@@ -1,4 +1,3 @@
-$ cat .gitignore
 *~
 ._*
 *.lock
@@ -35,7 +34,3 @@ target/**/*
 /_workingdir/
 /lib_managed/**/*
 /lib_managed/
-/AppData/**/*
-/AppData/
-AppData/**/*
-AppData/

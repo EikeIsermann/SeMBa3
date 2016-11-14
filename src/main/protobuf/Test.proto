@@ -1,0 +1,10 @@
+syntax = "proto3";
+package foo.bar;
+option java_package = "foo.bar";
+
+service Checker {
+    rpc Check (HelloRequest)  returns (HelloReply){}
+}
+
+message HelloRequest {  string name = 1;}
+message HelloReply {  string message = 1;}

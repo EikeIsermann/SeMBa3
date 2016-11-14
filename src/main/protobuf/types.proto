@@ -1,0 +1,80 @@
+syntax = "proto3";
+package sembaGRPC;
+option java_package = "sembaGRPC";
+
+
+
+message Annotation {
+    string uri = 1;
+    string description = 2;
+    string label = 3;
+}
+
+message Relation {
+    string uri = 1;
+    string description = 2;
+    string label = 3;
+}
+
+
+message AnnotationValue {
+   repeated string value = 1;
+}
+
+message RelationValue {
+    repeated string destination = 1;
+}
+
+message Library {
+    string uri = 1;
+}
+
+
+message LibraryConcepts {
+    Library lib = 1;
+    map<string, Annotation> annotations = 2;
+    map<string, Relation> relations = 3;
+}
+
+
+enum ItemType {
+    ITEM = 0;
+    COLLECTION = 1;
+}
+
+message Resource {
+    Library lib = 1;
+    ItemType itemType = 2;
+    string uri = 3;
+    string name = 4;
+    string thumbnailLocation = 5;
+    //repeated Annotation properties = 6;
+}
+
+message CollectionItem {
+    string uri = 1;
+    string LibraryResource = 2;
+    map<string, RelationValue>  relations = 3;
+    string parentCollection = 4;
+    Library lib = 5;
+}
+
+message CollectionContent {
+    string uri = 1;
+    repeated CollectionItem contents = 2;
+}
+
+message LibraryContent {
+    Library lib = 1;
+    map<string, Resource> libContent = 2;
+}
+
+message ItemDescription {
+   string itemURI = 1;
+   map<string, AnnotationValue> metadata = 2;
+}
+
+
+
+
+

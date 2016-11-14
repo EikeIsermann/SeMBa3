@@ -1,0 +1,148 @@
+@prefix : <http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix ns: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix wot: <http://xmlns.com/wot/0.1/> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix semba: <http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#> .
+@base <http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl> .
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl> rdf:type owl:Ontology ;
+                                                             owl:imports <http://www.hci.uni-wuerzburg.de/ontologies/semba/dcterms.rdf> .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#exemplifiedBy
+semba:exemplifiedBy rdf:type owl:ObjectProperty ;
+                    owl:inverseOf semba:isExampleFor .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#follows
+semba:follows rdf:type owl:ObjectProperty ;
+              owl:inverseOf semba:preceeds ;
+              rdf:type owl:TransitiveProperty .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#followsDirectly
+semba:followsDirectly rdf:type owl:ObjectProperty ;
+                      rdfs:subPropertyOf semba:follows ;
+                      owl:inverseOf semba:preceedsDirectly .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#hasMediaItem
+semba:hasMediaItem rdf:type owl:ObjectProperty ;
+                   owl:propertyChainAxiom ( semba:hasMediaItem
+                                            semba:exemplifiedBy
+                                          ) ,
+                                          ( semba:hasMediaItem
+                                            semba:follows
+                                          ) ,
+                                          ( semba:hasMediaItem
+                                            semba:preceeds
+                                          ) .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#isExampleFor
+semba:isExampleFor rdf:type owl:ObjectProperty .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#linksToMediaItem
+semba:linksToMediaItem rdf:type owl:ObjectProperty ;
+                       rdfs:domain semba:CollectionItem .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#preceeds
+semba:preceeds rdf:type owl:ObjectProperty ,
+                        owl:TransitiveProperty .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#preceedsDirectly
+semba:preceedsDirectly rdf:type owl:ObjectProperty ;
+                       rdfs:subPropertyOf semba:preceeds .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#libraryRootFolder
+semba:libraryRootFolder rdf:type owl:DatatypeProperty .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#sourceLocation
+semba:sourceLocation rdf:type owl:DatatypeProperty ;
+                     rdfs:domain semba:MediaItem ;
+                     rdfs:range xsd:anyURI .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://purl.org/dc/terms/FileFormat
+<http://purl.org/dc/terms/FileFormat> rdf:type owl:Class .
+
+
+###  http://purl.org/dc/terms/SizeOrDuration
+<http://purl.org/dc/terms/SizeOrDuration> rdf:type owl:Class .
+
+
+###  http://www.cc.uah.es/ie/ont/lom2owl#lomDuration
+<http://www.cc.uah.es/ie/ont/lom2owl#lomDuration> rdf:type owl:Class ;
+                                                  rdfs:subClassOf <http://purl.org/dc/terms/SizeOrDuration> .
+
+
+###  http://www.cc.uah.es/ie/ont/lom2owl#lomResource
+<http://www.cc.uah.es/ie/ont/lom2owl#lomResource> rdf:type owl:Class .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#CollectionItem
+semba:CollectionItem rdf:type owl:Class ;
+                     rdfs:subClassOf semba:SembaConcept .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#MediaCollection
+semba:MediaCollection rdf:type owl:Class ;
+                      rdfs:subClassOf semba:SembaConcept .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#MediaItem
+semba:MediaItem rdf:type owl:Class ;
+                rdfs:subClassOf semba:SembaConcept .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#MediaLibrary
+semba:MediaLibrary rdf:type owl:Class ;
+                   rdfs:subClassOf semba:SembaConcept .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#SembaConcept
+semba:SembaConcept rdf:type owl:Class .
+
+
+###  http://www.hci.uni-wuerzburg.de/semba/semba-sbase.owl#MediaItem
+<http://www.hci.uni-wuerzburg.de/semba/semba-sbase.owl#MediaItem> rdf:type owl:Class ;
+                                                                  rdfs:subClassOf <http://www.cc.uah.es/ie/ont/lom2owl#lomResource> .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#jpeg-image
+semba:jpeg-image rdf:type owl:NamedIndividual ,
+                          <http://purl.org/dc/terms/FileFormat> .
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl#portableDocumentFormat
+semba:portableDocumentFormat rdf:type owl:NamedIndividual ,
+                                      <http://purl.org/dc/terms/FileFormat> .
+
+
+###  Generated by the OWL API (version 4.2.5.20160517-0735) https://github.com/owlcs/owlapi

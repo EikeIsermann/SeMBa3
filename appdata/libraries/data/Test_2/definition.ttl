@@ -1,0 +1,53 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl>
+        a            owl:Ontology ;
+        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
+
+<file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content>
+        a       <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem> ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sourceLocation>
+                "file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/Test.jpeg" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#thumbLocation>
+                "file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/thumbnail.jpeg" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Component 1>
+                "Y component: Quantization table 0, Sampling factors 2 horiz/2 vert" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Component 2>
+                "Cb component: Quantization table 1, Sampling factors 1 horiz/1 vert" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Component 3>
+                "Cr component: Quantization table 1, Sampling factors 1 horiz/1 vert" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Compression Type>
+                "Baseline" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Content-Type>
+                "image/jpeg" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Data Precision>
+                "8 bits" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#File Modified Date>
+                "Mon Nov 14 13:44:14 CET 2016" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#File Name>
+                "apache-tika-900224944819931555.tmp" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#File Size>
+                "113561 bytes" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Image Height>
+                "640 pixels" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Image Width>
+                "480 pixels" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Number of Components>
+                "3" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Resolution Units>
+                "inch" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#X Resolution>
+                "96 dots" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#X-Parsed-By>
+                "org.apache.tika.parser.jpeg.JpegParser" , "org.apache.tika.parser.DefaultParser" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Y Resolution>
+                "96 dots" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#tiff:BitsPerSample>
+                "8" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#tiff:ImageLength>
+                "640" ;
+        <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#tiff:ImageWidth>
+                "480" .

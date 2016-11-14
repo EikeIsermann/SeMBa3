@@ -1,0 +1,229 @@
+@prefix : <http://www.hci.uni-wuerzburg.de/ontologies/example-collections/machine-learning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://www.hci.uni-wuerzburg.de/ontologies/example-collections/machine-learning> .
+
+<http://www.hci.uni-wuerzburg.de/ontologies/example-collections/machine-learning> rdf:type owl:Ontology ;
+                                                                                  
+                                                                                  owl:imports <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide1.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide10.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide11.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide13.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide14.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide15.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide16.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide17.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide18.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide19.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide2.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide20.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide21.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide22.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide23.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide3.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide4.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide5.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide6.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide7.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide8.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide9.owl> ,
+                                                                                              <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl> .
+
+
+#################################################################
+#
+#    Annotation properties
+#
+#################################################################
+
+
+###  http://www.hci.uni-wuerzburg.de/semba/semba-concepts.owl#hasMediaItem
+
+<http://www.hci.uni-wuerzburg.de/semba/semba-concepts.owl#hasMediaItem> rdf:type owl:AnnotationProperty .
+
+
+
+
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/example-collections/machine-learning#Lecturer
+
+:Lecturer rdf:type owl:Class ;
+          
+          rdfs:subClassOf <http://purl.org/dc/terms/Agent> .
+
+
+
+
+
+#################################################################
+#
+#    Individuals
+#
+#################################################################
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/example-collections/machine-learning#UWB-MachineLearning
+
+:UWB-MachineLearning rdf:type <http://purl.org/dc/dcmitype/Collection> ,
+                              owl:NamedIndividual ;
+                     
+                     <http://www.hci.uni-wuerzburg.de/semba/semba-concepts.owl#hasMediaItem> :MachineLearnin-Slide1 ;
+                     
+                     <http://purl.org/dc/terms/creator> :MarcLatoschik ;
+                     
+                     <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#hasMediaItem> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide1.owl#machinelearning-slide1> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide10.owl#machinelearning-slide10
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide10.owl#machinelearning-slide10> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide9.owl#machinelearning-slide9> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide11.owl#machinelearning-slide11
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide11.owl#machinelearning-slide11> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide10.owl#machinelearning-slide10> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide11.owl#machinelearning-slide11> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide13.owl#machinelearning-slide13
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide13.owl#machinelearning-slide13> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide14.owl#machinelearning-slide14
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide14.owl#machinelearning-slide14> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide13.owl#machinelearning-slide13> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide15.owl#machinelearning-slide15
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide15.owl#machinelearning-slide15> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide14.owl#machinelearning-slide14> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide16.owl#machinelearning-slide16
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide16.owl#machinelearning-slide16> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide17.owl#machinelearning-slide17
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide17.owl#machinelearning-slide17> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide18.owl#machinelearning-slide18
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide18.owl#machinelearning-slide18> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide19.owl#machinelearning-slide19
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide19.owl#machinelearning-slide19> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide2.owl#machinelearning-slide2
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide2.owl#machinelearning-slide2> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide1.owl#machinelearning-slide1> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide20.owl#machinelearning-slide20
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide20.owl#machinelearning-slide20> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide21.owl#machinelearning-slide21
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide21.owl#machinelearning-slide21> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#isExampleFor> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide22.owl#machinelearning-slide22
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide22.owl#machinelearning-slide22> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide12.owl#machinelearning-slide12> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide23.owl#machinelearning-slide23
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide23.owl#machinelearning-slide23> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide22.owl#machinelearning-slide22> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide3.owl#machinelearning-slide3
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide3.owl#machinelearning-slide3> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide2.owl#machinelearning-slide2> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide4.owl#machinelearning-slide4
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide4.owl#machinelearning-slide4> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide3.owl#machinelearning-slide3> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide5.owl#machinelearning-slide5
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide5.owl#machinelearning-slide5> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide4.owl#machinelearning-slide4> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide6.owl#machinelearning-slide6
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide6.owl#machinelearning-slide6> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide5.owl#machinelearning-slide5> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide7.owl#machinelearning-slide7
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide7.owl#machinelearning-slide7> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide6.owl#machinelearning-slide6> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide8.owl#machinelearning-slide8
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide8.owl#machinelearning-slide8> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide7.owl#machinelearning-slide7> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide9.owl#machinelearning-slide9
+
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide9.owl#machinelearning-slide9> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.owl#followsDirectly> <http://www.hci.uni-wuerzburg.de/ontologies/semba/example-collections/media/machinelearning-slide8.owl#machinelearning-slide8> .
+
+
+
+###  http://www.hci.uni-wuerzburg.de/people#MarcLatoschik
+
+<http://www.hci.uni-wuerzburg.de/people#MarcLatoschik> rdf:type :Lecturer .
+
+
+
+
+###  Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net
+
