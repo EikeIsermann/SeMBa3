@@ -155,7 +155,7 @@
 
     <owl:NamedIndividual rdf:about="http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition">
         <rdf:type rdf:resource="http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaLibrary"/>
-        <semba-main:libraryRootFolder>file:///Users/uni/Documents/SeMBa3/appdata/libraries/data</semba-main:libraryRootFolder>
+        <semba-main:libraryRootFolder>file:///Users/uni/Documents/SeMBa3/appdata/libraries/</semba-main:libraryRootFolder>
     </owl:NamedIndividual>
 </rdf:RDF>
 

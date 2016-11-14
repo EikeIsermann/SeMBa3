@@ -9,4 +9,5 @@
     <thumbnailResolution>400</thumbnailResolution>
     <thumbnailIdentifier>thumbnail.jpeg</thumbnailIdentifier>
     <language>en</language>
+    <dataPath>data</dataPath>
 </config>

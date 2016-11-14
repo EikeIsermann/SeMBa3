@@ -84,7 +84,11 @@ class SingleItemImport extends Actor with JobHandling {
 
     if(metadata.names().contains(TikaCoreProperties.TITLE)){
       LibraryAccess.setDatatypeProperty(Paths.sembaTitle,
-        itemOntology, itemIndividual, metadata.getValues(TikaCoreProperties.TITLE))
+        job.libInfo.basemodel(), itemIndividual, metadata.getValues(TikaCoreProperties.TITLE))
+    }
+    else{
+      LibraryAccess.setDatatypeProperty(Paths.sembaTitle,
+        job.libInfo.basemodel(), itemIndividual, Array(TextFactory.omitExtension(job.item.getAbsolutePath)))
     }
 
     val mimeType = tika.detect(item)

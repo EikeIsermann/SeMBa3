@@ -10,7 +10,7 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.iterator.ExtendedIterator
 import org.apache.jena.vocabulary.{OWL, OWL2, RDF, RDFS}
-import sembaGRPC.{LibraryConcepts, LibraryContent}
+import sembaGRPC.{Library, LibraryConcepts, LibraryContent}
 import utilities.{Convert, TextFactory}
 
 import scala.collection.mutable.ArrayBuffer
@@ -66,10 +66,10 @@ object LibraryAccess {
     val cleanKey = TextFactory.cleanString(key)
     var prop = None: Option[DatatypeProperty]
     try {
-       prop = Some(model.createDatatypeProperty(baseURI + cleanKey))
+       prop = Some(model.createDatatypeProperty(baseURI + cleanKey, functional))
        prop.get.addSuperProperty(model.getDatatypeProperty(Paths.generatedDatatypePropertyURI))
        prop.get.addDomain(model.getResource(Paths.resourceDefinitionURI))
-       if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
+       //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
     }
     finally model.leaveCriticalSection()
     prop.get
@@ -77,32 +77,32 @@ object LibraryAccess {
 
   def setDatatypeProperty( uri: String, model: OntModel, item: Individual, values: Array[String]): Individual = {
     var prop: Option[DatatypeProperty] = None
-    model.enterCriticalSection(Lock.READ)
+    model.enterCriticalSection(Lock.WRITE)
 
     try{
-      var prop = model.getDatatypeProperty(uri)
+       prop = Some(model.getDatatypeProperty(uri))
     }
 
     finally model.leaveCriticalSection()
-    if(prop.isDefined) setDatatypeProperty(prop.get,model,item,values)
+    if(prop.isDefined) setDatatypeProperty(prop.get,item.getOntModel,item,values)
     item
   }
 
   def setDatatypeProperty(
                            prop: DatatypeProperty, model: OntModel, item: Individual, values: Array[String]
                          ): Individual = {
+    val functional = {
+      prop.getOntModel.enterCriticalSection(Lock.WRITE)
+      try {
+        prop.isFunctionalProperty
+      }
+      finally prop.getOntModel.leaveCriticalSection()
+    }
+
     model.enterCriticalSection(Lock.WRITE)
     try{
 
-      if(                              {
-        prop.getOntModel.enterCriticalSection(Lock.READ)
-        try {
-          prop.isFunctionalProperty
-        }
-        finally prop.getOntModel.leaveCriticalSection()
-
-      }
-      ){
+      if(functional){
       require(values.length == 1)
       item.removeAll(prop)
       item.addProperty(prop, values.head)
@@ -155,7 +155,7 @@ object LibraryAccess {
     retVal
   }
 
-  def retrieveLibContent(model: OntModel): LibraryContent = {
+  def retrieveLibContent(model: OntModel, lib: Library): LibraryContent = {
      var retVal = LibraryContent()
     model.enterCriticalSection(Lock.READ)
     try{
@@ -165,7 +165,7 @@ object LibraryAccess {
       while(iter.hasNext){
         val ind = iter.next()
         val uri = ind.getURI
-        retVal = retVal.addLibContent((uri, Convert.item2grpc(uri,ind)))
+        retVal = retVal.addLibContent((uri, Convert.item2grpc(lib, ind)))
       }
     }      }
     finally model.leaveCriticalSection()

@@ -11,7 +11,7 @@ import sembaGRPC.SembaAPIGrpc.SembaAPIBlockingStub
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-object TestClient extends App{
+object TestClient extends App {
 
   var testSessionID: String = ""
   val client = TestClient("localhost", 50051)
@@ -20,7 +20,7 @@ object TestClient extends App{
        testSessionID = client.registerSession().sessionID
        var testLib = Library(uri = "file:///users/uni/documents/semba3/appdata/libraries/semba-teaching.owl")
        client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID))
-      //println(client.getContent(testLib))
+     //println(client.getContent(testLib))
       println(client.addItem("file:///users/uni/documents/semba3/appdata/libraries/test", testLib))
 
       }

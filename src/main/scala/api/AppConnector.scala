@@ -93,6 +93,11 @@ class AppConnector extends Actor {
 
       implicit val timeout: Timeout = 20 seconds
 
+
+      override def subscribeUpdates(request: UpdateRequest, responseObserver: StreamObserver[UpdateMessage]): Unit = {
+        observers.put(request.sessionID, responseObserver)
+      }
+
       override def openLibrary(request: LibraryRequest): Future[LibraryConcepts] = {
         val uri = request.getLib.uri
         val lib = app.loadLibrary(new URI(uri), UUID.fromString(request.sessionID))
@@ -101,13 +106,15 @@ class AppConnector extends Actor {
         ask(lib, OpenLib()).mapTo[LibraryConcepts]
       }
 
-      override def removeFromCollection(request: CollectionItem): Future[VoidResult] = {
-        val lib = app.get(request.lib.get.uri)
-        ask(lib, RemoveCollectionItem(request)).mapTo[VoidResult]
+      override def addToLibrary(request: SourceFile): Future[VoidResult] = {
+        val lib = app.get(request.getLibrary.uri)
+        ask(lib, AddToLibrary(request)).mapTo[VoidResult]
       }
 
-      override def subscribeUpdates(request: UpdateRequest, responseObserver: StreamObserver[UpdateMessage]): Unit = {
-        observers.put(request.sessionID, responseObserver)
+
+      override def requestContents(request: Library): Future[LibraryContent] = {
+        val lib = app.get(request.uri)
+        ask(lib, RequestContents(request)).mapTo[LibraryContent]
       }
 
       override def getMetadata(request: Resource): Future[ItemDescription] = {
@@ -115,15 +122,14 @@ class AppConnector extends Actor {
         ask(lib, GetMetadata(request)).mapTo[ItemDescription]
       }
 
-      override def requestContents(request: Library): Future[LibraryContent] = {
-        val lib = app.get(request.uri)
-        ask(lib, RequestContents(request)).mapTo[LibraryContent]
+
+      override def removeFromCollection(request: CollectionItem): Future[VoidResult] = {
+        val lib = app.get(request.lib.get.uri)
+        ask(lib, RemoveCollectionItem(request)).mapTo[VoidResult]
       }
 
-      override def addToLibrary(request: SourceFile): Future[VoidResult] = {
-        val lib = app.get(request.getLibrary.uri)
-        ask(lib, AddToLibrary(request)).mapTo[VoidResult]
-      }
+
+
 
       override def sparqlFilter(request: SparqlQuery): Future[LibraryContent] = {
         val lib = app.get(request.getLibrary.uri)

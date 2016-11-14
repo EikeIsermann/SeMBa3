@@ -1,6 +1,8 @@
 package utilities
 
 import java.io.File
+import java.net.URI
+
 import scala.xml._
 
 
@@ -18,6 +20,7 @@ object XMLFactory {
 
   def getXMLAsElemAdv(pathToFile:String) = new ElemAdv(FileFactory.fileToXML(pathToFile))
 
+  def getXMLAsElemAdv(pathToFile:URI) = new ElemAdv(FileFactory.fileToXML(pathToFile))
   def getXML(pathToFile:String) = FileFactory.fileToXML(pathToFile)
 
   def getXML(file: File) = XML.loadFile(file)

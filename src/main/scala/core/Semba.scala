@@ -17,7 +17,7 @@ import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
 import org.apache.jena.vocabulary.DCTerms
-import sembaGRPC.{LibraryConcepts, LibraryContent, VoidResult}
+import sembaGRPC.{Library, LibraryConcepts, LibraryContent, VoidResult}
 import sembaGRPC.SourceFile.Source
 import utilities.{Convert, FileFactory, XMLFactory}
 import utilities.debug.DC
@@ -36,6 +36,7 @@ class Semba(val path: URI) extends Actor with JobHandling
   var library: Agent[OntModel] = _
   var basemodel: Agent[OntModel] = _
   var libraryLocation: URI = _
+  var libRoot: URI = _
   var config: Config = _
   def libInfo: LibInfo = new LibInfo(system, library, basemodel, libraryLocation, config)
 
@@ -43,8 +44,10 @@ class Semba(val path: URI) extends Actor with JobHandling
        library =  Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
        basemodel = Agent(ModelFactory.createOntologyModel())
       Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
-      libraryLocation = new URI(getLiteral(basemodel().getIndividual("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition"), "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"))
-       config = new Config("/Users/uni/Documents/SeMBa3/appdata/libraries/Config.xml")//libraryLocation  +  Paths.libConfiguration)
+      libRoot = new URI(getLiteral(basemodel().getIndividual("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition"), "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"))
+
+      config = new Config( new URI(libRoot + Paths.libConfiguration))
+    libraryLocation = new URI(libRoot + config.dataPath)
       init()
   }
 
@@ -83,6 +86,8 @@ class Semba(val path: URI) extends Actor with JobHandling
     case contents: RequestContents => {
       sender() ! getContents()
     }
+
+
 
     case JobReply => {}
     case _ => {
@@ -141,7 +146,7 @@ class Semba(val path: URI) extends Actor with JobHandling
   }
 
   def getContents(): LibraryContent = {
-     LibraryAccess.retrieveLibContent(library())
+     LibraryAccess.retrieveLibContent(library(), Library(path.toString))
   }
 
 
@@ -149,7 +154,7 @@ class Semba(val path: URI) extends Actor with JobHandling
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???
 }
 
-class Config(path: String)
+class Config(path: URI)
 {
   val configFile = XMLFactory.getXMLAsElemAdv(path)
 
@@ -169,6 +174,7 @@ class Config(path: String)
 
   val lang = getString("language")
   val thumbnail = getString("thumbnailIdentifier")
+  val dataPath = getString("dataPath")
   def getString(s: String): String =  configFile.getValueAt("config", s)
 
 

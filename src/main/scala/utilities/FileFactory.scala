@@ -126,6 +126,10 @@ object FileFactory {
     XML.loadFile(new File(pathToFile))
   }
 
+  def fileToXML(pathToFile: URI) = {
+    XML.loadFile(new File(pathToFile))
+  }
+
   /**
    * extracts the filename from a path string (extension is not omitted)
    * @param path2File

@@ -45,14 +45,14 @@ object Convert {
 
   def lib2grpc(lib: String): Library = new Library(lib)
 
-  def item2grpc(lib: String, item: Individual): Resource = {
+  def item2grpc(lib: Library, item: Individual): Resource = {
     val model = item.getOntModel
     var retVal = Resource()
     model.enterCriticalSection(Lock.READ)
     try {
       require(item.hasOntClass(Paths.resourceDefinitionURI))
       retVal = new Resource(
-        Some(lib2grpc(lib)),
+        Some(lib),
         item.getOntClass(true).getURI match {
           case Paths.itemClassURI => ItemType.ITEM
           case Paths.collectionClassURI => ItemType.COLLECTION
