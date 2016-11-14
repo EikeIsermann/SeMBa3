@@ -6,31 +6,47 @@ import "types.proto";
 
 service SembaAPI {
 
-    rpc OpenLibrary(LibraryRequest) returns (LibraryConcepts){}
-    rpc RequestContents(Library) returns (LibraryContent){}
-    rpc CloseLibrary(LibraryRequest) returns (VoidResult){}
+    rpc OpenLibrary (LibraryRequest) returns (LibraryConcepts) {
+    }
+    rpc RequestContents (Library) returns (LibraryContent) {
+    }
+    rpc CloseLibrary (LibraryRequest) returns (VoidResult) {
+    }
 
-    rpc addToLibrary(SourceFile) returns (VoidResult){}
-    rpc removeFromLibrary(Resource) returns (VoidResult){}
+    rpc addToLibrary (SourceFile) returns (VoidResult) {
+    }
+    rpc removeFromLibrary (Resource) returns (VoidResult) {
+    }
 
-    rpc addToCollection(AddToCollection) returns (VoidResult){}
-    rpc removeFromCollection(CollectionItem) returns (VoidResult){}
-    rpc createRelation(RelationModification) returns (VoidResult){}
-    rpc removeRelation(RelationModification) returns (VoidResult){}
+    rpc addToCollection (AddToCollection) returns (VoidResult) {
+    }
+    rpc removeFromCollection (CollectionItem) returns (VoidResult) {
+    }
+    rpc createRelation (RelationModification) returns (VoidResult) {
+    }
+    rpc removeRelation (RelationModification) returns (VoidResult) {
+    }
 
-    rpc getMetadata(Resource) returns (ItemDescription){}
-    rpc updateMetadata(MetadataUpdate) returns (VoidResult){}
+    rpc getMetadata (Resource) returns (ItemDescription) {
+    }
+    rpc updateMetadata (MetadataUpdate) returns (VoidResult) {
+    }
 
-    rpc simpleSearch(SimpleQuery) returns (LibraryContent){}
-    rpc sparqlFilter(SparqlQuery) returns (LibraryContent){}
+    rpc simpleSearch (SimpleQuery) returns (LibraryContent) {
+    }
+    rpc sparqlFilter (SparqlQuery) returns (LibraryContent) {
+    }
 
-    rpc subscribeUpdates(UpdateRequest) returns (stream UpdateMessage){}
-    rpc registerSession(SessionRequest) returns (SessionRequest){}
+    rpc subscribeUpdates (UpdateRequest) returns (stream UpdateMessage) {
+    }
+    rpc registerSession (SessionRequest) returns (SessionRequest) {
+    }
 
-    rpc ping(TestMsg) returns (TestMsg){}
+    rpc ping (TestMsg) returns (TestMsg) {
+    }
     //rpc unsubscribeUpdates(UpdateRequest) returns (){}
 }
-message TestMsg{
+message TestMsg {
     string test = 1;
 }
 
@@ -40,7 +56,7 @@ message AddToCollection {
 }
 
 
-message VoidResult{
+message VoidResult {
     bool accepted = 1;
     string message = 2;
 }
@@ -48,8 +64,8 @@ message VoidResult{
 message SourceFile {
     Library library = 1;
     oneof source {
-    string path = 2;
-    bytes data = 3;
+        string path = 2;
+        bytes data = 3;
     }
 }
 

@@ -1,4 +1,5 @@
 package core.metadata
+
 import java.awt.font.FontRenderContext
 import java.awt.image.BufferedImage
 import java.awt.{Color, Font, RenderingHints}
@@ -7,11 +8,9 @@ import java.net.URI
 import java.util
 import javax.imageio.ImageIO
 
-import org.imgscalr.Scalr.pad
 import core.ThumbnailJob
 import org.apache.commons.io.IOUtils
-
-import scala.collection.immutable.HashMap
+import org.imgscalr.Scalr.pad
 
 /**
   * Author: Eike Isermann
@@ -25,11 +24,11 @@ class TxtThumb extends ThumbActor {
     val thumbnail = new BufferedImage(res, res, BufferedImage.TYPE_INT_RGB)
     val bounds = TxtThumb.font.getStringBounds(src, new FontRenderContext(null, true, true))
     val pic = thumbnail.createGraphics()
-      pic.setColor(TxtThumb.background)
-      pic.fillRect(0,0,res,res)
-      pic.setColor(TxtThumb.color)
-      pic.setFont(TxtThumb.font)
-      pic.setRenderingHints(TxtThumb.RenderingProperties)
+    pic.setColor(TxtThumb.background)
+    pic.fillRect(0, 0, res, res)
+    pic.setColor(TxtThumb.color)
+    pic.setFont(TxtThumb.font)
+    pic.setRenderingHints(TxtThumb.RenderingProperties)
 
     val metrics = pic.getFontMetrics(TxtThumb.font)
     val height = metrics.getHeight
@@ -37,7 +36,9 @@ class TxtThumb extends ThumbActor {
     var xPos = xOrigin
     var yPos = (bounds.getY.toInt + res * 0.2).toInt
 
-    def breakLine { yPos += height; xPos = xOrigin }
+    def breakLine {
+      yPos += height; xPos = xOrigin
+    }
 
     breakLine
     src.split("\n|\r\n").foreach { line =>
@@ -46,7 +47,7 @@ class TxtThumb extends ThumbActor {
 
         pic.drawString(word, xPos, yPos)
 
-        if (xPos + wordWidth >= xOrigin + (res*0.8).toInt ) breakLine
+        if (xPos + wordWidth >= xOrigin + (res * 0.8).toInt) breakLine
         else xPos += wordWidth
       }
 
@@ -62,14 +63,14 @@ class TxtThumb extends ThumbActor {
 
 }
 
-  object TxtThumb {
-    val RenderingProperties =  new util.HashMap[RenderingHints.Key, Object]()
-    RenderingProperties.put(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-    RenderingProperties.put(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
-      RenderingProperties.put(RenderingHints.KEY_FRACTIONALMETRICS,  RenderingHints.VALUE_FRACTIONALMETRICS_ON)
+object TxtThumb {
+  val RenderingProperties = new util.HashMap[RenderingHints.Key, Object]()
+  RenderingProperties.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+  RenderingProperties.put(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+  RenderingProperties.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON)
 
-    val font = new Font("Tahoma", Font.PLAIN, 5)
-    val color = Color.black
-    val background = Color.white
-    val padding = 4
-  }
+  val font = new Font("Tahoma", Font.PLAIN, 5)
+  val color = Color.black
+  val background = Color.white
+  val padding = 4
+}

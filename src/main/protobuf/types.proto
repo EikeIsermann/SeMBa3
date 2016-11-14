@@ -3,7 +3,6 @@ package sembaGRPC;
 option java_package = "sembaGRPC";
 
 
-
 message Annotation {
     string uri = 1;
     string description = 2;
@@ -18,7 +17,7 @@ message Relation {
 
 
 message AnnotationValue {
-   repeated string value = 1;
+    repeated string value = 1;
 }
 
 message RelationValue {
@@ -54,7 +53,7 @@ message Resource {
 message CollectionItem {
     string uri = 1;
     string LibraryResource = 2;
-    map<string, RelationValue>  relations = 3;
+    map<string, RelationValue> relations = 3;
     string parentCollection = 4;
     Library lib = 5;
 }
@@ -70,8 +69,8 @@ message LibraryContent {
 }
 
 message ItemDescription {
-   string itemURI = 1;
-   map<string, AnnotationValue> metadata = 2;
+    string itemURI = 1;
+    map<string, AnnotationValue> metadata = 2;
 }
 
 

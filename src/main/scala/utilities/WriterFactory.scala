@@ -4,16 +4,12 @@ import java.io.{File, FileInputStream, FileOutputStream, FileWriter}
 import java.net.URI
 import java.util.concurrent.ConcurrentSkipListSet
 
-import akka.agent.Agent
-
-import scala.collection.mutable.ArrayBuffer
-
 /**
- * Copyright © 2012 DMAMS Team
- * Help: https://trinity.informatik.uni-wuerzburg.de/redmine-stud/projects/sq2011p3/wiki/Wiki
- * User: Alex
- * Date: 24.03.12 16:40
- */
+  * Copyright © 2012 DMAMS Team
+  * Help: https://trinity.informatik.uni-wuerzburg.de/redmine-stud/projects/sq2011p3/wiki/Wiki
+  * User: Alex
+  * Date: 24.03.12 16:40
+  */
 object WriterFactory {
   //TODO similar name concurrency issue
   var LockedFilenames = new ConcurrentSkipListSet[File]()
@@ -42,11 +38,23 @@ object WriterFactory {
     retVal
   }
 
-  def writeFile(origin: File, destination: File, copy:Boolean = true): File ={
-    if (!destination.exists()){
+  def getFilenameAvailable(name: String): File = {
+    var retVal = new File(new URI(name))
+    var i = 1
+    var available = LockedFilenames.add(retVal) && !retVal.exists()
+    while (!available) {
+      retVal = new File(new URI(name + "_" + i))
+      available = !retVal.exists() && LockedFilenames.add(retVal)
+      i = i + 1
+    }
+    retVal
+  }
+
+  def writeFile(origin: File, destination: File, copy: Boolean = true): File = {
+    if (!destination.exists()) {
       destination.mkdirs()
     }
-    var addedItem = new File(new URI(destination.toURI  + TextFactory.sanitizeFilename(origin.getName)))
+    var addedItem = new File(new URI(destination.toURI + TextFactory.sanitizeFilename(origin.getName)))
     /*if (addedItem.exists()){
       var i = 1
       while(addedItem.exists){
@@ -57,24 +65,11 @@ object WriterFactory {
 
     }   */
     new FileOutputStream(addedItem) getChannel() transferFrom(new FileInputStream(origin).getChannel, 0, Long.MaxValue)
-    if (!copy){
+    if (!copy) {
       origin.delete()
     }
     addedItem
   }
-
-  def getFilenameAvailable(name: String): File = {
-    var retVal = new File(new URI(name))
-    var i = 1
-    var available = LockedFilenames.add(retVal) && !retVal.exists()
-    while(!available){
-      retVal = new File(new URI(name + "_" + i))
-      available = !retVal.exists() && LockedFilenames.add(retVal)
-      i = i + 1
-    }
-    retVal
-  }
-
 
 
 }

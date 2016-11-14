@@ -10,10 +10,10 @@ import scala.xml.XML
 
 
 /**
- * Copyright © 2012 PacMan Team
- * User: Chris
- * Date: 08.06.12 18:17
- */
+  * Copyright © 2012 PacMan Team
+  * User: Chris
+  * Date: 08.06.12 18:17
+  */
 
 object FileFactory {
 
@@ -85,13 +85,11 @@ object FileFactory {
     }
 
     get(pathToDirectory, recursive, withDirectories)
-       if(!hiddenFiles)
-       {
-         buffer = buffer.filter(file => !file.isHidden)
-       }
+    if (!hiddenFiles) {
+      buffer = buffer.filter(file => !file.isHidden)
+    }
     buffer.toList
   }
-
 
 
   def path2File(pathToFile: String): File = {
@@ -104,13 +102,14 @@ object FileFactory {
 
 
   /**
-   * determine the mime type of that file
-   * takes roughly 7 seconds for roughly 16000 files
-   * found mime types for 16486 files in 6129ms
-   * found mime types for 16486 files in 5187ms
-   * @param file the File
-   * @return mime type string
-   */
+    * determine the mime type of that file
+    * takes roughly 7 seconds for roughly 16000 files
+    * found mime types for 16486 files in 6129ms
+    * found mime types for 16486 files in 5187ms
+    *
+    * @param file the File
+    * @return mime type string
+    */
   def getMimeTypeOf(file: File): String = {
     var ret: String = null
     try {
@@ -131,10 +130,11 @@ object FileFactory {
   }
 
   /**
-   * extracts the filename from a path string (extension is not omitted)
-   * @param path2File
-   * @return
-   */
+    * extracts the filename from a path string (extension is not omitted)
+    *
+    * @param path2File
+    * @return
+    */
   def filePath2Name(path2File: String): String = path2File.reverse.split("/")(0).reverse
 
   def filterFileExtension(dir: File, valid: Array[String]): List[File] = {

@@ -1,54 +1,53 @@
 package core
 
-import java.io.{File, FileOutputStream}
 import java.net.URI
 import java.util.UUID
 
-import akka.actor.Actor.Receive
-import core.{LibraryAccess => lib}
-import akka.actor.{Actor, ActorContext, ActorSystem, Props}
+import akka.actor.{Actor, ActorSystem, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
-import akka.util.LineNumbers.SourceFile
-import api.{AddToLibrary, OpenLib, RemoveCollectionItem, RequestContents}
+import api.{AddToLibrary, OpenLib, RequestContents}
 import app.Paths
 import core.library._
+import core.{LibraryAccess => lib}
 import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.shared.Lock
-import org.apache.jena.vocabulary.DCTerms
-import sembaGRPC.{Library, LibraryConcepts, LibraryContent, VoidResult}
 import sembaGRPC.SourceFile.Source
-import utilities.{Convert, FileFactory, XMLFactory}
+import sembaGRPC.{Library, LibraryConcepts, LibraryContent, VoidResult}
 import utilities.debug.DC
+import utilities.{Convert, FileFactory, XMLFactory}
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+
 /**
   * Created by Eike on 06.04.2016.
   */
 
 case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config)
-class Semba(val path: URI) extends Actor with JobHandling
-{
+
+class Semba(val path: URI) extends Actor with JobHandling {
   var system = context.system
   var library: Agent[OntModel] = _
   var basemodel: Agent[OntModel] = _
   var libraryLocation: URI = _
   var libRoot: URI = _
   var config: Config = _
-  def libInfo: LibInfo = new LibInfo(system, library, basemodel, libraryLocation, config)
 
   override def preStart() = {
-       library =  Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
-       basemodel = Agent(ModelFactory.createOntologyModel())
-      Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
-      libRoot = new URI(getLiteral(basemodel().getIndividual("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition"), "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"))
+    library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
+    basemodel = Agent(ModelFactory.createOntologyModel())
+    Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
+    libRoot = new URI(getLiteral(basemodel().getIndividual("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition"), "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"))
 
-      config = new Config( new URI(libRoot + Paths.libConfiguration))
+    config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
-      init()
+    init()
+  }
+
+  def init(): Unit = {
+    readLibrary()
   }
 
   /*
@@ -67,26 +66,34 @@ class Semba(val path: URI) extends Actor with JobHandling
 
   //newCollection("testCollection", new URI("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program") )
 
-
-  def init(): Unit = {
-    readLibrary()
+  def readLibrary(): Unit = {
+    system.actorOf(Props(new LibImporter(library))) ! ImportLib(libraryLocation)
   }
 
+  def getLiteral(item: Individual, str: String): String = {
+    try {
+      val prop = library().getProperty(str)
+      item.getPropertyValue(prop).toString
+    }
+    catch {
+      case ex: Exception =>
+        DC.warn("Couldn't retrieve literal")
+    }
+  }
 
   override def receive: Receive = {
     case openLib: OpenLib => {
       sender() ! getConcepts()
     }
     case addItem: AddToLibrary => {
-        val notEmpty = addItem.sourceFile.source.isDefined
-        sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set." )
-        newItem(addItem)
-      }
+      val notEmpty = addItem.sourceFile.source.isDefined
+      sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.")
+      newItem(addItem)
+    }
 
     case contents: RequestContents => {
       sender() ! getContents()
     }
-
 
 
     case JobReply => {}
@@ -95,67 +102,48 @@ class Semba(val path: URI) extends Actor with JobHandling
     }
   }
 
-  def readLibrary(): Unit = {
-    system.actorOf(Props(new LibImporter(library))) ! ImportLib(libraryLocation)
+  def newItem(addToLibrary: AddToLibrary): Unit = {
+    addToLibrary.sourceFile.source match {
+      case Source.Path(path) => {
+        newItem(new URI(path))
+      }
+
+      case Source.Data(data) => {
+        //TODO get input stream, copy to local filesystem, read as new item
+      }
+    }
   }
 
-
-  def newItem (addToLibrary: AddToLibrary): Unit ={
-     addToLibrary.sourceFile.source match {
-       case Source.Path(path) =>
-         {
-           newItem(new URI(path))
-         }
-
-       case Source.Data(data) =>
-         {
-           //TODO get input stream, copy to local filesystem, read as new item
-         }
-     }
-  }
-
-  def newItem( path: URI , copyToLib: Boolean = true): Unit = {
+  def newItem(path: URI, copyToLib: Boolean = true): Unit = {
     val items = FileFactory.contentsOfDirectory(path, true, false, false)
     val workers = system.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
     val batchID = UUID.randomUUID()
-    for (item <- items){
-      val job =   ImportNewItem(item, libInfo, copyToLib)
+    for (item <- items) {
+      val job = ImportNewItem(item, libInfo, copyToLib)
       job.jobID = batchID
       workers ! createMasterJob(job, self)
     }
   }
 
-  def newCollection( name: String, classURI: URI,  picture: URI = new URI(config.defaultCollectionIcon)): Unit ={
-    system.actorOf(Props[CollectionHandler]) ! CreateCollection(name, classURI, libInfo, picture)
-
-  }
-
-  def getLiteral(item:Individual, str: String): String = {
-    try{
-      val prop = library().getProperty(str)
-      item.getPropertyValue(prop).toString
-    }
-    catch{
-      case ex: Exception =>
-        DC.warn("Couldn't retrieve literal")
-    }
-  }
+  def libInfo: LibInfo = new LibInfo(system, library, basemodel, libraryLocation, config)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path.toString))
   }
 
   def getContents(): LibraryContent = {
-     LibraryAccess.retrieveLibContent(library(), Library(path.toString))
+    LibraryAccess.retrieveLibContent(library(), Library(path.toString))
   }
 
+  def newCollection(name: String, classURI: URI, picture: URI = new URI(config.defaultCollectionIcon)): Unit = {
+    system.actorOf(Props[CollectionHandler]) ! CreateCollection(name, classURI, libInfo, picture)
 
+  }
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???
 }
 
-class Config(path: URI)
-{
+class Config(path: URI) {
   val configFile = XMLFactory.getXMLAsElemAdv(path)
 
   val baseOntologyURI = getString("baseOntologyURI")
@@ -175,7 +163,8 @@ class Config(path: URI)
   val lang = getString("language")
   val thumbnail = getString("thumbnailIdentifier")
   val dataPath = getString("dataPath")
-  def getString(s: String): String =  configFile.getValueAt("config", s)
+
+  def getString(s: String): String = configFile.getValueAt("config", s)
 
 
 }

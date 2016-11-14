@@ -3,9 +3,7 @@ package core.library
 import java.io.File
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
 import app.Presets
-import core.ontology.MediaLibrary
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory
@@ -18,6 +16,8 @@ import scala.collection.mutable.ArrayBuffer
   */
 
 
+//TODO implement JobHandler, Scaladoc
+
 class FileLoader extends Actor {
 
   override def receive: Receive = {
@@ -27,12 +27,11 @@ class FileLoader extends Actor {
 
   def readFolder(dir: File): SuccessfulSingleImport = {
     var retVal = ArrayBuffer[OntModel]()
-    for (source <- FileFactory.filterFileExtension(dir, Presets.validOntologyExtensions))
-  {
-     val ontology = ModelFactory.createOntologyModel()
-     ontology.read(source.toString)
-     retVal += ontology
-  }
-     SuccessfulSingleImport(retVal)
+    for (source <- FileFactory.filterFileExtension(dir, Presets.validOntologyExtensions)) {
+      val ontology = ModelFactory.createOntologyModel()
+      ontology.read(source.toString)
+      retVal += ontology
+    }
+    SuccessfulSingleImport(retVal)
   }
 }

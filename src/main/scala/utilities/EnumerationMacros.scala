@@ -10,14 +10,12 @@ Based on Travis Brown's work:
 http://stackoverflow.com/questions/13671734/iteration-over-a-sealed-trait-in-scala
 */
 object EnumerationMacros {
-  def sealedInstancesOf[A]: TreeSet[A] = macro sealedInstancesOf_impl[A]
-
   def sealedInstancesOf_impl[A: c.WeakTypeTag](c: Context) = {
     import c.universe._
 
     val symbol = weakTypeOf[A].typeSymbol.asClass
 
-    if  (!symbol.isClass || !symbol.isSealed)
+    if (!symbol.isClass || !symbol.isSealed)
       c.abort(c.enclosingPosition, "Can only enumerate values of a sealed trait or class.")
     else {
 
@@ -40,4 +38,6 @@ object EnumerationMacros {
       }
     }
   }
+
+  def sealedInstancesOf[A]: TreeSet[A] = macro sealedInstancesOf_impl[A]
 }
