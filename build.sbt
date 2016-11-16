@@ -24,7 +24,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "org.scala-lang" % "scala-xml" % "2.11.0-M4",
+  "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.6",
   "org.apache.tika" % "tika-core" % "1.13",
   "org.apache.tika" % "tika-parsers" % "1.13",
   "org.apache.tika" % "tika-xmp" % "1.13",

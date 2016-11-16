@@ -45,6 +45,11 @@ trait JobHandling {
 
   }
 
+  def acceptJob(newJob: JobProtocol, sender: ActorRef): Unit = {
+    createMasterJob(newJob, sender)
+
+  }
+
   def createJob(newJob: JobProtocol, originalJob: JobProtocol): JobProtocol = {
     waitingForCompletion.+=((newJob, originalJob))
     newJob

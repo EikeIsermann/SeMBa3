@@ -1,5 +1,7 @@
 package app
 
+import java.io.File
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
@@ -15,13 +17,20 @@ object TestClient extends App {
 
   val client = TestClient("localhost", 50051)
   var testSessionID: String = ""
+  var testFile = new File(new URI("file:/users/uni/documents/semba3/appdata/libraries/library.owl"))
+  var test1 = testFile.exists()
+  var test2 = testFile.toURI
+  var test3 = new File(test2).exists()
+
   var test: LibraryConcepts = LibraryConcepts()
   try {
     testSessionID = client.registerSession().sessionID
-    var testLib = Library(uri = "file:///users/uni/documents/semba3/appdata/libraries/semba-teaching.owl")
+    var testLib = Library(uri = "file:///users/uni/documents/semba3/appdata/libraries/library.owl")
     client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID))
     //println(client.getContent(testLib))
-    println(client.addItem("file:///users/uni/documents/semba3/appdata/libraries/test", testLib))
+    println(client.addItem("file:///users/uni/documents/semba3/appdata/libraries/test/Test.pdf", testLib))
+    println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
+    //println(client.getMetadata("file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
 
   }
   finally {
@@ -98,6 +107,20 @@ class TestClient private(
     retVal
 
   }
+  def addColl(collName: String, clazz: String, lib: Library): VoidResult = {
+    logger.info("Trying to add item")
+    var retVal = VoidResult()
+    val source = SourceFile().withLibrary(lib).withColl(NewCollection(ontClass = clazz, name = collName))
+    try {
+      retVal = blockingStub.addToLibrary(source)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    retVal
+
+  }
 
   def getContent(lib: Library): LibraryContent = {
     logger.info("Trying to add item")
@@ -111,6 +134,18 @@ class TestClient private(
     }
     retVal
 
+  }
+  def getMetadata(src: String, library: Library): ItemDescription = {
+    logger.info("Retrieving Metadata")
+    var retVal = ItemDescription()
+    try {
+      retVal = blockingStub.getMetadata(Resource().withUri(src).withLib(library))
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    retVal
   }
 
 }

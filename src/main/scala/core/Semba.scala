@@ -3,20 +3,21 @@ package core
 import java.net.URI
 import java.util.UUID
 
-import akka.actor.{Actor, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
-import api.{AddToLibrary, OpenLib, RequestContents}
+import api._
 import app.Paths
 import core.library._
 import core.{LibraryAccess => lib}
 import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
 import org.apache.jena.rdf.model.ModelFactory
 import sembaGRPC.SourceFile.Source
-import sembaGRPC.{Library, LibraryConcepts, LibraryContent, VoidResult}
+import sembaGRPC._
 import utilities.debug.DC
 import utilities.{Convert, FileFactory, XMLFactory}
 
+import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -26,6 +27,7 @@ import scala.concurrent.duration._
   */
 
 case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config)
+case class AddSubmodel(uri: String, model: OntModel)
 
 class Semba(val path: URI) extends Actor with JobHandling {
   var system = context.system
@@ -39,7 +41,7 @@ class Semba(val path: URI) extends Actor with JobHandling {
     library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
     basemodel = Agent(ModelFactory.createOntologyModel())
     Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
-    libRoot = new URI(getLiteral(basemodel().getIndividual("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#LibraryDefinition"), "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"))
+    libRoot = new URI(getLiteral(basemodel().getIndividual(path.toString + "#LibraryDefinition"), Paths.libraryRootFolder))
 
     config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
@@ -70,6 +72,36 @@ class Semba(val path: URI) extends Actor with JobHandling {
     system.actorOf(Props(new LibImporter(library))) ! ImportLib(libraryLocation)
   }
 
+  override def receive: Receive = {
+    case apiCall: SembaApiCall => {
+      apiCall match {
+        case openLib: OpenLib => {
+          sender() ! getConcepts()
+        }
+        case addItem: AddToLibrary => {
+          val notEmpty = addItem.sourceFile.source.isDefined
+          sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.")
+          newItem(addItem)
+        }
+
+        case contents: RequestContents => {
+          sender() ! getContents()
+        }
+
+        case getMeta: GetMetadata => {
+          sender() ! getMetadata(getMeta.resource.uri)
+        }
+      }
+    }
+
+
+
+
+    case jobReply: JobReply => handleReply(jobReply)
+    case _ => {
+    }
+  }
+
   def getLiteral(item: Individual, str: String): String = {
     try {
       val prop = library().getProperty(str)
@@ -81,26 +113,6 @@ class Semba(val path: URI) extends Actor with JobHandling {
     }
   }
 
-  override def receive: Receive = {
-    case openLib: OpenLib => {
-      sender() ! getConcepts()
-    }
-    case addItem: AddToLibrary => {
-      val notEmpty = addItem.sourceFile.source.isDefined
-      sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.")
-      newItem(addItem)
-    }
-
-    case contents: RequestContents => {
-      sender() ! getContents()
-    }
-
-
-    case JobReply => {}
-    case _ => {
-      println()
-    }
-  }
 
   def newItem(addToLibrary: AddToLibrary): Unit = {
     addToLibrary.sourceFile.source match {
@@ -111,7 +123,13 @@ class Semba(val path: URI) extends Actor with JobHandling {
       case Source.Data(data) => {
         //TODO get input stream, copy to local filesystem, read as new item
       }
+
+      case Source.Coll(newColl) =>{
+        newCollection(newColl.name , newColl.ontClass )
+      }
+      case Source.Empty =>
     }
+
   }
 
   def newItem(path: URI, copyToLib: Boolean = true): Unit = {
@@ -125,7 +143,7 @@ class Semba(val path: URI) extends Actor with JobHandling {
     }
   }
 
-  def libInfo: LibInfo = new LibInfo(system, library, basemodel, libraryLocation, config)
+  def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path.toString))
@@ -135,8 +153,12 @@ class Semba(val path: URI) extends Actor with JobHandling {
     LibraryAccess.retrieveLibContent(library(), Library(path.toString))
   }
 
-  def newCollection(name: String, classURI: URI, picture: URI = new URI(config.defaultCollectionIcon)): Unit = {
-    system.actorOf(Props[CollectionHandler]) ! CreateCollection(name, classURI, libInfo, picture)
+  def getMetadata(item: String): ItemDescription = {
+    LibraryAccess.retrieveMetadata(item, library())
+  }
+
+  def newCollection(name: String, classURI: String, picture: URI = new URI(config.defaultCollectionIcon)): Unit = {
+    system.actorOf(Props[CollectionHandler]) ! createMasterJob(CreateCollection(name, classURI, libInfo, picture), self)
 
   }
 

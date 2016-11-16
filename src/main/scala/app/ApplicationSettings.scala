@@ -50,6 +50,9 @@ object Paths {
   /** URI of the Data Property defining the main title of a Resource. Required for all valid Resources. */
   val sembaTitle = getString("sembaTitleURI")
 
+  /** URI of the Object Property linking collection items to their source */
+  val linksToSource = getString("mediaItemLink")
+
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }

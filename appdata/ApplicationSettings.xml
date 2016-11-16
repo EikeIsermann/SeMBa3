@@ -4,7 +4,7 @@
     <ontologyDefinition>appdata\semba-main.owl</ontologyDefinition>
     <libraryDefinition>appdata\libraries</libraryDefinition>
     <libraryConfigurationFile>config.xml</libraryConfigurationFile>
-<libraryRootFolder>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder"</libraryRootFolder>  <resourceDefinitionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource</resourceDefinitionURI>
+<libraryRootFolder>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder</libraryRootFolder>  <resourceDefinitionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource</resourceDefinitionURI>
     <itemClassURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem</itemClassURI>
     <collectionClassURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaCollection</collectionClassURI>
     <thumbnailLocationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#thumbLocation</thumbnailLocationURI>
@@ -13,6 +13,7 @@
     <metadataPropertyURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaMetadata</metadataPropertyURI>
     <sembaRelationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaRelation"</sembaRelationURI>
     <sembaTitleURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaTitle</sembaTitleURI>
+    <mediaItemLink>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#linksToMediaItem</mediaItemLink>
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>

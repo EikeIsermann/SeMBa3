@@ -3,7 +3,7 @@ package core.library
 import java.io.{File, FileInputStream, FileNotFoundException}
 import java.net.URI
 
-import akka.actor.Actor
+import akka.actor.{Actor, Props}
 import app.Paths
 import core._
 import core.metadata.ThumbActor
@@ -34,13 +34,22 @@ class SingleItemImport extends Actor with JobHandling {
   var itemIndividual: Individual = _
 
   override def receive: Receive = {
-    case importJob: ImportNewItem => {
-      originalSender.put(importJob, context.sender())
-      job = importJob
-      createJob(job, job)
-      startImport()
+    case jobProtocol: JobProtocol =>
+      {
+        acceptJob(jobProtocol, context.sender())
 
-    }
+        jobProtocol match {
+          case importJob: ImportNewItem => {
+            originalSender.put(importJob, context.sender())
+            job = importJob
+            createJob(job, job)
+            startImport()
+
+          }
+        }
+        self ! JobReply(jobProtocol)
+      }
+
 
     case reply: JobReply => handleReply(reply)
   }
@@ -49,10 +58,8 @@ class SingleItemImport extends Actor with JobHandling {
     rootFolder = createFileStructure()
     itemOntology = setupOntology()
     analyzeItem()
-    LibraryAccess.writeModel(itemOntology, new URI(uri))
+    context.actorOf(Props[OntologyWriter]) ! createJob(SaveOntology(itemOntology), job)
     job.libInfo.library.send(base => LibraryAccess.addToLib(base, ArrayBuffer(itemOntology)))
-    self ! JobReply(job)
-
   }
 
   def analyzeItem(): Unit = {
@@ -69,7 +76,8 @@ class SingleItemImport extends Actor with JobHandling {
       LibraryAccess.setDatatypeProperty(prop, itemOntology, itemIndividual, metadata.getValues(metadataProperty))
     }
 
-    if (metadata.names().contains(TikaCoreProperties.TITLE)) {
+    val title = Option(metadata.get(TikaCoreProperties.TITLE))
+    if (title.isDefined) {
       LibraryAccess.setDatatypeProperty(Paths.sembaTitle,
         job.libInfo.basemodel(), itemIndividual, metadata.getValues(TikaCoreProperties.TITLE))
     }
@@ -79,7 +87,6 @@ class SingleItemImport extends Actor with JobHandling {
     }
 
     val mimeType = tika.detect(item)
-    println(mimeType)
     context.actorOf(ThumbActor.getProps(mimeType)) ! createJob(ThumbnailJob(item, rootFolder.toURI, job.libInfo.config), job)
     stream.close()
   }

@@ -8,7 +8,7 @@ import org.apache.jena.ontology.impl.OntModelImpl
 import org.apache.jena.ontology.{DatatypeProperty, Individual, OntModel}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
-import sembaGRPC.{Library, LibraryConcepts, LibraryContent}
+import sembaGRPC._
 import utilities.{Convert, TextFactory}
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,7 +17,7 @@ import scala.collection.mutable.ArrayBuffer
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-
+        //TODO static access to used properties etc. instead of Paths.XXX
 object LibraryAccess {
 
   /**
@@ -27,6 +27,15 @@ object LibraryAccess {
     parent.read(path.toString)
     //TODO verify if ontology contains semba-main concepts & file locations
     parent
+  }
+
+  def writeModel(model: OntModel): Unit =
+  {
+    model.enterCriticalSection(Lock.WRITE)
+    try {
+      model.write(new FileOutputStream(new File(model.listOntologies().next.getURI)), "TURTLE")
+    }
+    finally model.leaveCriticalSection()
   }
 
   def writeModel(model: OntModel, path: URI) = {
@@ -41,7 +50,7 @@ object LibraryAccess {
   def addToLib(parent: OntModel, child: ArrayBuffer[OntModel]): OntModel = {
     parent.enterCriticalSection(Lock.WRITE)
     try {
-      child.foreach(parent.addSubModel(_))
+      child.foreach(model => {parent.addSubModel(model)})
     }
     finally parent.leaveCriticalSection()
     parent
@@ -169,5 +178,45 @@ object LibraryAccess {
     retVal
   }
 
+  def retrieveMetadata(item: String, model: OntModel): ItemDescription = {
+    var retVal = ItemDescription().withItemURI(item)
+    model.enterCriticalSection(Lock.READ)
+    try {
+      val indOption = Option(model.getIndividual(item))
+      val superPropOption = Option(model.getDatatypeProperty(Paths.metadataPropertyURI))
+      if(superPropOption.isDefined && indOption.isDefined){
+        val ind = indOption.get
+        val superProp = superPropOption.get
+        val iter = ind.listProperties()
+        while (iter.hasNext){
+          val stmt = iter.next()
+          val uri =  stmt.getPredicate.getURI
+          val dataProp = Option(model.getDatatypeProperty(uri))
+          if( dataProp.isDefined && dataProp.get.hasSuperProperty(superProp, false))
+          {
+          val valueList = AnnotationValue().addValue(stmt.getObject.asLiteral().getString)
+          retVal = retVal.addMetadata((stmt.getPredicate.getURI, valueList))
+        }
+
+        }
+      }
+    }
+    finally model.leaveCriticalSection()
+    retVal
+  }
+
+  def removeIndividual(item: String, model: OntModel): Unit = {
+    model.enterCriticalSection(Lock.READ)
+    try {
+      val ind = model.getIndividual(item)
+      val iter = model.listSubjectsWithProperty(model.getProperty(Paths.linksToSource), item)
+      while(iter.hasNext){
+        model.getOntResource(iter.nextResource()).remove()
+      }
+      ind.remove()
+
+    }
+    model.leaveCriticalSection()
+  }
 
 }
