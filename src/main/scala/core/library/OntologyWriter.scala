@@ -13,7 +13,6 @@ import org.apache.jena.shared.Lock
   */
 
 case class SaveOntology(model: OntModel) extends JobProtocol
-//TODO JobHandler, Logic, is needed?
 class OntologyWriter extends Actor with JobHandling{
   override def receive: Receive = {
     case save: SaveOntology => {

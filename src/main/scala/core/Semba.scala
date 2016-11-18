@@ -12,6 +12,7 @@ import core.library._
 import core.{LibraryAccess => lib}
 import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.util.{FileUtils, URIref}
 import sembaGRPC.SourceFile.Source
 import sembaGRPC._
 import utilities.debug.DC
@@ -27,9 +28,8 @@ import scala.concurrent.duration._
   */
 
 case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config)
-case class AddSubmodel(uri: String, model: OntModel)
 
-class Semba(val path: URI) extends Actor with JobHandling {
+class Semba(val path: String) extends Actor with JobHandling {
   var system = context.system
   var library: Agent[OntModel] = _
   var basemodel: Agent[OntModel] = _
@@ -41,8 +41,8 @@ class Semba(val path: URI) extends Actor with JobHandling {
     library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
     basemodel = Agent(ModelFactory.createOntologyModel())
     Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
-    libRoot = new URI(getLiteral(basemodel().getIndividual(path.toString + "#LibraryDefinition"), Paths.libraryRootFolder))
-
+    var test = basemodel().listIndividuals().toList
+    libRoot = new URI(getLiteral(basemodel().getIndividual(path + "#LibraryDefinition"), Paths.libraryRootFolder))
     config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
     init()
@@ -72,6 +72,27 @@ class Semba(val path: URI) extends Actor with JobHandling {
     system.actorOf(Props(new LibImporter(library))) ! ImportLib(libraryLocation)
   }
 
+  def removeCollectionItem(collectionItem: CollectionItem): Any = {
+
+  }
+
+  def removeItem(resource: Resource): VoidResult = {
+    system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource.uri,library()), self)
+    VoidResult().withAccepted(true)
+  }
+
+  def createRelation(relationModification: RelationModification): Any = {
+
+  }
+
+  def updateMetadata(updateMeta: UpdateMetadata): Any = {
+
+  }
+
+  def removeRelation(relationModification: RelationModification): Any = {
+
+  }
+
   override def receive: Receive = {
     case apiCall: SembaApiCall => {
       apiCall match {
@@ -91,13 +112,37 @@ class Semba(val path: URI) extends Actor with JobHandling {
         case getMeta: GetMetadata => {
           sender() ! getMetadata(getMeta.resource.uri)
         }
+        case removeIt: RemoveFromLibrary => {
+          sender() ! removeItem(removeIt.resource)
+        }
+        case updateMeta: UpdateMetadata => {
+          sender() ! updateMetadata(updateMeta)
+        }
+
+        case removeCollItem: RemoveCollectionItem => {
+          sender() ! removeCollectionItem(removeCollItem.collectionItem)
+        }
+
+        case createRel: CreateRelation => {
+          sender() ! createRelation(createRel.relationModification)
+        }
+        case removeRel: RemoveRelation => {
+          sender() ! removeRelation(removeRel.relationModification)
+        }
+
+
       }
     }
 
 
 
 
-    case jobReply: JobReply => handleReply(jobReply)
+    case jobReply: JobReply => {
+      if (handleReply(jobReply)){
+         basemodel.send(base => LibraryAccess.writeModel(base))
+      }
+
+    }
     case _ => {
     }
   }
@@ -117,7 +162,7 @@ class Semba(val path: URI) extends Actor with JobHandling {
   def newItem(addToLibrary: AddToLibrary): Unit = {
     addToLibrary.sourceFile.source match {
       case Source.Path(path) => {
-        newItem(new URI(path))
+        newItem(FileFactory.getURI(path))
       }
 
       case Source.Data(data) => {
@@ -132,8 +177,8 @@ class Semba(val path: URI) extends Actor with JobHandling {
 
   }
 
-  def newItem(path: URI, copyToLib: Boolean = true): Unit = {
-    val items = FileFactory.contentsOfDirectory(path, true, false, false)
+  def newItem(path: String, copyToLib: Boolean = true): Unit = {
+    val items = FileFactory.contentsOfDirectory(new URI(path), true, false, false)
     val workers = system.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
     val batchID = UUID.randomUUID()
     for (item <- items) {
@@ -146,11 +191,11 @@ class Semba(val path: URI) extends Actor with JobHandling {
   def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config)
 
   def getConcepts(): LibraryConcepts = {
-    LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path.toString))
+    LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path))
   }
 
   def getContents(): LibraryContent = {
-    LibraryAccess.retrieveLibContent(library(), Library(path.toString))
+    LibraryAccess.retrieveLibContent(library(), Library(path))
   }
 
   def getMetadata(item: String): ItemDescription = {

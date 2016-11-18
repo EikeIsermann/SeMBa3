@@ -6,7 +6,9 @@ import java.util.UUID
 import akka.actor.{ActorRef, ActorSystem, PoisonPill, Props}
 import api.AppConnector
 import core.Semba
+import org.apache.jena.util.FileManager
 import sembaGRPC.VoidResult
+import utilities.FileFactory
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -39,34 +41,34 @@ object Application extends App {
 
   /** Initializes a new [[core.Semba]] Actor if a library is not loaded yet or returns the its [[ActorRef]]
     *
-    * @param path URI to the library ontology
+    * @param aPath URI to the library ontology
     * @param session Client session that requests the library
     * @return Reference to the [[core.Semba]] representing the lib ontology
     */
-  def loadLibrary(path: URI, session: UUID): ActorRef = {
-    val src = path.toString
-    if (!libraries.contains(src)) {
+  def loadLibrary(aPath: String, session: UUID): ActorRef = {
+    val path = FileFactory.getURI(aPath)
+    if (!libraries.contains(path)) {
       val backend = system.actorOf(Props(new Semba(path)))
-      libraries.put(src, backend)
+      libraries.put(path, backend)
     }
-    if (!sessions.contains(src)) sessions.put(src, ArrayBuffer[UUID](session))
-    else sessions.apply(src).+=(session)
-    libraries.apply(path.toString)
+    if (!sessions.contains(path)) sessions.put(path, ArrayBuffer[UUID](session))
+    else sessions.apply(path).+=(session)
+    libraries.apply(path)
   }
 
   /** Removes the sessionID from [[Application.sessions]] and terminates the [[core.Semba]] if no other sessions are
     * registered.
     *
-    * @param path URI to the library ontology
+    * @param aPath URI to the library ontology
     * @param session Client session that closes the library
     * @return True if library was closed, false if it is still loaded but unsubscribed.
     */
-  def closeLibrary(path: URI, session: UUID): VoidResult = {
-    val src = path.toString
-    sessions.apply(src) -= session
-    if (sessions.apply(src).isEmpty) {
-      libraries.apply(src) ! PoisonPill
-      libraries.remove(src)
+  def closeLibrary(aPath: String, session: UUID): VoidResult = {
+    val path = FileFactory.getURI(aPath)
+    sessions.apply(path) -= session
+    if (sessions.apply(path).isEmpty) {
+      libraries.apply(path) ! PoisonPill
+      libraries.remove(path)
     }
     VoidResult(true, "Library Closed")
   }
@@ -76,6 +78,6 @@ object Application extends App {
     * @param uri
     * @return
     */
-  def get(uri: String): ActorRef = libraries.apply(uri)
+  def get(uri: String): ActorRef = libraries.apply(FileFactory.getURI(uri))
 
 }

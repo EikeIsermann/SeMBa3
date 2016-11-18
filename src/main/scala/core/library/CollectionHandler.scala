@@ -8,7 +8,7 @@ import core._
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
-import utilities.WriterFactory
+import utilities.{FileFactory, WriterFactory}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -42,7 +42,7 @@ class CollectionHandler extends Actor with JobHandling {
   def createCollection(job: CreateCollection): Unit = {
     val newLocation = WriterFactory.createFolder(job.libInfo.libraryLocation, job.name)
     WriterFactory.writeFile(new File(job.picture), newLocation)
-    val ont = setupOntology(job, newLocation.toURI.toString + job.libInfo.config.ontName)
+    val ont = setupOntology(job, FileFactory.getURI(newLocation.toURI.toString) + "/" + job.libInfo.config.ontName)
     context.actorOf(Props[OntologyWriter]) ! createJob(SaveOntology(ont), job)
     job.libInfo.library.send(base => LibraryAccess.addToLib(base, ArrayBuffer(ont)))
   }

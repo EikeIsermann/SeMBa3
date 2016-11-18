@@ -53,6 +53,13 @@ object Paths {
   /** URI of the Object Property linking collection items to their source */
   val linksToSource = getString("mediaItemLink")
 
+  /** URI of the Object Property linking collection items to their collection */
+  val isPartOfCollection = getString("isPartOfCollectionURI")
+
+  /** URI of the Object Property linking collections to collection items */
+  val hasCollectionItem = getString("hasCollectionItemURI")
+
+
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }

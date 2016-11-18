@@ -14,7 +14,7 @@ import org.apache.tika.Tika
 import org.apache.tika.metadata.{Metadata, TikaCoreProperties}
 import org.apache.tika.parser.AutoDetectParser
 import utilities.debug.DC
-import utilities.{TextFactory, WriterFactory}
+import utilities.{FileFactory, TextFactory, WriterFactory}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -128,7 +128,7 @@ class SingleItemImport extends Actor with JobHandling {
 
   def thumbLocation: String = rootFolder.toURI.toString + job.libInfo.config.thumbnail
 
-  def uri: String = rootFolder.toURI.toString + job.libInfo.config.ontName
+  def uri: String = FileFactory.getURI(rootFolder.toURI.toString) + "/" + job.libInfo.config.ontName
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = {
     JobReply(jobProtocol)

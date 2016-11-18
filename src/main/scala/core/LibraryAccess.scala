@@ -5,7 +5,7 @@ import java.net.URI
 
 import app.Paths
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.ontology.{DatatypeProperty, Individual, OntModel}
+import org.apache.jena.ontology.{DatatypeProperty, Individual, OntModel, Ontology}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
 import sembaGRPC._
@@ -23,25 +23,26 @@ object LibraryAccess {
   /**
     * Modification
     */
-  def load(parent: OntModel, path: URI): OntModel = {
-    parent.read(path.toString)
+  def load(parent: OntModel, path: String): OntModel = {
+    parent.read(path, null, "TTL")
     //TODO verify if ontology contains semba-main concepts & file locations
     parent
   }
 
-  def writeModel(model: OntModel): Unit =
+  def writeModel(model: OntModel): OntModel =
   {
     model.enterCriticalSection(Lock.WRITE)
     try {
-      model.write(new FileOutputStream(new File(model.listOntologies().next.getURI)), "TURTLE")
+      model.write(new FileOutputStream(new File(new URI(model.listOntologies().next.getURI))), "TURTLE")
     }
     finally model.leaveCriticalSection()
+    model
   }
 
   def writeModel(model: OntModel, path: URI) = {
     model.enterCriticalSection(Lock.WRITE)
     try {
-      model.write(new FileOutputStream(new File(path)), "TURTLE")
+      model.write(new FileOutputStream(new File(path)),"TURTLE")
     }
     finally model.leaveCriticalSection()
 
@@ -205,18 +206,26 @@ object LibraryAccess {
     retVal
   }
 
-  def removeIndividual(item: String, model: OntModel): Unit = {
-    model.enterCriticalSection(Lock.READ)
+  def removeIndividual(item: String, model: OntModel): ArrayBuffer[(String, String)] = {
+    model.enterCriticalSection(Lock.WRITE)
+    var retVal = ArrayBuffer[(String,String)]()
     try {
       val ind = model.getIndividual(item)
       val iter = model.listSubjectsWithProperty(model.getProperty(Paths.linksToSource), item)
       while(iter.hasNext){
-        model.getOntResource(iter.nextResource()).remove()
+        var collItem = model.getOntResource(iter.nextResource())
+        var collection = collItem.getPropertyResourceValue(model.getProperty(Paths.isPartOfCollection))
+        retVal += ((collItem.getURI, collection.getURI))
+        collItem.remove()
       }
+      var test = ind.getOntModel
+      var test2 = test.listOntologies().toList
       ind.remove()
-
+      model.removeSubModel(ind.getOntModel)
     }
-    model.leaveCriticalSection()
+    finally model.leaveCriticalSection()
+    retVal
   }
+
 
 }

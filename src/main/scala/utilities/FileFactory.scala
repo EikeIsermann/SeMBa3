@@ -3,6 +3,7 @@ package utilities
 import java.io.File
 import java.net.URI
 
+import org.apache.jena.util.FileUtils
 import org.apache.tika.Tika
 
 import scala.collection.{immutable, mutable}
@@ -140,4 +141,33 @@ object FileFactory {
   def filterFileExtension(dir: File, valid: Array[String]): List[File] = {
     dir.listFiles().filter(_.isFile).toList.filter(file => valid.exists(file.getName.endsWith(_)))
   }
+
+  def getURI(name: String): String = {
+    var baseURI = name
+    val scheme: String = FileUtils.getScheme(baseURI)
+    if (scheme != null) {
+      if (scheme == "file") if (!baseURI.startsWith("file:///")) try {
+        // Fix up file URIs.  Yuk.
+        val tmp: String = baseURI.substring("file:".length)
+        val f: File = new File(tmp)
+        baseURI = "file://" + f.getCanonicalPath
+        baseURI = baseURI.replace('\\', '/')
+        //                        baseURI = baseURI.replace(" ","%20");
+        //                        baseURI = baseURI.replace("~","%7E");
+        // Convert to URI.  Except that it removes ///
+        // Could do that and fix up (again)
+        //java.net.URL u = new java.net.URL(baseURI) ;
+        //baseURI = u.toExternalForm() ;
+      }
+      catch {
+        case ex: Exception => {
+        }
+      }
+      return baseURI
+    }
+
+    if (baseURI.startsWith("/")) return "file://" + baseURI
+    return "file:" + baseURI
+  }
+
 }

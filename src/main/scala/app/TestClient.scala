@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
+import org.apache.jena.util.FileUtils
 import sembaGRPC.SembaAPIGrpc.SembaAPIBlockingStub
 import sembaGRPC._
 
@@ -17,24 +18,27 @@ object TestClient extends App {
 
   val client = TestClient("localhost", 50051)
   var testSessionID: String = ""
-  var testFile = new File(new URI("file:/users/uni/documents/semba3/appdata/libraries/library.owl"))
-  var test1 = testFile.exists()
-  var test2 = testFile.toURI
-  var test3 = new File(test2).exists()
+
+
+
+
 
   var test: LibraryConcepts = LibraryConcepts()
   try {
     testSessionID = client.registerSession().sessionID
-    var testLib = Library(uri = "file:///users/uni/documents/semba3/appdata/libraries/library.owl")
+    var testLib = Library(uri = "file:/users/uni/documents/semba3/appdata/libraries/library.ttl")
     client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID))
     //println(client.getContent(testLib))
-    println(client.addItem("file:///users/uni/documents/semba3/appdata/libraries/test/Test.pdf", testLib))
-    println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
-    //println(client.getMetadata("file:/Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
+    /*for(i <- 1 to 3){
+      println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.pdf", testLib))
+    }   */
+    //println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
+      //println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
+   //   println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content", testLib))
+    client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib)
 
   }
   finally {
-    println(test)
   }
 
 
@@ -148,4 +152,16 @@ class TestClient private(
     retVal
   }
 
+  def removeItem(src: String, library: Library): VoidResult = {
+    logger.info("Retrieving Metadata")
+    var retVal = VoidResult()
+    try {
+      retVal = blockingStub.removeFromLibrary(Resource().withUri(src).withLib(library))
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    retVal
+  }
 }

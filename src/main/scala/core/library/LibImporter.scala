@@ -39,7 +39,9 @@ class LibImporter(library: Agent[OntModel]) extends Actor {
       completedJobs += 1
       result.foreach(models => availableImports.+=(models))
       if (completedJobs == jobs) {
-        library.send(base => LibraryAccess.addToLib(base, availableImports))
+        library.send(base => {
+          LibraryAccess.addToLib(base, availableImports)
+        })
       }
     }
   }

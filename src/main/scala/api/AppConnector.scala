@@ -142,7 +142,7 @@ class AppConnector extends Actor {
         */
       override def openLibrary(request: LibraryRequest): Future[LibraryConcepts] = {
         val uri = request.getLib.uri
-        val lib = app.loadLibrary(new URI(uri), UUID.fromString(request.sessionID))
+        val lib = app.loadLibrary(uri, UUID.fromString(request.sessionID))
         if (!registeredForLibrary.contains(uri)) registeredForLibrary.put(uri, new ArrayBuffer[String]())
         registeredForLibrary(request.getLib.uri).+=(request.sessionID)
         ask(lib, OpenLib()).mapTo[LibraryConcepts]
@@ -219,7 +219,7 @@ class AppConnector extends Actor {
         */
       override def closeLibrary(request: LibraryRequest): Future[VoidResult] = {
         registeredForLibrary(request.getLib.uri).-=(request.sessionID)
-        Future.successful(app.closeLibrary(new URI(request.getLib.uri), UUID.fromString(request.sessionID)))
+        Future.successful(app.closeLibrary(request.getLib.uri, UUID.fromString(request.sessionID)))
       }
 
       /** Asks corresponding [[core.Semba]] to remove a relation between two [[CollectionItem]]s.

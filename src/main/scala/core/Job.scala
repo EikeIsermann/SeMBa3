@@ -36,7 +36,7 @@ trait JobHandling {
       waitingForCompletion -= entry.get
       completed = !waitingForCompletion.exists(_._2.jobID == entry.get._2.jobID)
       if (completed) {
-        println("Job finished:" + entry.get)
+        println("Job finished:" + entry.get._1.getClass + this.getClass)
         originalSender.apply(entry.get._2) ! JobReply(entry.get._2)
       }
     }
@@ -47,8 +47,8 @@ trait JobHandling {
 
   def acceptJob(newJob: JobProtocol, sender: ActorRef): Unit = {
     createMasterJob(newJob, sender)
-
   }
+
 
   def createJob(newJob: JobProtocol, originalJob: JobProtocol): JobProtocol = {
     waitingForCompletion.+=((newJob, originalJob))
