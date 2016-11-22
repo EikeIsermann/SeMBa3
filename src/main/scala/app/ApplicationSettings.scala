@@ -59,6 +59,8 @@ object Paths {
   /** URI of the Object Property linking collections to collection items */
   val hasCollectionItem = getString("hasCollectionItemURI")
 
+  /** URI of the superclass all valid SeMBa collection items inherit */
+  val collectionItemURI = getString("collectionItemURI")
 
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)

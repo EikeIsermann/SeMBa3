@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
 import api._
-import app.Paths
+import app.{Application, Paths}
 import core.library._
 import core.{LibraryAccess => lib}
 import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
@@ -19,6 +19,7 @@ import utilities.debug.DC
 import utilities.{Convert, FileFactory, XMLFactory}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -27,7 +28,7 @@ import scala.concurrent.duration._
   * Created by Eike on 06.04.2016.
   */
 
-case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config)
+case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config, libAccess: ActorRef, libURI: String)
 
 class Semba(val path: String) extends Actor with JobHandling {
   var system = context.system
@@ -36,40 +37,30 @@ class Semba(val path: String) extends Actor with JobHandling {
   var libraryLocation: URI = _
   var libRoot: URI = _
   var config: Config = _
+  var libAccess: ActorRef = _
 
   override def preStart() = {
     library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
+    libAccess = system.actorOf(Props(new CriticalOntologyAccess(library, path)))
     basemodel = Agent(ModelFactory.createOntologyModel())
     Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
     var test = basemodel().listIndividuals().toList
     libRoot = new URI(getLiteral(basemodel().getIndividual(path + "#LibraryDefinition"), Paths.libraryRootFolder))
     config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
-    init()
+    //init()
   }
 
+  override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {
+    updates(jobProtocol.jobID).foreach(update => Application.api ! update)
+    super.processUpdates(jobProtocol)
+  }
   def init(): Unit = {
     readLibrary()
   }
 
-  /*
-  for(_ <- 1 to 1000)  {
-    val time = System.currentTimeMillis()
-    library().enterCriticalSection(Lock.READ)
-    try{
-      println(library().listIndividuals(library().getOntClass("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem")).toList.size() + " items took "+ (System.currentTimeMillis() - time))
-    }
-    finally library().leaveCriticalSection()
-    //println(job.libInfo.library())
-    //println(job.libInfo.library().listIndividuals(job.libInfo.library().getOntClass("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem")).toList.size() + " items took "+ (System.currentTimeMillis() - time))
-
-  }
-    */
-
-  //newCollection("testCollection", new URI("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program") )
-
   def readLibrary(): Unit = {
-    system.actorOf(Props(new LibImporter(library))) ! ImportLib(libraryLocation)
+    system.actorOf(Props(new LibImporter(library))) ! createMasterJob(ImportLib(libraryLocation, libInfo), self)
   }
 
   def removeCollectionItem(collectionItem: CollectionItem): Any = {
@@ -77,7 +68,7 @@ class Semba(val path: String) extends Actor with JobHandling {
   }
 
   def removeItem(resource: Resource): VoidResult = {
-    system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource.uri,library()), self)
+    system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource.uri,library(), libAccess), self)
     VoidResult().withAccepted(true)
   }
 
@@ -138,9 +129,7 @@ class Semba(val path: String) extends Actor with JobHandling {
 
 
     case jobReply: JobReply => {
-      if (handleReply(jobReply)){
-         basemodel.send(base => LibraryAccess.writeModel(base))
-      }
+      handleReply(jobReply, self)
 
     }
     case _ => {
@@ -188,7 +177,7 @@ class Semba(val path: String) extends Actor with JobHandling {
     }
   }
 
-  def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config)
+  def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config, libAccess, path)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path))

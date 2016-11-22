@@ -27,7 +27,7 @@ object Application extends App {
   val system = ActorSystem("Semba")
 
   /** Global reference to AppConnector for sending updates */
-  val api = system.actorOf(Props[AppConnector])
+  val api = system.actorOf(Props[AppConnector], "apiActor")
 
   /** Global reference to all opened SemBA library instances*/
   var libraries: mutable.HashMap[String, ActorRef] = new mutable.HashMap[String, ActorRef]()
@@ -41,12 +41,11 @@ object Application extends App {
 
   /** Initializes a new [[core.Semba]] Actor if a library is not loaded yet or returns the its [[ActorRef]]
     *
-    * @param aPath URI to the library ontology
+    * @param path URI to the library ontology
     * @param session Client session that requests the library
     * @return Reference to the [[core.Semba]] representing the lib ontology
     */
-  def loadLibrary(aPath: String, session: UUID): ActorRef = {
-    val path = FileFactory.getURI(aPath)
+  def loadLibrary(path: String, session: UUID): ActorRef = {
     if (!libraries.contains(path)) {
       val backend = system.actorOf(Props(new Semba(path)))
       libraries.put(path, backend)
@@ -59,18 +58,21 @@ object Application extends App {
   /** Removes the sessionID from [[Application.sessions]] and terminates the [[core.Semba]] if no other sessions are
     * registered.
     *
-    * @param aPath URI to the library ontology
+    * @param path URI to the library ontology
     * @param session Client session that closes the library
     * @return True if library was closed, false if it is still loaded but unsubscribed.
     */
-  def closeLibrary(aPath: String, session: UUID): VoidResult = {
-    val path = FileFactory.getURI(aPath)
+  def closeLibrary(path: String, session: UUID): VoidResult = {
     sessions.apply(path) -= session
     if (sessions.apply(path).isEmpty) {
       libraries.apply(path) ! PoisonPill
       libraries.remove(path)
     }
     VoidResult(true, "Library Closed")
+  }
+
+  def closeConnection(session:UUID) = {
+    sessions.foreach(entry => if(entry._2.contains(session)) entry._2 -= session)
   }
 
   /**
@@ -80,4 +82,9 @@ object Application extends App {
     */
   def get(uri: String): ActorRef = libraries.apply(FileFactory.getURI(uri))
 
+
+  def ping(actor: ActorRef) = {
+    println( actor == api)
+    actor ! "Pong"
+}
 }

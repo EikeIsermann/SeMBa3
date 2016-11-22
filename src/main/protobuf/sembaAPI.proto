@@ -42,6 +42,10 @@ service SembaAPI {
     rpc registerSession (SessionRequest) returns (SessionRequest) {
     }
 
+    rpc closeConnection(SessionRequest) returns (SessionRequest){
+
+    }
+
     rpc ping (TestMsg) returns (TestMsg) {
     }
     //rpc unsubscribeUpdates(UpdateRequest) returns (){}
@@ -85,6 +89,7 @@ message RelationModification {
 message MetadataUpdate {
     Resource item = 1;
     ItemDescription desc = 2;
+    UpdateType kindOfUpdate = 3;
 }
 
 message SimpleQuery {
@@ -101,20 +106,27 @@ message SparqlQuery {
 enum UpdateType {
     DELETE = 0;
     ADD = 1;
-    UPDATE = 2;
+    NOTIFY = 2;
 }
 
 message UpdateMessage {
     UpdateType kindOfUpdate = 1;
     oneof messageContent {
-        Resource item = 2;
+        Resource items = 2;
         LibraryConcepts concepts = 3;
         CollectionContent collection = 4;
         ItemDescription description = 5;
+        Notification note = 6;
     }
-    string lib = 6;
+    string lib = 7;
 
 }
+message Notification{
+    string msg = 1;
+    string uri = 2;
+}
+
+
 
 message UpdateRequest {
     string sessionID = 1;

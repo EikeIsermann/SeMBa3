@@ -3,8 +3,8 @@ package core.library
 import java.io.{File, FileInputStream, FileNotFoundException}
 import java.net.URI
 
-import akka.actor.{Actor, Props}
-import app.Paths
+import akka.actor.{Actor, ActorRef, Props}
+import app.{Application, Paths}
 import core._
 import core.metadata.ThumbActor
 import org.apache.jena.ontology.{Individual, OntModel}
@@ -13,9 +13,11 @@ import org.apache.jena.shared.Lock
 import org.apache.tika.Tika
 import org.apache.tika.metadata.{Metadata, TikaCoreProperties}
 import org.apache.tika.parser.AutoDetectParser
+import sembaGRPC.{Library, Resource, UpdateMessage, UpdateType}
 import utilities.debug.DC
-import utilities.{FileFactory, TextFactory, WriterFactory}
+import utilities.{Convert, FileFactory, TextFactory, WriterFactory}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -24,6 +26,9 @@ import scala.collection.mutable.ArrayBuffer
   */
 
 case class ImportNewItem(item: File, libInfo: LibInfo, copyToLib: Boolean) extends JobProtocol
+case class GenerateDatatypeProperties(keys: scala.collection.Set[String], model: OntModel) extends JobProtocol
+case class SetDatatypeProperties(propertyMap: mutable.HashMap[String, Array[String]],
+                                 item: Individual, model: OntModel) extends JobProtocol
 
 // TODO ScalaDoc, Custom Metadata Mappings
 class SingleItemImport extends Actor with JobHandling {
@@ -40,9 +45,8 @@ class SingleItemImport extends Actor with JobHandling {
 
         jobProtocol match {
           case importJob: ImportNewItem => {
-            originalSender.put(importJob, context.sender())
+            acceptJob(importJob, sender())
             job = importJob
-            createJob(job, job)
             startImport()
 
           }
@@ -51,43 +55,53 @@ class SingleItemImport extends Actor with JobHandling {
       }
 
 
-    case reply: JobReply => handleReply(reply)
+    case reply: JobReply => handleReply(reply, self)
+  }
+
+
+  override def handleReply(reply: JobReply, selfRef: ActorRef): Boolean = {
+    reply.job match {
+      case sDP: SetDatatypeProperties =>  job.libInfo.libAccess ! createJob(SaveOntology(itemOntology), job)
+      case sO: SaveOntology => job.libInfo.libAccess ! createJob(RegisterOntology(itemIndividual.getURI, itemOntology), job)
+      case _ =>
+    }
+    super.handleReply(reply, selfRef)
   }
 
   def startImport(): Unit = {
     rootFolder = createFileStructure()
     itemOntology = setupOntology()
     analyzeItem()
-    context.actorOf(Props[OntologyWriter]) ! createJob(SaveOntology(itemOntology), job)
-    job.libInfo.library.send(base => LibraryAccess.addToLib(base, ArrayBuffer(itemOntology)))
   }
+
 
   def analyzeItem(): Unit = {
     val tika = new Tika()
     val parser = new AutoDetectParser()
     val metadata = new Metadata()
     val stream: FileInputStream = new FileInputStream(item)
+    val mimeType = tika.detect(item)
+    context.actorOf(ThumbActor.getProps(mimeType)) ! createJob(ThumbnailJob(item, rootFolder.toURI, job.libInfo.config), job)
+
     parser.parse(stream,
       new org.xml.sax.helpers.DefaultHandler(),
       metadata
     )
+
+    val readMetadataProperties = mutable.HashMap[String, Array[String]]()
     for (metadataProperty <- metadata.names) {
-      val prop = LibraryAccess.generateDatatypeProperty(metadataProperty, job.libInfo.basemodel(), job.libInfo.config.baseOntologyURI + "#")
-      LibraryAccess.setDatatypeProperty(prop, itemOntology, itemIndividual, metadata.getValues(metadataProperty))
+      val metaURI = job.libInfo.config.baseOntologyURI + "#" + TextFactory.cleanString(metadataProperty)
+      readMetadataProperties.put(metaURI, metadata.getValues(metadataProperty))
     }
-
+    job.libInfo.libAccess !
+      createJob(GenerateDatatypeProperties(readMetadataProperties.keySet, job.libInfo.basemodel()),job)
     val title = Option(metadata.get(TikaCoreProperties.TITLE))
-    if (title.isDefined) {
-      LibraryAccess.setDatatypeProperty(Paths.sembaTitle,
-        job.libInfo.basemodel(), itemIndividual, metadata.getValues(TikaCoreProperties.TITLE))
-    }
-    else {
-      LibraryAccess.setDatatypeProperty(Paths.sembaTitle,
-        job.libInfo.basemodel(), itemIndividual, Array(TextFactory.omitExtension(job.item.getAbsolutePath)))
-    }
 
-    val mimeType = tika.detect(item)
-    context.actorOf(ThumbActor.getProps(mimeType)) ! createJob(ThumbnailJob(item, rootFolder.toURI, job.libInfo.config), job)
+    readMetadataProperties.put(Paths.sembaTitle, Array(title.getOrElse(TextFactory.omitExtension(job.item.getAbsolutePath))))
+
+    job.libInfo.libAccess !
+      createJob(SetDatatypeProperties(readMetadataProperties, itemIndividual, itemOntology), job)
+
     stream.close()
   }
 
@@ -113,6 +127,7 @@ class SingleItemImport extends Actor with JobHandling {
     val network = ModelFactory.createOntologyModel()
 
     val ont = network.createOntology(uri)
+    job.libInfo.library().enterCriticalSection(Lock.READ)
     job.libInfo.basemodel().enterCriticalSection(Lock.READ)
     try {
       ont.addImport(job.libInfo.basemodel().getOntology(job.libInfo.config.baseOntologyURI))
@@ -121,8 +136,7 @@ class SingleItemImport extends Actor with JobHandling {
       itemIndividual.addProperty(network.getProperty(job.libInfo.config.sourceLocation), item.toURI.toString)
       itemIndividual.addProperty(network.getProperty(Paths.thumbnailLocationURI), thumbLocation)
     }
-    finally job.libInfo.basemodel().leaveCriticalSection()
-
+    finally {job.libInfo.basemodel().leaveCriticalSection() ;job.libInfo.library().leaveCriticalSection()}
     network
   }
 

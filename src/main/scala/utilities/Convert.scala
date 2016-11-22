@@ -4,7 +4,7 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 
 import app.Paths
-import org.apache.jena.ontology.{DatatypeProperty, Individual, ObjectProperty}
+import org.apache.jena.ontology.{DatatypeProperty, Individual, ObjectProperty, OntModel}
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import sun.misc.{BASE64Decoder, BASE64Encoder}
@@ -40,20 +40,24 @@ object Convert {
 
   def uri2id(str: String): String = str.substring(str.lastIndexOf('#') + 1)
 
+  def uri2ont(str: String): String = str.substring(0, str.lastIndexOf('#'))
 
   def lib2grpc(lib: String): Library = new Library(lib)
 
-  def item2grpc(lib: Library, item: Individual): Resource = {
-    val model = item.getOntModel
+  def item2grpc(lib: Library, itemURI: String, model: OntModel): Resource = {
     var retVal = Resource()
     model.enterCriticalSection(Lock.READ)
     try {
+      val item = model.getIndividual(itemURI)
+      var test = item.listOntClasses(true).toList
+
       require(item.hasOntClass(Paths.resourceDefinitionURI))
       retVal = new Resource(
         Some(lib),
         item.getOntClass(true).getURI match {
           case Paths.itemClassURI => ItemType.ITEM
           case Paths.collectionClassURI => ItemType.COLLECTION
+          case _ => ItemType.ITEM
         },
         item.getURI,
         item.getPropertyValue(model.getDatatypeProperty(Paths.sembaTitle)).asLiteral().toString,

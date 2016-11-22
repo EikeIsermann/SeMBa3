@@ -11,7 +11,6 @@ import org.apache.jena.shared.Lock
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-
 case class SaveOntology(model: OntModel) extends JobProtocol
 class OntologyWriter extends Actor with JobHandling{
   override def receive: Receive = {
@@ -20,11 +19,11 @@ class OntologyWriter extends Actor with JobHandling{
       writeOntology(save.model)
       self ! JobReply(save)
     }
-    case reply: JobReply => handleReply(reply)
+    case reply: JobReply => handleReply(reply, self)
   }
 
   def writeOntology(model:OntModel) = {
-    LibraryAccess.writeModel(model)
+      LibraryAccess.writeModel(model)
   }
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???

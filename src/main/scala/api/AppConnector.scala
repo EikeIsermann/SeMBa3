@@ -12,9 +12,11 @@ import akka.actor.Actor
 import akka.pattern._
 import akka.util.Timeout
 import app.{Application, Presets}
+import core.JobProtocol
 import io.grpc.stub.StreamObserver
 import io.grpc.{Server, ServerBuilder}
 import sembaGRPC.{CollectionItem, Library, LibraryConcepts, SimpleQuery, _}
+import utilities.FileFactory
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -24,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Case classes for sending gRPC calls to Semba Actors
   */
-trait SembaApiCall
+trait SembaApiCall extends JobProtocol
 
 case class OpenLib() extends SembaApiCall
 
@@ -65,16 +67,24 @@ class AppConnector extends Actor {
   val logger = Logger.getLogger(classOf[ApiServer].getName)
 
   /** ApiServer instance using the Actors Executioncontext */
-  val server = new ApiServer(context.dispatcher)
+  val server = new ApiServer(ExecutionContext.global)
   server.start()
-  server.blockUntilShutdown()
-
+  //server.blockUntilShutdown()
 
   override def receive: Receive = {
     case update: UpdateMessage => {
       val registered = registeredForLibrary.apply(update.lib)
-      for (observer <- registered)
+      for (observer <- registered){
+      try {
         observers.apply(observer).onNext(update)
+      }
+      catch{
+        case e: Exception => {
+          observers.remove(observer)
+          app.closeConnection(UUID.fromString(observer))
+        }
+      }
+      }
     }
   }
 
@@ -141,10 +151,11 @@ class AppConnector extends Actor {
         * @return List of available Relations and Annotations of the Library
         */
       override def openLibrary(request: LibraryRequest): Future[LibraryConcepts] = {
-        val uri = request.getLib.uri
+
+        val uri =  FileFactory.getURI(request.getLib.uri)
         val lib = app.loadLibrary(uri, UUID.fromString(request.sessionID))
         if (!registeredForLibrary.contains(uri)) registeredForLibrary.put(uri, new ArrayBuffer[String]())
-        registeredForLibrary(request.getLib.uri).+=(request.sessionID)
+        registeredForLibrary(uri).+=(request.sessionID)
         ask(lib, OpenLib()).mapTo[LibraryConcepts]
       }
 
@@ -218,8 +229,9 @@ class AppConnector extends Actor {
         * @return True if library was closed, false if it is still loaded but unsubscribed.
         */
       override def closeLibrary(request: LibraryRequest): Future[VoidResult] = {
-        registeredForLibrary(request.getLib.uri).-=(request.sessionID)
-        Future.successful(app.closeLibrary(request.getLib.uri, UUID.fromString(request.sessionID)))
+        val uri = FileFactory.getURI(request.getLib.uri)
+        registeredForLibrary(uri).-=(request.sessionID)
+        Future.successful(app.closeLibrary(uri, UUID.fromString(request.sessionID)))
       }
 
       /** Asks corresponding [[core.Semba]] to remove a relation between two [[CollectionItem]]s.
@@ -287,6 +299,12 @@ class AppConnector extends Actor {
       override def ping(request: TestMsg): Future[TestMsg] = {
         println(request.test)
         Future.successful(TestMsg("Pong"))
+      }
+
+      override def closeConnection(request: SessionRequest): Future[SessionRequest] = {
+        app.closeConnection(UUID.fromString(request.sessionID))
+        observers.remove(request.sessionID)
+        Future.successful(request)
       }
     }
 

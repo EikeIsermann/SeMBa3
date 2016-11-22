@@ -6,6 +6,11 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix semba-main: <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#> .
 
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl>
+        a            owl:Ontology ;
+        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
+
+
 <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#xmpTPg:NPages>
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
@@ -21,6 +26,11 @@
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
 <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#created>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+semba-main:sembaTitle
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
@@ -182,7 +192,7 @@ semba-main:generatedProperty
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:LibraryDefinition  a                 semba-main:MediaLibrary , owl:NamedIndividual ;
+:LibraryDefinition  a                 owl:NamedIndividual , semba-main:MediaLibrary ;
         semba-main:libraryRootFolder  "file:/users/uni/documents/semba3/appdata/libraries/" .
 
 <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Author>
@@ -219,11 +229,11 @@ semba-main:generatedProperty
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:Content-Type  a            owl:DatatypeProperty ;
+:Author  a                  owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:Author  a                  owl:DatatypeProperty ;
+:Content-Type  a            owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
@@ -234,12 +244,12 @@ semba-main:generatedProperty
 
 semba-main:Resource  a  owl:Class .
 
-<http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#access_permission:can_print>
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#access_permission:modify_annotations>
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-<http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#access_permission:modify_annotations>
+<http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#access_permission:can_print>
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
@@ -258,10 +268,6 @@ semba-main:Resource  a  owl:Class .
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
-
-<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl>
-        a            owl:Ontology ;
-        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
 
 <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#dc:format>
         a                   owl:DatatypeProperty ;
@@ -298,11 +304,11 @@ semba-main:Resource  a  owl:Class .
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:modify_annotations>
-        a                   owl:DatatypeProperty ;
+:X-Parsed-By  a             owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:X-Parsed-By  a             owl:DatatypeProperty ;
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:modify_annotations>
+        a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .

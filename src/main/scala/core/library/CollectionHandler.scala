@@ -34,7 +34,7 @@ class CollectionHandler extends Actor with JobHandling {
     }
 
     case jobReply: JobReply => {
-      handleReply(jobReply)
+      handleReply(jobReply, self)
     }
 
   }
@@ -42,9 +42,10 @@ class CollectionHandler extends Actor with JobHandling {
   def createCollection(job: CreateCollection): Unit = {
     val newLocation = WriterFactory.createFolder(job.libInfo.libraryLocation, job.name)
     WriterFactory.writeFile(new File(job.picture), newLocation)
-    val ont = setupOntology(job, FileFactory.getURI(newLocation.toURI.toString) + "/" + job.libInfo.config.ontName)
-    context.actorOf(Props[OntologyWriter]) ! createJob(SaveOntology(ont), job)
-    job.libInfo.library.send(base => LibraryAccess.addToLib(base, ArrayBuffer(ont)))
+    val uri = FileFactory.getURI(newLocation.toURI.toString) + "/" + job.libInfo.config.ontName
+    val ont = setupOntology(job, uri)
+    job.libInfo.libAccess ! createJob(SaveOntology(ont), job)
+    job.libInfo.libAccess ! createJob(RegisterOntology(uri, ont), job)
   }
 
   def setupOntology(job: CreateCollection, uri: String): OntModel = {

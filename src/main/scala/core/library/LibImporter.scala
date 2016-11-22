@@ -6,7 +6,7 @@ import java.net.URI
 import akka.actor.{Actor, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
-import core.LibraryAccess
+import core._
 import org.apache.jena.ontology.OntModel
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,43 +17,34 @@ import scala.collection.mutable.ArrayBuffer
   */
 
 //TODO ScalaDoc, JobHandler
-sealed trait ImportProtocol
 
-case class ImportLib(path: URI) extends ImportProtocol
+case class ImportLib(path: URI, libInfo: LibInfo) extends JobProtocol
 
-case class LoadFolder(folder: File) extends ImportProtocol
+case class LoadFolder(folder: File, libInfo: LibInfo) extends JobProtocol
 
-case class SuccessfulSingleImport(models: ArrayBuffer[OntModel]) extends ImportProtocol
 
-class LibImporter(library: Agent[OntModel]) extends Actor {
+class LibImporter(library: Agent[OntModel]) extends Actor with JobHandling {
 
 
   val workers = context.actorOf(new RoundRobinPool(10).props(Props[FileLoader]))
-  var jobs: Int = _
-  var completedJobs: Int = 0
   var availableImports: ArrayBuffer[OntModel] = ArrayBuffer[OntModel]()
 
   override def receive: Receive = {
-    case ImportLib(path) => importLibrary(path)
-    case SuccessfulSingleImport(result) => {
-      completedJobs += 1
-      result.foreach(models => availableImports.+=(models))
-      if (completedJobs == jobs) {
-        library.send(base => {
-          LibraryAccess.addToLib(base, availableImports)
-        })
-      }
+    case importLib: ImportLib => {
+      acceptJob(importLib, sender())
+      importLibrary(importLib)
+      self ! JobReply(importLib)
     }
+    case reply: JobReply => handleReply(reply, self)
   }
 
   //TODO add basemodel to see if imported by item
-  def importLibrary(path: URI): Unit = {
-    val lib = new File(path)
+  def importLibrary(importLib: ImportLib): Unit = {
+    val lib = new File(importLib.path)
     if (lib.exists) {
       val importJob = lib.listFiles.filter(x => x.isDirectory)
-      jobs = importJob.size
       for (x <- importJob) {
-        workers ! LoadFolder(x)
+        workers ! createJob(LoadFolder(x, importLib.libInfo), importLib)
       }
     }
 
@@ -64,5 +55,5 @@ class LibImporter(library: Agent[OntModel]) extends Actor {
 
   }
 
-
+  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
 }
