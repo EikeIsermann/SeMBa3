@@ -34,3 +34,4 @@ target/**/*
 /_workingdir/
 /lib_managed/**/*
 /lib_managed/
+/appdata/libraries/backup/*
