@@ -11,7 +11,8 @@ import org.apache.jena.ontology.{DatatypeProperty, Individual, OntModel, Ontolog
 import org.apache.jena.rdf.model.{ModelFactory, RDFNode}
 import org.apache.jena.shared.Lock
 import sembaGRPC._
-import utilities.{Convert, TextFactory}
+import utilities.{Convert, TextFactory, UpdateMessageFactory}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
@@ -62,7 +63,7 @@ object LibraryAccess {
     activeModels().get(item) match
       {
       case Some(model: OntModel) => model
-      case None => throw new NoSuchElementException("No Model available for $item")
+      case None => throw new NoSuchElementException("No Model available for item: " + item)
     }
   }
 
@@ -93,35 +94,43 @@ object LibraryAccess {
     clone
   }
 
-  def generateDatatypeProperty(key: String, model: OntModel, functional: Boolean = false): DatatypeProperty = {
+  def generateDatatypeProperty(key: String, model: OntModel, functional: Boolean = false): Option[DatatypeProperty] = {
     model.enterCriticalSection(Lock.WRITE)
     var prop = None: Option[DatatypeProperty]
-    try {
-      prop = Some(model.createDatatypeProperty(key, functional))
-      prop.get.addSuperProperty(model.getDatatypeProperty(Paths.generatedDatatypePropertyURI))
-      prop.get.addDomain(model.getResource(Paths.resourceDefinitionURI))
-      //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
-    }
+
+      try {
+        prop = Option(model.getDatatypeProperty(key))
+        if( prop.isEmpty ) {
+        prop = Some(model.createDatatypeProperty(key, functional))
+        prop.get.addSuperProperty(model.getDatatypeProperty(Paths.generatedDatatypePropertyURI))
+        prop.get.addDomain(model.getResource(Paths.resourceDefinitionURI))
+        //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
+         }
+        else prop = None
+
+      }
     finally model.leaveCriticalSection()
-    prop.get
+    prop
   }
 
-  def setDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): Individual = {
+  def setDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): ArrayBuffer[AnnotationValue] = {
     var prop: Option[DatatypeProperty] = None
     model.enterCriticalSection(Lock.WRITE)
-
+    var retVal = ArrayBuffer[AnnotationValue]()
     try {
       prop = Some(model.getDatatypeProperty(uri))
     }
 
     finally model.leaveCriticalSection()
-    if (prop.isDefined) setDatatypeProperty(prop.get, item.getOntModel, item, values)
-    item
+    if (prop.isDefined) {
+       retVal = setDatatypeProperty(prop.get, item.getOntModel, item, values)
+    }
+    retVal
   }
 
   def setDatatypeProperty(
                            prop: DatatypeProperty, model: OntModel, item: Individual, values: Array[String]
-                         ): Individual = {
+                         ): ArrayBuffer[AnnotationValue] = {
     val functional = false /*{
       model.enterCriticalSection(Lock.READ)
       try {
@@ -130,6 +139,7 @@ object LibraryAccess {
       finally model.leaveCriticalSection()
     }           */
 
+
     model.enterCriticalSection(Lock.WRITE)
     try {
 
@@ -137,19 +147,20 @@ object LibraryAccess {
         require(values.length == 1)
         item.removeAll(prop)
         item.addProperty(prop, values.head)
-
       }
 
       else {
-        values.foreach(x => item.addProperty(prop, model.createLiteral(x)))
+        values.foreach(x => {
+          item.addProperty(prop, model.createLiteral(x))
+        })
       }
     }
 
     finally model.leaveCriticalSection()
-    item
+    ArrayBuffer[AnnotationValue](AnnotationValue().addAllValue(values))
   }
 
-  def removeDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): Individual =
+  def removeDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): ArrayBuffer[AnnotationValue] =
   {
     model.enterCriticalSection(Lock.WRITE)
     try{
@@ -161,7 +172,7 @@ object LibraryAccess {
   //TODO!
     }
     finally model.leaveCriticalSection()
-    item
+    ArrayBuffer[AnnotationValue](AnnotationValue().addAllValue(values))
   }
 
 
@@ -204,7 +215,8 @@ object LibraryAccess {
     var indUris = ArrayBuffer[String]()
     model.enterCriticalSection(Lock.READ)
     try {
-      var individuals = Option(model.listIndividuals(model.getOntClass(Paths.resourceDefinitionURI)))
+      val ontClass = model.getOntClass(Paths.resourceDefinitionURI)
+      var individuals = Option(model.listIndividuals(ontClass))
       if (individuals.isDefined) {
         var iter = individuals.get
         while (iter.hasNext) {
@@ -213,7 +225,7 @@ object LibraryAccess {
       }
     }
     finally model.leaveCriticalSection()
-    indUris.foreach(uri => retVal.addLibContent((uri, Convert.item2grpc(lib, uri, model))))
+    indUris.foreach(uri => retVal = retVal.addLibContent((uri, Convert.item2grpc(lib, uri, model))))
     retVal
   }
 

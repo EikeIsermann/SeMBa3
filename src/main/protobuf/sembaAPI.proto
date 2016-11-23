@@ -111,14 +111,14 @@ enum UpdateType {
 
 message UpdateMessage {
     UpdateType kindOfUpdate = 1;
-    oneof messageContent {
-        Resource items = 2;
-        LibraryConcepts concepts = 3;
-        CollectionContent collection = 4;
-        ItemDescription description = 5;
-        Notification note = 6;
-    }
-    string lib = 7;
+    repeated  Resource items = 2;
+    LibraryConcepts concepts = 3;
+    repeated  CollectionItem collectionItems = 4;
+    repeated  ItemDescription descriptions = 5;
+    repeated  RelationModification relations = 6;
+    repeated  Notification notes = 7;
+
+    string lib = 8;
 
 }
 message Notification{

@@ -12,7 +12,7 @@ trait TextFactory {
 }
 
 object TextFactory {
-  def cleanString(raw: String): String = raw.toString.trim.replaceAll("\t", "_").replaceAll("\n", "_").replaceAll("\r", "_")
+  def cleanString(raw: String): String = raw.toString.trim.replaceAll("\t", "_").replaceAll("\n", "_").replaceAll("\r", "_").replaceAll("\\s+", "_")
 
   def validURI(raw: String): String = {
     ""

@@ -17,63 +17,56 @@ import scala.collection.mutable.ArrayBuffer
   * This is a SeMBa3 class
   */
 case class RegisterOntology(uri: String, model: OntModel) extends JobProtocol
-
+case class DeleteItem(item: Resource) extends JobProtocol
 class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor with JobHandling{
 
   override def receive: Receive = {
     case job: JobProtocol => {
       val sender = context.sender()
        acceptJob(job, sender)
-
-      job match {
-          case removeIt: RemoveFromLibrary => removeItem(removeIt)
-          case updateMeta: UpdateMetadata => updateMetadata(updateMeta)
-          case addToColl: AddToCollectionMsg => addToCollection(addToColl)
-          case removeCollItem: RemoveCollectionItem => removeCollectionItem(removeCollItem)
-          case createRel: CreateRelation => modifyRelation(createRel.relationModification, true)
-          case removeRel: RemoveRelation => modifyRelation(removeRel.relationModification, false)
-          case regModel: RegisterOntology => registerOntology(regModel)
-          case genDataProp: GenerateDatatypeProperties => generateDatatypeProperties(genDataProp)
-          case setDataProp: SetDatatypeProperties => setDatatypeProperties(setDataProp)
-          case saveOnt: SaveOntology => saveOntology(saveOnt)
-        }
+       self ! handleJob(job)
     }
     case reply: JobReply => handleReply(reply, self)
     }
 
 
-    def saveOntology( saveOnt: SaveOntology): Unit = {
+    def saveOntology( saveOnt: SaveOntology): UpdateMessage = {
       var save: Option[String] = None
       lib().enterCriticalSection(Lock.WRITE)
       try{
         save = LibraryAccess.writeModel(saveOnt.model)
       }
       finally lib().leaveCriticalSection()
-      val message = UpdateMessage(UpdateType.NOTIFY, uri).withNote(
+      UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
         UpdateMessageFactory.getNotification("Ontology has been saved to file", "Could not save Ontology", save))
-      self ! JobReply(saveOnt, ArrayBuffer(message))
     }
 
-    def removeItem( removeIt: RemoveFromLibrary) = {
-      val item = removeIt.resource.uri
-
+    def removeItem( removeIt: DeleteItem): UpdateMessage = {
+      val item = removeIt.item.uri
+      var upd = UpdateMessageFactory.getDeletionMessage(uri)
       /** Remove all collectionitems referencing this item */
       val linkedCollectionItems = LibraryAccess.getCollectionItems(item, lib())
       val mapIt = linkedCollectionItems.iterator
       while (mapIt.hasNext) {
         val keyVal = mapIt.next()
         val model = LibraryAccess.getModelForItem(keyVal._1)
-        LibraryAccess.removeIndividual(keyVal._2, model)
-      }
-      for( c <- linkedCollectionItems.values.toList.distinct){
 
+        LibraryAccess.removeIndividual(keyVal._2, model)
+
+        upd = upd.addCollectionItems(
+          CollectionItem(
+          parentCollection = keyVal._1,
+          uri = keyVal._2
+        ))
       }
+
       val model = LibraryAccess.getModelForItem(item)
       LibraryAccess.removeFromLib(model, lib())
-      //TODO return libraryUpdate
+      upd = upd.addItems(removeIt.item)
+      upd
     }
 
-    def updateMetadata( updateMeta: UpdateMetadata ) = {
+    def updateMetadata( updateMeta: UpdateMetadata ): UpdateMessage = {
       val item = updateMeta.metadataUpdate.item.get.uri
       val itemDesc = updateMeta.metadataUpdate.desc.get
       val model = LibraryAccess.getModelForItem(item)
@@ -85,78 +78,115 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
           LibraryAccess.updateMetadata(values, item, model, isDeletion)
         }
         finally lib().leaveCriticalSection()
+      //TODO
+      UpdateMessage()
 
-      // TODO: return MetadataUpdate
     }
-    def addToCollection( addToColl: AddToCollectionMsg): Unit ={
+    def addToCollection( addToColl: AddToCollectionMsg): UpdateMessage ={
       val collection = addToColl.addToCollection.collection.get.uri
       val item = addToColl.addToCollection.newItem.get.uri
       val model = LibraryAccess.getModelForItem(collection)
       LibraryAccess.addCollectionItem(collection, item, model)
 
       //TODO: return CollectionUpdate
+      UpdateMessage()
     }
 
-    def removeCollectionItem( removeCollItem: RemoveCollectionItem ): Unit ={
+    def removeCollectionItem( removeCollItem: RemoveCollectionItem ): UpdateMessage ={
       val model = LibraryAccess.getModelForItem(removeCollItem.collectionItem.parentCollection)
       lib().enterCriticalSection(Lock.WRITE)
       try{
          LibraryAccess.removeIndividual(removeCollItem.collectionItem.uri, model)
       }
       finally lib().leaveCriticalSection()
+      //todo
+      UpdateMessage()
     }
 
-  def modifyRelation(relMod: RelationModification, add: Boolean) = {
+  def modifyRelation(relMod: RelationModification, add: Boolean): UpdateMessage = {
     val startItem = relMod.start.get.uri
     val endItem = relMod.end.get.uri
     val relation = relMod.rel.get.uri
     val model = LibraryAccess.getModelForItem(
       relMod.start.get.parentCollection)
+    var upd = UpdateMessageFactory.getAddMessage(uri)
+      .addRelations(
+        relMod
+    )
+
 
     lib().enterCriticalSection(Lock.WRITE)
     try {
-      if (add) LibraryAccess.createRelation(startItem, endItem, relation, model)
-      else LibraryAccess.removeRelation(startItem, endItem, relation, model)
+      if (add) {
+        LibraryAccess.createRelation(startItem, endItem, relation, model)
+      }
+      else {
+        LibraryAccess.removeRelation(startItem, endItem, relation, model)
+        upd = upd.withKindOfUpdate(UpdateType.DELETE)
+      }
     }
     finally lib().leaveCriticalSection()
-    //Todo return CollectionUpdate
+    upd
   }
 
-  def registerOntology(regModel: RegisterOntology): Unit ={
+  def registerOntology(regModel: RegisterOntology): UpdateMessage ={
     LibraryAccess.addToLib(regModel.uri, lib(), regModel.model)
-    self ! JobReply(regModel)
+    UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
+      UpdateMessageFactory.getNotification("Ontology has been added to Library", "Could add Ontology", Option(regModel.uri)))
   }
 
-  def generateDatatypeProperties(genDataProp: GenerateDatatypeProperties): Unit ={
+  def generateDatatypeProperties(genDataProp: GenerateDatatypeProperties): UpdateMessage ={
     lib().enterCriticalSection(Lock.WRITE)
+    var concepts =
+        LibraryConcepts().withLib(Convert.lib2grpc(uri))
     try{
     for( key <- genDataProp.keys){
-      LibraryAccess.generateDatatypeProperty(key, genDataProp.model)
+      val newProp = LibraryAccess.generateDatatypeProperty(key, genDataProp.model)
+      if(newProp.isDefined)
+        {
+          concepts = concepts.addAnnotations((key, Convert.ann2grpc(newProp.get)))
+        }
     }
     }
     finally lib().leaveCriticalSection()
-    self ! JobReply(genDataProp)
+    UpdateMessageFactory.getAddMessage(uri)
+      .withConcepts(concepts)
+
   }
 
-  def setDatatypeProperties(setDataProp: SetDatatypeProperties): Unit ={
+  def setDatatypeProperties(setDataProp: SetDatatypeProperties): UpdateMessage ={
     lib().enterCriticalSection(Lock.WRITE)
+    var upd = UpdateMessageFactory.getAddMessage(uri)
     try
     {
       for(prop <- setDataProp.propertyMap.keySet){
-        LibraryAccess.setDatatypeProperty(prop, setDataProp.model,setDataProp.item, setDataProp.propertyMap.apply(prop))
+        var annotation = LibraryAccess.setDatatypeProperty(prop,
+          setDataProp.model,setDataProp.item, setDataProp.propertyMap.apply(prop))
+        upd = upd.addDescriptions(ItemDescription()
+          .withItemURI(setDataProp.item.getURI).addAllMetadata(annotation.map( v => (prop,v))))
       }
     }
     finally lib().leaveCriticalSection()
 
-    if(LibraryAccess.activeModels().values.exists(_ == setDataProp.model)){
-      println("test")
-      //TODO send datatypeProperty update
-    }
-    self ! JobReply(setDataProp)
+
+    UpdateMessage()
   }
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = {
-    JobReply(jobProtocol)
+  override def handleJob(job: JobProtocol): JobReply = {
+    JobReply(job, ArrayBuffer[UpdateMessage]
+    (job match {
+      case removeIt: DeleteItem => removeItem(removeIt)
+      case updateMeta: UpdateMetadata => updateMetadata(updateMeta)
+      case addToColl: AddToCollectionMsg => addToCollection(addToColl)
+      case removeCollItem: RemoveCollectionItem => removeCollectionItem(removeCollItem)
+      case createRel: CreateRelation => modifyRelation(createRel.relationModification, true)
+      case removeRel: RemoveRelation => modifyRelation(removeRel.relationModification, false)
+      case regModel: RegisterOntology => registerOntology(regModel)
+      case genDataProp: GenerateDatatypeProperties => generateDatatypeProperties(genDataProp)
+      case setDataProp: SetDatatypeProperties => setDatatypeProperties(setDataProp)
+      case saveOnt: SaveOntology => saveOntology(saveOnt)
+    })
+    )
   }
 }
 

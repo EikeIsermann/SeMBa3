@@ -36,8 +36,8 @@ class FileLoader extends Actor with JobHandling{
     for (source <- FileFactory.filterFileExtension(job.folder, Presets.validOntologyExtensions)) {
       val ontology = ModelFactory.createOntologyModel()
       ontology.read(source.toString)
-      val uri = ontology.listIndividuals(ontology.getOntClass(Paths.itemClassURI)).next().getURI
-      job.libInfo.libAccess ! RegisterOntology(uri, ontology)
+      val uri = ontology.listIndividuals(ontology.getOntClass(Paths.resourceDefinitionURI)).next().getURI
+      job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
     }
   }
 

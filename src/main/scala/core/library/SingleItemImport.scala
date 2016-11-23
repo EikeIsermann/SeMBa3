@@ -13,7 +13,7 @@ import org.apache.jena.shared.Lock
 import org.apache.tika.Tika
 import org.apache.tika.metadata.{Metadata, TikaCoreProperties}
 import org.apache.tika.parser.AutoDetectParser
-import sembaGRPC.{Library, Resource, UpdateMessage, UpdateType}
+import sembaGRPC._
 import utilities.debug.DC
 import utilities.{Convert, FileFactory, TextFactory, WriterFactory}
 
@@ -37,7 +37,7 @@ class SingleItemImport extends Actor with JobHandling {
   var rootFolder: File = _
   var itemOntology: OntModel = _
   var itemIndividual: Individual = _
-
+  var title: String =_
   override def receive: Receive = {
     case jobProtocol: JobProtocol =>
       {
@@ -50,6 +50,7 @@ class SingleItemImport extends Actor with JobHandling {
             startImport()
 
           }
+
         }
         self ! JobReply(jobProtocol)
       }
@@ -61,8 +62,11 @@ class SingleItemImport extends Actor with JobHandling {
 
   override def handleReply(reply: JobReply, selfRef: ActorRef): Boolean = {
     reply.job match {
-      case sDP: SetDatatypeProperties =>  job.libInfo.libAccess ! createJob(SaveOntology(itemOntology), job)
-      case sO: SaveOntology => job.libInfo.libAccess ! createJob(RegisterOntology(itemIndividual.getURI, itemOntology), job)
+      case sDP: SetDatatypeProperties =>  {
+        job.libInfo.libAccess ! createJob(SaveOntology(itemOntology), job)
+        job.libInfo.libAccess ! createJob(RegisterOntology(itemIndividual.getURI, itemOntology), job)
+        job.libInfo.libAccess ! createJob(SaveOntology(job.libInfo.basemodel()), job)
+      }
       case _ =>
     }
     super.handleReply(reply, selfRef)
@@ -72,6 +76,16 @@ class SingleItemImport extends Actor with JobHandling {
     rootFolder = createFileStructure()
     itemOntology = setupOntology()
     analyzeItem()
+    updates.apply(job.jobID).+=(
+      UpdateMessage(kindOfUpdate = UpdateType.ADD, lib = job.libInfo.libURI).addItems(
+      Resource().withLib(Library(job.libInfo.libURI))
+        .withUri(uri)
+        .withItemType(ItemType.ITEM)
+        .withName(title)
+        .withThumbnailLocation(thumbLocation)
+    )
+
+    )
   }
 
 
@@ -95,9 +109,9 @@ class SingleItemImport extends Actor with JobHandling {
     }
     job.libInfo.libAccess !
       createJob(GenerateDatatypeProperties(readMetadataProperties.keySet, job.libInfo.basemodel()),job)
-    val title = Option(metadata.get(TikaCoreProperties.TITLE))
+    title = Option(metadata.get(TikaCoreProperties.TITLE)).getOrElse(TextFactory.omitExtension(job.item.getAbsolutePath))
 
-    readMetadataProperties.put(Paths.sembaTitle, Array(title.getOrElse(TextFactory.omitExtension(job.item.getAbsolutePath))))
+    readMetadataProperties.put(Paths.sembaTitle, Array(title))
 
     job.libInfo.libAccess !
       createJob(SetDatatypeProperties(readMetadataProperties, itemIndividual, itemOntology), job)

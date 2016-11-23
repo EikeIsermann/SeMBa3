@@ -5,6 +5,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
+import core.MainJob
 import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import org.apache.jena.util.FileUtils
@@ -20,32 +21,36 @@ object TestClient extends App {
   val client = TestClient("localhost", 50051)
   var testSessionID: String = ""
 
+  testLib()
 
 
+  def testLib()  ={
 
 
   var test: LibraryConcepts = LibraryConcepts()
     testSessionID = client.registerSession().sessionID
     var testLib = Library(uri = "file:/users/uni/documents/semba3/appdata/libraries/library.ttl")
-    client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID))
-  //  println(client.getContent(testLib))
+    println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
+   //println(client.getContent(testLib))
     client.subscribeForUpdates(testSessionID)
+  //println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
 
-   for(i <- 1 to 1){
-      println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.pdf", testLib))
-   }
+  for(i <- 1 to 500){
+     println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
+  }
     //println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
       //println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
    //   println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content", testLib))
-    //client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib)
-      Thread.sleep(100000)
-
+  //println(client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_4/definition.ttl#content", testLib))
+  //println(client.getContent(testLib))
+  Thread.sleep(100000)
+  }
 
 
 
 
   def apply(host: String, port: Int): TestClient = {
-    /* val test = ManagedChannelBuilder.forAddress(host, port)
+    /* val test = ManagedChannelBuilder.forAddress(host, port)Ja
      test.usePlaintext(true)
      val  channel =  test.build()
       */
@@ -183,7 +188,13 @@ class TestClient private(
            println("Completed")
          }
 
-         override def onNext(value: UpdateMessage): Unit = println(value.messageContent)
+         override def onNext(value: UpdateMessage): Unit = {
+           value.kindOfUpdate match {
+             case UpdateType.NOTIFY =>
+             case UpdateType.DELETE => println(value)
+             case UpdateType.ADD => println(value)
+           }
+         }
        }
        asyncStub.subscribeUpdates(UpdateRequest(session), observer )
     }

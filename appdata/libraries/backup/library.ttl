@@ -1,0 +1,16 @@
+@prefix :      <file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xml:   <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix semba-main: <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#> .
+
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl>
+        a            owl:Ontology ;
+        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
+
+:LibraryDefinition  a                 owl:NamedIndividual , semba-main:MediaLibrary ;
+        semba-main:libraryRootFolder  "file:/users/uni/documents/semba3/appdata/libraries/" .
+

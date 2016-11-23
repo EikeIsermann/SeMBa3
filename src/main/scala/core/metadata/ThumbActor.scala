@@ -16,20 +16,16 @@ abstract class ThumbActor extends Actor with JobHandling {
 
 
   override def receive: Receive = {
-    case job: JobProtocol => sender ! handleJob(job)
+    case thumb: ThumbnailJob => {
+      acceptJob(thumb, sender())
+      createThumbnail(thumb)
+      self ! JobReply(thumb)
+    }
+    case reply: JobReply => handleReply(reply, self)
   }
 
-  /** All ThumbnailActors accept ThumbnailJobs. Thumbnail creation blocks the actor and returns a JobReply.
-    *
-    * @param job
-    * @return JobReply after successful import.
-    */
-  override def handleJob(job: JobProtocol): JobReply = {
-    job match {
-      case thumb: ThumbnailJob => createThumbnail(thumb)
-    }
-    new JobReply(job)
-  }
+  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+
 
   /** ThumbnailActors only need to implement createThumbnail providing logic to render and write the image.
     *

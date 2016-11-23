@@ -82,6 +82,4 @@ object Convert {
       label = Option(prop.getLabel(lang)).getOrElse("")
     )
   }
-
-
 }

@@ -73,19 +73,24 @@ class AppConnector extends Actor {
 
   override def receive: Receive = {
     case update: UpdateMessage => {
-      val registered = registeredForLibrary.apply(update.lib)
-      for (observer <- registered){
-      try {
-        observers.apply(observer).onNext(update)
-      }
-      catch{
-        case e: Exception => {
-          observers.remove(observer)
-          app.closeConnection(UUID.fromString(observer))
+      val allObservers = registeredForLibrary.get(update.lib)
+      allObservers match {
+        case None => println("RECEIVED " + update.kindOfUpdate)
+        case Some(registered) => {
+        for (observer <- registered) {
+          try {
+            observers.apply(observer).onNext(update)
+          }
+          catch {
+            case e: Exception => {
+              observers.remove(observer)
+              app.closeConnection(UUID.fromString(observer))
+            }
+          }
         }
       }
-      }
     }
+  }
   }
 
   /** Binds the SembaApiImpl to a [[io.grpc.Server]] instance
@@ -133,7 +138,7 @@ class AppConnector extends Actor {
      class SembaApiImpl extends SembaAPIGrpc.SembaAPI {
 
       /** Timeout for all Getters */
-      implicit val timeout: Timeout = 20 seconds
+      implicit val timeout: Timeout = 120 seconds
 
       /** Add the gRPC client to the map of observers
         *

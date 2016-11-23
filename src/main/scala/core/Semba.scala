@@ -3,9 +3,11 @@ package core
 import java.net.URI
 import java.util.UUID
 
+import akka.pattern.ask
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
+import akka.util.Timeout
 import api._
 import app.{Application, Paths}
 import core.library._
@@ -20,7 +22,7 @@ import utilities.{Convert, FileFactory, XMLFactory}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -38,29 +40,28 @@ class Semba(val path: String) extends Actor with JobHandling {
   var libRoot: URI = _
   var config: Config = _
   var libAccess: ActorRef = _
+  var libInitialized: Future[JobReply] = _
+  implicit val timeout = Timeout(300 seconds)
 
   override def preStart() = {
     library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
     libAccess = system.actorOf(Props(new CriticalOntologyAccess(library, path)))
     basemodel = Agent(ModelFactory.createOntologyModel())
-    Await.result(basemodel.alter(base => lib.load(base, path)), 1000 second)
-    var test = basemodel().listIndividuals().toList
+    Await.result(basemodel.alter(base => lib.load(base, path)), 10 second)
     libRoot = new URI(getLiteral(basemodel().getIndividual(path + "#LibraryDefinition"), Paths.libraryRootFolder))
     config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
-    //init()
+    libInitialized = ask(system.actorOf(Props(new LibImporter(library))), ImportLib(libraryLocation, libInfo)).mapTo[JobReply]
+
   }
 
   override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {
     updates(jobProtocol.jobID).foreach(update => Application.api ! update)
     super.processUpdates(jobProtocol)
   }
-  def init(): Unit = {
-    readLibrary()
-  }
 
   def readLibrary(): Unit = {
-    system.actorOf(Props(new LibImporter(library))) ! createMasterJob(ImportLib(libraryLocation, libInfo), self)
+
   }
 
   def removeCollectionItem(collectionItem: CollectionItem): Any = {
@@ -68,7 +69,7 @@ class Semba(val path: String) extends Actor with JobHandling {
   }
 
   def removeItem(resource: Resource): VoidResult = {
-    system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource.uri,library(), libAccess), self)
+    system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource, libAccess), self)
     VoidResult().withAccepted(true)
   }
 
@@ -88,6 +89,9 @@ class Semba(val path: String) extends Actor with JobHandling {
     case apiCall: SembaApiCall => {
       apiCall match {
         case openLib: OpenLib => {
+          println("Waiting for result")
+          val test = Await.result(libInitialized, timeout.duration)
+          println("Result")
           sender() ! getConcepts()
         }
         case addItem: AddToLibrary => {
@@ -130,6 +134,7 @@ class Semba(val path: String) extends Actor with JobHandling {
 
     case jobReply: JobReply => {
       handleReply(jobReply, self)
+
 
     }
     case _ => {

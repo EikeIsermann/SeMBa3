@@ -1,6 +1,6 @@
 package utilities
 
-import sembaGRPC.Notification
+import sembaGRPC.{Notification, UpdateMessage, UpdateType}
 
 /**
   * Author: Eike Isermann
@@ -14,4 +14,14 @@ object UpdateMessageFactory {
       case None =>  Notification().withMsg(fail)
     }
   }
+
+  def getDeletionMessage(uri: String): UpdateMessage = {
+     UpdateMessage(kindOfUpdate = UpdateType.DELETE, lib = uri)
+  }
+
+  def getAddMessage(uri: String): UpdateMessage = {
+    UpdateMessage(kindOfUpdate = UpdateType.ADD, lib = uri)
+  }
+
+
 }

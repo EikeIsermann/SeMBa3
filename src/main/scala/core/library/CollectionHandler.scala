@@ -4,12 +4,14 @@ import java.io.{File, FileOutputStream}
 import java.net.URI
 
 import akka.actor.{Actor, Props}
+import app.Paths
 import core._
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
 import utilities.{FileFactory, WriterFactory}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -57,6 +59,12 @@ class CollectionHandler extends Actor with JobHandling {
       ont.addImport(baseModel.getOntology(job.libInfo.config.baseOntologyURI))
       network.addSubModel(job.libInfo.basemodel())
       val ontItem = network.createIndividual(uri + job.libInfo.config.itemName, network.getOntClass(job.classURI.toString))
+      val readMetadataProperties = mutable.HashMap[String, Array[String]]()
+      readMetadataProperties.put(Paths.sembaTitle, Array(job.name))
+
+      job.libInfo.libAccess !
+        createJob(SetDatatypeProperties(readMetadataProperties, ontItem, network), job)
+
     }
     finally baseModel.leaveCriticalSection()
     network
