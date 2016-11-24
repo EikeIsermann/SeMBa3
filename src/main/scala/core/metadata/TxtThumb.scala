@@ -57,7 +57,7 @@ class TxtThumb extends ThumbActor {
     pic.dispose
 
     ImageIO.write(pad(thumbnail, TxtThumb.padding / 2, TxtThumb.background), "JPEG", new File(new URI(thumb.dest + thumb.config.thumbnail)))
-
+    thumbnail.flush()
   }
 
 

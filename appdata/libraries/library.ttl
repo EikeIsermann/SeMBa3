@@ -6,14 +6,85 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix semba-main: <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#> .
 
-:Component_2  a             owl:DatatypeProperty ;
+:Creation-Date  a           owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:LibraryDefinition  a                 owl:NamedIndividual , semba-main:MediaLibrary ;
-        semba-main:libraryRootFolder  "file:/users/uni/documents/semba3/appdata/libraries/" .
+:File_Modified_Date  a      owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
 
-<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#tiff:ImageLength>
+:Component_1  a             owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:created  a                 owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:creator  a                 owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#pdf:PDFVersion>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Content-Encoding  a        owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#pdf:encrypted>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:can_print_degraded>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Image_Width  a             owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:fill_in_form>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Data_Precision  a          owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Last-Save-Date  a          owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dc:creator>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:modified  a                owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:X_Resolution  a            owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#xmp:CreatorTool>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:File_Name  a               owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:extract_content>
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
@@ -22,7 +93,58 @@
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:Component_1  a             owl:DatatypeProperty ;
+:producer  a                owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#tiff:ImageLength>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:date   a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Resolution_Units  a        owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Image_Height  a            owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dc:format>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dcterms:created>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:LibraryDefinition  a                 semba-main:MediaLibrary , owl:NamedIndividual ;
+        semba-main:libraryRootFolder  "file:/users/uni/desktop/library/" .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:can_modify>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Last-Modified  a           owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:File_Size  a               owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Y_Resolution  a            owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Author  a                  owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
@@ -30,20 +152,8 @@
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:Image_Width  a             owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl>
-        a            owl:Ontology ;
-        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
-
-<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#tiff:ImageWidth>
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:can_print>
         a                   owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-:Image_Height  a            owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
@@ -52,43 +162,68 @@
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:X-Parsed-By  a             owl:DatatypeProperty ;
+:Component_3  a             owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:File_Size  a               owl:DatatypeProperty ;
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:extract_for_accessibility>
+        a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:File_Name  a               owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-:Y_Resolution  a            owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-:Data_Precision  a          owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-:Resolution_Units  a        owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
-
-:X_Resolution  a            owl:DatatypeProperty ;
-        rdfs:domain         semba-main:Resource ;
-        rdfs:subPropertyOf  semba-main:generatedProperty .
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl>
+        a            owl:Ontology ;
+        owl:imports  <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl> .
 
 :Number_of_Components
         a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:Component_3  a             owl:DatatypeProperty ;
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#meta:author>
+        a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .
 
-:File_Modified_Date  a      owl:DatatypeProperty ;
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#meta:save-date>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dcterms:modified>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:assemble_document>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#meta:creation-date>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#xmpTPg:NPages>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#tiff:ImageWidth>
+        a                   owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:Component_2  a             owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+:X-Parsed-By  a             owl:DatatypeProperty ;
+        rdfs:domain         semba-main:Resource ;
+        rdfs:subPropertyOf  semba-main:generatedProperty .
+
+<file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#access_permission:modify_annotations>
+        a                   owl:DatatypeProperty ;
         rdfs:domain         semba-main:Resource ;
         rdfs:subPropertyOf  semba-main:generatedProperty .

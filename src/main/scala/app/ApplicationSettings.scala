@@ -62,6 +62,8 @@ object Paths {
   /** URI of the superclass all valid SeMBa collection items inherit */
   val collectionItemURI = getString("collectionItemURI")
 
+  val hasMediaItem = getString("hasMediaItemURI")
+
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }

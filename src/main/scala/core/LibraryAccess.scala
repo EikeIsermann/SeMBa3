@@ -7,8 +7,8 @@ import java.util.UUID
 import akka.agent.Agent
 import app.Paths
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.ontology.{DatatypeProperty, Individual, OntModel, Ontology}
-import org.apache.jena.rdf.model.{ModelFactory, RDFNode}
+import org.apache.jena.ontology._
+import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode}
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import utilities.{Convert, TextFactory, UpdateMessageFactory}
@@ -21,7 +21,8 @@ import scala.collection.mutable.ArrayBuffer
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-        //TODO static access to used properties etc. instead of Paths.XXX
+        //TODO static access to used properties etc. instead of Paths.XXX, Selector for Queries
+
 object LibraryAccess {
 
 
@@ -332,14 +333,39 @@ object LibraryAccess {
     try{
        val newUri = Convert.uri2ont(collection) + UUID.randomUUID()
        val collItem = model.createIndividual(newUri, model.getOntClass(Paths.collectionItemURI))
+       val coll = model.getIndividual(collection)
        val itemModel = getModelForItem(item)
-         model.addSubModel(itemModel)
-       model.addLoadedImport(item)
-        collItem.setPropertyValue(model.getProperty(Paths.linksToSource),itemModel.getIndividual(item))
+       val itemIndividual = itemModel.getIndividual(item)
+       val hasMediaItem = model.getObjectProperty(Paths.hasMediaItem)
+       val hasCollectionItem = model.getObjectProperty(Paths.hasCollectionItem)
+       val isPart = model.getObjectProperty(Paths.isPartOfCollection)
+
+
+       collItem.setPropertyValue(model.getProperty(Paths.linksToSource),itemIndividual )
+       collItem.setPropertyValue(isPart, coll)
+        coll.setPropertyValue(hasCollectionItem, collItem)
+       if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
       //TODO figure out URI and CI format
     }
    finally model.leaveCriticalSection()
   }
+
+  def retrieveSimpleSearchStatements(): Unit ={
+
+  }
+
+  def getDeepCopy(ontModel: OntModel): OntModel = {
+    var retVal: Model = ontModel
+    ontModel.enterCriticalSection(Lock.READ)
+    try{
+      retVal = ontModel.difference(ModelFactory.createDefaultModel())
+    }
+    finally ontModel.leaveCriticalSection()
+    ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF, retVal)
+  }
+
+
+
 
 
 

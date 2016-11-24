@@ -6,6 +6,7 @@ import java.util.UUID
 import akka.actor.{ActorRef, ActorSystem, PoisonPill, Props}
 import api.AppConnector
 import core.Semba
+import core.metadata.ThumbActor
 import org.apache.jena.util.FileManager
 import sembaGRPC.VoidResult
 import utilities.FileFactory
@@ -13,6 +14,8 @@ import utilities.FileFactory
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
+
+//TODO model file versioning
 /** Entry point of the Application. Provides global access to sessions and loaded libraries.
   *
   * Author: Eike Isermann
@@ -33,7 +36,7 @@ object Application extends App {
   var libraries: mutable.HashMap[String, ActorRef] = new mutable.HashMap[String, ActorRef]()
   //loadLibrary(new URI("file:///users/uni/documents/semba3/appdata/libraries/semba-teaching.owl"),UUID.randomUUID())
 
-
+  ThumbActor.initialize(system)
 
   /**
     * Methods

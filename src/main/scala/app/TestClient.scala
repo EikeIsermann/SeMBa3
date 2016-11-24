@@ -17,6 +17,26 @@ import sembaGRPC._
   * This is a SeMBa3 class
   */
 object TestClient extends App {
+  val queryString =
+  {
+
+        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dc:creator> \"Florian Bötsch\" ." +
+          "   }"
+  }
+
+  val queryString2 =
+  {
+
+    "SELECT ?x\nWHERE\n { ?x a <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource> ." +
+      "   }"
+  }
+
+
+
+
+
+
+
 
   val client = TestClient("localhost", 50051)
   var testSessionID: String = ""
@@ -29,21 +49,26 @@ object TestClient extends App {
 
   var test: LibraryConcepts = LibraryConcepts()
     testSessionID = client.registerSession().sessionID
-    var testLib = Library(uri = "file:/users/uni/documents/semba3/appdata/libraries/library.ttl")
+    var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
     println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
    //println(client.getContent(testLib))
     client.subscribeForUpdates(testSessionID)
   //println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
 
-  for(i <- 1 to 500){
-     println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
+  for(i <- 1 to 0){
+     client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/", testLib)
   }
     //println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
       //println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
    //   println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content", testLib))
   //println(client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_4/definition.ttl#content", testLib))
   //println(client.getContent(testLib))
-  Thread.sleep(100000)
+    for(i <- 1 to 2){
+      println(client.sparql(queryString2,testLib))
+      println(client.sparql(queryString,testLib))
+
+    }
+  Thread.sleep(1200000)
   }
 
 
@@ -109,7 +134,7 @@ class TestClient private(
   }
 
   def addItem(src: String, lib: Library): VoidResult = {
-    logger.info("Trying to add item")
+    //logger.info("Trying to add item")
     var retVal = VoidResult()
     val source = SourceFile().withLibrary(lib).withPath(src)
     try {
@@ -198,6 +223,19 @@ class TestClient private(
        }
        asyncStub.subscribeUpdates(UpdateRequest(session), observer )
     }
+  }
+
+  def sparql(query: String, lib: Library) = {
+    logger.info("Performing Sparqlmagic")
+    var retVal = LibraryContent()
+    try {
+      retVal = blockingStub.sparqlFilter(SparqlQuery().withLibrary(lib).withKey(query))
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    retVal
   }
 
 }

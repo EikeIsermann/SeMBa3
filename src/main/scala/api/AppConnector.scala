@@ -138,7 +138,7 @@ class AppConnector extends Actor {
      class SembaApiImpl extends SembaAPIGrpc.SembaAPI {
 
       /** Timeout for all Getters */
-      implicit val timeout: Timeout = 120 seconds
+      implicit val timeout: Timeout = 12000 seconds
 
       /** Add the gRPC client to the map of observers
         *

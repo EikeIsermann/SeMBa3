@@ -26,7 +26,7 @@ case class LoadFolder(folder: File, libInfo: LibInfo) extends JobProtocol
 class LibImporter(library: Agent[OntModel]) extends Actor with JobHandling {
 
 
-  val workers = context.actorOf(new RoundRobinPool(50).props(Props[FileLoader]))
+  val workers = context.actorOf(new RoundRobinPool(10).props(Props[FileLoader]))
   var availableImports: ArrayBuffer[OntModel] = ArrayBuffer[OntModel]()
 
   override def receive: Receive = {

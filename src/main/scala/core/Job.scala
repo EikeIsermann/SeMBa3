@@ -40,7 +40,6 @@ trait JobHandling {
       waitingForCompletion -= entry.get
       completed = !waitingForCompletion.exists(_._2.jobID == entry.get._2.jobID)
       if (completed) {
-        println("Job finished:" + entry.get._2.getClass + this.getClass)
         val jobMaster = originalSender.apply(entry.get._2.jobID)
         if (jobMaster != selfRef ) {
           jobMaster ! JobReply(entry.get._2, updates.apply(entry.get._2.jobID))
@@ -49,11 +48,13 @@ trait JobHandling {
         else processUpdates(entry.get._2)
       }
     }
-
+    if(completed) finishedJob()
     completed
 
   }
 
+  def finishedJob() = {
+  }
   def processUpdates(jobProtocol: JobProtocol) = {
       updates.remove(jobProtocol.jobID)
   }

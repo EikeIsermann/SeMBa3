@@ -17,7 +17,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 
 
-//TODO implement JobHandler, Scaladoc
+//TODO Scaladoc
 
 class FileLoader extends Actor with JobHandling{
 
@@ -36,8 +36,13 @@ class FileLoader extends Actor with JobHandling{
     for (source <- FileFactory.filterFileExtension(job.folder, Presets.validOntologyExtensions)) {
       val ontology = ModelFactory.createOntologyModel()
       ontology.read(source.toString)
-      val uri = ontology.listIndividuals(ontology.getOntClass(Paths.resourceDefinitionURI)).next().getURI
-      job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
+       if(ontology.hasLoadedImport("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl")) {
+         val uri = ontology.listIndividuals(ontology.getOntClass(Paths.resourceDefinitionURI)).next().getURI
+         job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
+
+       }
+
+
     }
   }
 

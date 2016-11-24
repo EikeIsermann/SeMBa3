@@ -41,7 +41,9 @@ class Semba(val path: String) extends Actor with JobHandling {
   var config: Config = _
   var libAccess: ActorRef = _
   var libInitialized: Future[JobReply] = _
+  var resourceCreation: ActorRef = _
   implicit val timeout = Timeout(300 seconds)
+
 
   override def preStart() = {
     library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
@@ -52,7 +54,7 @@ class Semba(val path: String) extends Actor with JobHandling {
     config = new Config(new URI(libRoot + Paths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
     libInitialized = ask(system.actorOf(Props(new LibImporter(library))), ImportLib(libraryLocation, libInfo)).mapTo[JobReply]
-
+    resourceCreation = context.actorOf(Props(new ResourceCreation(libInfo)))
   }
 
   override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {
@@ -97,7 +99,7 @@ class Semba(val path: String) extends Actor with JobHandling {
         case addItem: AddToLibrary => {
           val notEmpty = addItem.sourceFile.source.isDefined
           sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.")
-          newItem(addItem)
+          resourceCreation ! createMasterJob(addItem, self)
         }
 
         case contents: RequestContents => {
@@ -124,7 +126,11 @@ class Semba(val path: String) extends Actor with JobHandling {
         case removeRel: RemoveRelation => {
           sender() ! removeRelation(removeRel.relationModification)
         }
+        case sparql: SparqlFilter => {
+          sender() ! LibraryContent()
+          system.actorOf(Props(new Search(library()))) ! sparql
 
+        }
 
       }
     }
@@ -153,34 +159,6 @@ class Semba(val path: String) extends Actor with JobHandling {
   }
 
 
-  def newItem(addToLibrary: AddToLibrary): Unit = {
-    addToLibrary.sourceFile.source match {
-      case Source.Path(path) => {
-        newItem(FileFactory.getURI(path))
-      }
-
-      case Source.Data(data) => {
-        //TODO get input stream, copy to local filesystem, read as new item
-      }
-
-      case Source.Coll(newColl) =>{
-        newCollection(newColl.name , newColl.ontClass )
-      }
-      case Source.Empty =>
-    }
-
-  }
-
-  def newItem(path: String, copyToLib: Boolean = true): Unit = {
-    val items = FileFactory.contentsOfDirectory(new URI(path), true, false, false)
-    val workers = system.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
-    val batchID = UUID.randomUUID()
-    for (item <- items) {
-      val job = ImportNewItem(item, libInfo, copyToLib)
-      job.jobID = batchID
-      workers ! createMasterJob(job, self)
-    }
-  }
 
   def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config, libAccess, path)
 
@@ -194,11 +172,6 @@ class Semba(val path: String) extends Actor with JobHandling {
 
   def getMetadata(item: String): ItemDescription = {
     LibraryAccess.retrieveMetadata(item, library())
-  }
-
-  def newCollection(name: String, classURI: String, picture: URI = new URI(config.defaultCollectionIcon)): Unit = {
-    system.actorOf(Props[CollectionHandler]) ! createMasterJob(CreateCollection(name, classURI, libInfo, picture), self)
-
   }
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???

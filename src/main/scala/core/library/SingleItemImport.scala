@@ -3,7 +3,7 @@ package core.library
 import java.io.{File, FileInputStream, FileNotFoundException}
 import java.net.URI
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 import app.{Application, Paths}
 import core._
 import core.metadata.ThumbActor
@@ -59,13 +59,10 @@ class SingleItemImport extends Actor with JobHandling {
     case reply: JobReply => handleReply(reply, self)
   }
 
-
   override def handleReply(reply: JobReply, selfRef: ActorRef): Boolean = {
     reply.job match {
       case sDP: SetDatatypeProperties =>  {
-        job.libInfo.libAccess ! createJob(SaveOntology(itemOntology), job)
         job.libInfo.libAccess ! createJob(RegisterOntology(itemIndividual.getURI, itemOntology), job)
-        job.libInfo.libAccess ! createJob(SaveOntology(job.libInfo.basemodel()), job)
       }
       case _ =>
     }
@@ -95,7 +92,7 @@ class SingleItemImport extends Actor with JobHandling {
     val metadata = new Metadata()
     val stream: FileInputStream = new FileInputStream(item)
     val mimeType = tika.detect(item)
-    context.actorOf(ThumbActor.getProps(mimeType)) ! createJob(ThumbnailJob(item, rootFolder.toURI, job.libInfo.config), job)
+   ThumbActor.getThumbActor(mimeType) ! createJob(ThumbnailJob(item, rootFolder.toURI, job.libInfo.config), job)
 
     parser.parse(stream,
       new org.xml.sax.helpers.DefaultHandler(),
@@ -146,6 +143,7 @@ class SingleItemImport extends Actor with JobHandling {
     try {
       ont.addImport(job.libInfo.basemodel().getOntology(job.libInfo.config.baseOntologyURI))
       network.addSubModel(job.libInfo.basemodel())
+      network.setNsPrefix("base", job.libInfo.config.baseOntologyURI+"#")
       itemIndividual = network.createIndividual(uri + job.libInfo.config.itemName, network.getOntClass(Paths.itemClassURI))
       itemIndividual.addProperty(network.getProperty(job.libInfo.config.sourceLocation), item.toURI.toString)
       itemIndividual.addProperty(network.getProperty(Paths.thumbnailLocationURI), thumbLocation)

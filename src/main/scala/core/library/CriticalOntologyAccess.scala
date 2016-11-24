@@ -50,9 +50,8 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       while (mapIt.hasNext) {
         val keyVal = mapIt.next()
         val model = LibraryAccess.getModelForItem(keyVal._1)
-
         LibraryAccess.removeIndividual(keyVal._2, model)
-
+        self ! createJob(SaveOntology(model), removeIt)
         upd = upd.addCollectionItems(
           CollectionItem(
           parentCollection = keyVal._1,
@@ -78,6 +77,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
           LibraryAccess.updateMetadata(values, item, model, isDeletion)
         }
         finally lib().leaveCriticalSection()
+      self ! createJob(SaveOntology(model), updateMeta)
       //TODO
       UpdateMessage()
 
@@ -87,6 +87,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       val item = addToColl.addToCollection.newItem.get.uri
       val model = LibraryAccess.getModelForItem(collection)
       LibraryAccess.addCollectionItem(collection, item, model)
+      self ! createJob(SaveOntology(model), addToColl)
 
       //TODO: return CollectionUpdate
       UpdateMessage()
@@ -99,6 +100,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
          LibraryAccess.removeIndividual(removeCollItem.collectionItem.uri, model)
       }
       finally lib().leaveCriticalSection()
+      self ! createJob(SaveOntology(model), removeCollItem)
       //todo
       UpdateMessage()
     }
@@ -126,6 +128,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       }
     }
     finally lib().leaveCriticalSection()
+    saveOntology(SaveOntology(model))
     upd
   }
 
@@ -137,6 +140,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
 
   def generateDatatypeProperties(genDataProp: GenerateDatatypeProperties): UpdateMessage ={
     lib().enterCriticalSection(Lock.WRITE)
+    var update = false
     var concepts =
         LibraryConcepts().withLib(Convert.lib2grpc(uri))
     try{
@@ -144,11 +148,14 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       val newProp = LibraryAccess.generateDatatypeProperty(key, genDataProp.model)
       if(newProp.isDefined)
         {
+          update = true
           concepts = concepts.addAnnotations((key, Convert.ann2grpc(newProp.get)))
         }
     }
     }
     finally lib().leaveCriticalSection()
+
+    if( update ) self ! createJob(SaveOntology(genDataProp.model), genDataProp)
     UpdateMessageFactory.getAddMessage(uri)
       .withConcepts(concepts)
 
@@ -167,7 +174,8 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       }
     }
     finally lib().leaveCriticalSection()
-
+    //TOOD better saving strategy
+    self ! createJob(SaveOntology(setDataProp.model), setDataProp)
 
     UpdateMessage()
   }

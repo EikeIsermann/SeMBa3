@@ -46,7 +46,6 @@ class CollectionHandler extends Actor with JobHandling {
     WriterFactory.writeFile(new File(job.picture), newLocation)
     val uri = FileFactory.getURI(newLocation.toURI.toString) + "/" + job.libInfo.config.ontName
     val ont = setupOntology(job, uri)
-    job.libInfo.libAccess ! createJob(SaveOntology(ont), job)
     job.libInfo.libAccess ! createJob(RegisterOntology(uri, ont), job)
   }
 
@@ -58,13 +57,13 @@ class CollectionHandler extends Actor with JobHandling {
     try {
       ont.addImport(baseModel.getOntology(job.libInfo.config.baseOntologyURI))
       network.addSubModel(job.libInfo.basemodel())
+      network.setNsPrefix("base", job.libInfo.config.baseOntologyURI+"#")
       val ontItem = network.createIndividual(uri + job.libInfo.config.itemName, network.getOntClass(job.classURI.toString))
       val readMetadataProperties = mutable.HashMap[String, Array[String]]()
       readMetadataProperties.put(Paths.sembaTitle, Array(job.name))
 
       job.libInfo.libAccess !
         createJob(SetDatatypeProperties(readMetadataProperties, ontItem, network), job)
-
     }
     finally baseModel.leaveCriticalSection()
     network

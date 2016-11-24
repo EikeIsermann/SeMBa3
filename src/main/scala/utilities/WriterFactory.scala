@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentSkipListSet
   * Date: 24.03.12 16:40
   */
 object WriterFactory {
-  //TODO similar name concurrency issue
   var LockedFilenames = new ConcurrentSkipListSet[File]()
 
   def writeToFile(fileName: String, data: String) {

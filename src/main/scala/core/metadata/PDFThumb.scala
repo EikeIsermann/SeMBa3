@@ -7,6 +7,7 @@ import javax.imageio.ImageIO
 import core.ThumbnailJob
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
+import org.apache.pdfbox.tools.PDFBox
 import org.imgscalr.Scalr
 
 
@@ -26,7 +27,10 @@ class PdfThumb extends ThumbActor {
     Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, thumb.config.thumbResolution.toInt, thumb.config.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
     ImageIO.write(imgBuff, "jpeg", new File(new URI(thumb.dest + thumb.config.thumbnail)))
+
+
     imgBuff.flush()
+    doc.close()
   }
 }
 

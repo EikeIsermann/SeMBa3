@@ -18,6 +18,7 @@
     <hasCollectionItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#containsCollectionItem</hasCollectionItemURI>
     <collectionItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#CollectionItem</collectionItemURI>
     <resourceDefinitionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource</resourceDefinitionURI>
+    <hasMediaItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasMediaItem</hasMediaItemURI>
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>

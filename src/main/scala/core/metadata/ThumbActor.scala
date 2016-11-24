@@ -2,7 +2,9 @@ package core.metadata
 
 import javax.imageio.ImageIO
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.routing.RoundRobinPool
+import core.library.FileLoader
 import core.{JobHandling, JobProtocol, JobReply, ThumbnailJob}
 
 import scala.collection.mutable.HashMap
@@ -63,25 +65,25 @@ object ThumbActor {
       "application/xml",
       "application/rdf+xml",
       "application/x-tex"))
-
+   val MIMETYPES_GENERIC = (Props[GenericThumbActor], Set("GenericThumbActor"))
   /** All available ThumbnailActor definitions */
-  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_IMAGE, MIMETYPES_PDF, MIMETYPES_TXT)
+  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_GENERIC, MIMETYPES_IMAGE,  MIMETYPES_TXT) //MIMETYPES_PDF,)
 
 
-  private val supportedContentTypes: HashMap[String, Props] = {
-    val map = new HashMap[String, Props]()
-    for (gen <- ALL_GENERATORS) {
-      gen._2.foreach(key => map.put(key, gen._1))
-    }
-    map
-  }
-
+  private val supportedContentTypes: scala.collection.mutable.HashMap[String, ActorRef] = HashMap[String, ActorRef]()
   /** Returns the correct actor constructor registered for a given MimeType
     *
     * @param mime MimeType
     * @return Props for the required ThumbActor
     */
-  def getProps(mime: String): Props = {
-    supportedContentTypes.get(mime).getOrElse(Props[GenericThumbActor])
+  def getThumbActor(mime: String): ActorRef = {
+    supportedContentTypes.get(mime).getOrElse(supportedContentTypes.apply("GenericThumbActor"))
+  }
+
+  def initialize(system: ActorSystem) = {
+    for (gen <- ALL_GENERATORS) {
+      gen._2.foreach(key => supportedContentTypes.put(key,
+        system.actorOf(new RoundRobinPool(10).props(gen._1))))
+    }
   }
 }
