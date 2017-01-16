@@ -3,7 +3,7 @@ package utilities
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-import app.Paths
+import app.SembaPaths
 import org.apache.jena.ontology.{DatatypeProperty, Individual, ObjectProperty, OntModel}
 import org.apache.jena.shared.Lock
 import sembaGRPC._
@@ -51,17 +51,17 @@ object Convert {
       val item = model.getIndividual(itemURI)
       var test = item.listOntClasses(true).toList
 
-      require(item.hasOntClass(Paths.resourceDefinitionURI))
+      require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
       retVal = new Resource(
         Some(lib),
         item.getOntClass(true).getURI match {
-          case Paths.itemClassURI => ItemType.ITEM
-          case Paths.collectionClassURI => ItemType.COLLECTION
+          case SembaPaths.itemClassURI => ItemType.ITEM
+          case SembaPaths.collectionClassURI => ItemType.COLLECTION
           case _ => ItemType.ITEM
         },
         item.getURI,
-        item.getPropertyValue(model.getDatatypeProperty(Paths.sembaTitle)).asLiteral().toString,
-        item.getPropertyValue(model.getDatatypeProperty(Paths.thumbnailLocationURI)).asLiteral().toString
+        item.getPropertyValue(model.getDatatypeProperty(SembaPaths.sembaTitle)).asLiteral().toString,
+        item.getPropertyValue(model.getDatatypeProperty(SembaPaths.thumbnailLocationURI)).asLiteral().toString
       )
     }
     finally model.leaveCriticalSection()

@@ -13,7 +13,7 @@ object ApplicationSettings {
 /**
   * Global variables providing core URIs and Paths
   */
-object Paths {
+object SembaPaths {
 
   private val configFile = XMLFactory.getConfigXMLAsElemAdv
 
@@ -64,6 +64,8 @@ object Paths {
 
   val hasMediaItem = getString("hasMediaItemURI")
 
+  val mainUri = getString("sembaMainURI")
+
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }
@@ -71,7 +73,7 @@ object Paths {
 /** Global Presets
   *
   */
-object Presets {
+object SembaPresets {
 
   private val configFile = XMLFactory.getConfigXMLAsElemAdv
   /** Port used by gRPC server instance */

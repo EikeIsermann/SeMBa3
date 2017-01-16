@@ -1,10 +1,12 @@
 package core.library
 
+
 import akka.actor.Actor
 import api.SparqlFilter
-import core.{JobHandling, JobProtocol, JobReply, LibraryAccess}
+import core.{JobHandling, JobProtocol, JobReply}
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
+import org.apache.jena.shared.Lock
 import sembaGRPC.SparqlQuery
 
 /**
@@ -44,17 +46,25 @@ class Search(model: OntModel) extends Actor with JobHandling {
 
 
  def performSparqlQuery(strQuery: String) = {
+
+   model.enterCriticalSection(Lock.READ)
+
+
+   try{
      val time = System.currentTimeMillis()
-   var count = 1
+     var count = 0
      val query = QueryFactory.create(strQuery)
      val qe = QueryExecutionFactory.create(query, model)
      val res = qe.execSelect()
      while(res.hasNext){
-       res.next()
+       println(res.next() + "Result" )
+
        count += 1
      }
      qe.close()
-      println("Query took " + (System.currentTimeMillis() - time) + " model size: " + model.size() + ": number of hits: " + count)
+     println("Query took " + (System.currentTimeMillis() - time) + " model size: " + model.size() + ": number of hits: " + count)
+   }
+   finally model.leaveCriticalSection()
 
  }
 }

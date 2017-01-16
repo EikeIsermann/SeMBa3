@@ -3,7 +3,7 @@ package core.library
 import java.net.URI
 
 import akka.actor.Actor
-import core.{JobHandling, JobProtocol, JobReply, LibraryAccess}
+import core.{JobHandling, JobProtocol, JobReply}
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.shared.Lock
 

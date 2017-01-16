@@ -11,7 +11,7 @@ import java.util.logging.Logger
 import akka.actor.Actor
 import akka.pattern._
 import akka.util.Timeout
-import app.{Application, Presets}
+import app.{Application, SembaPresets}
 import core.JobProtocol
 import io.grpc.stub.StreamObserver
 import io.grpc.{Server, ServerBuilder}
@@ -102,7 +102,7 @@ class AppConnector extends Actor {
     private[this] var server: Server = null
 
     def start(): Unit = {
-      val builder = ServerBuilder.forPort(Presets.grpcPort.toInt)
+      val builder = ServerBuilder.forPort(SembaPresets.grpcPort.toInt)
       builder.addService(SembaAPIGrpc.bindService(new SembaApiImpl, context.dispatcher))
       server = builder.build().start()
       logger.info("Semba Server started, listening on " + server.getPort)

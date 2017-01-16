@@ -1,15 +1,19 @@
 package core.library
 
 import akka.actor.Actor
+import akka.actor.Actor.Receive
 import akka.agent.Agent
 import api._
 import app.Application
 import core.{JobHandling, JobProtocol, JobReply, LibraryAccess}
 import org.apache.jena.ontology.OntModel
+import org.apache.jena.query.{Dataset, ReadWrite}
+import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import utilities.{Convert, UpdateMessageFactory}
 
+import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -18,52 +22,37 @@ import scala.collection.mutable.ArrayBuffer
   */
 case class RegisterOntology(uri: String, model: OntModel) extends JobProtocol
 case class DeleteItem(item: Resource) extends JobProtocol
-class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor with JobHandling{
 
-  override def receive: Receive = {
-    case job: JobProtocol => {
-      val sender = context.sender()
-       acceptJob(job, sender)
-       self ! handleJob(job)
-    }
-    case reply: JobReply => handleReply(reply, self)
-    }
+
+abstract class StorageModification (uri: String) extends Actor with JobHandling{
+
+//  override def receive: Receive = {
+//    case job: JobProtocol => {
+//      val sender = context.sender()
+//       acceptJob(job, sender)
+//       self ! handleJob(job)
+//    }
+//    case reply: JobReply => handleReply(reply, self)
+//    }
+
+    def library: Model
+
+
+
 
 
     def saveOntology( saveOnt: SaveOntology): UpdateMessage = {
       var save: Option[String] = None
-      lib().enterCriticalSection(Lock.WRITE)
+      library.enterCriticalSection(Lock.WRITE)
       try{
         save = LibraryAccess.writeModel(saveOnt.model)
       }
-      finally lib().leaveCriticalSection()
+      finally library.leaveCriticalSection()
       UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
         UpdateMessageFactory.getNotification("Ontology has been saved to file", "Could not save Ontology", save))
     }
 
-    def removeItem( removeIt: DeleteItem): UpdateMessage = {
-      val item = removeIt.item.uri
-      var upd = UpdateMessageFactory.getDeletionMessage(uri)
-      /** Remove all collectionitems referencing this item */
-      val linkedCollectionItems = LibraryAccess.getCollectionItems(item, lib())
-      val mapIt = linkedCollectionItems.iterator
-      while (mapIt.hasNext) {
-        val keyVal = mapIt.next()
-        val model = LibraryAccess.getModelForItem(keyVal._1)
-        LibraryAccess.removeIndividual(keyVal._2, model)
-        self ! createJob(SaveOntology(model), removeIt)
-        upd = upd.addCollectionItems(
-          CollectionItem(
-          parentCollection = keyVal._1,
-          uri = keyVal._2
-        ))
-      }
-
-      val model = LibraryAccess.getModelForItem(item)
-      LibraryAccess.removeFromLib(model, lib())
-      upd = upd.addItems(removeIt.item)
-      upd
-    }
+    def removeItem( removeIt: DeleteItem): UpdateMessage
 
     def updateMetadata( updateMeta: UpdateMetadata ): UpdateMessage = {
       val item = updateMeta.metadataUpdate.item.get.uri
@@ -71,12 +60,12 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
       val model = LibraryAccess.getModelForItem(item)
       val isDeletion = updateMeta.metadataUpdate.kindOfUpdate.isDelete
 
-        lib().enterCriticalSection(Lock.WRITE)
+      library.enterCriticalSection(Lock.WRITE)
         try {
           val values = itemDesc.metadata.mapValues( v => v.value.toArray)
-          LibraryAccess.updateMetadata(values, item, model, isDeletion)
+          LibraryAccess.updateMetadata(values, item, model, library, isDeletion)
         }
-        finally lib().leaveCriticalSection()
+        finally library.leaveCriticalSection()
       self ! createJob(SaveOntology(model), updateMeta)
       //TODO
       UpdateMessage()
@@ -95,11 +84,11 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
 
     def removeCollectionItem( removeCollItem: RemoveCollectionItem ): UpdateMessage ={
       val model = LibraryAccess.getModelForItem(removeCollItem.collectionItem.parentCollection)
-      lib().enterCriticalSection(Lock.WRITE)
+      library.enterCriticalSection(Lock.WRITE)
       try{
          LibraryAccess.removeIndividual(removeCollItem.collectionItem.uri, model)
       }
-      finally lib().leaveCriticalSection()
+      finally library.leaveCriticalSection()
       self ! createJob(SaveOntology(model), removeCollItem)
       //todo
       UpdateMessage()
@@ -117,7 +106,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
     )
 
 
-    lib().enterCriticalSection(Lock.WRITE)
+    library.enterCriticalSection(Lock.WRITE)
     try {
       if (add) {
         LibraryAccess.createRelation(startItem, endItem, relation, model)
@@ -127,16 +116,22 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
         upd = upd.withKindOfUpdate(UpdateType.DELETE)
       }
     }
-    finally lib().leaveCriticalSection()
+    finally library.leaveCriticalSection()
     saveOntology(SaveOntology(model))
     upd
   }
 
-  def registerOntology(regModel: RegisterOntology): UpdateMessage ={
-    LibraryAccess.addToLib(regModel.uri, lib(), regModel.model)
-    UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
-      UpdateMessageFactory.getNotification("Ontology has been added to Library", "Could add Ontology", Option(regModel.uri)))
-  }
+def registerOntology(regModel: RegisterOntology): UpdateMessage//   ={
+//    ont.begin(ReadWrite.WRITE)
+//
+//    try{
+//      ont.addNamedModel(regModel.uri, regModel.model)
+//    }
+//    finally (ont.close())
+//    LibraryAccess.addToLib(regModel.uri, lib(), regModel.model)
+//    UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
+//      UpdateMessageFactory.getNotification("Ontology has been added to Library", "Could add Ontology", Option(regModel.uri)))
+//  }
 
   def generateDatatypeProperties(genDataProp: GenerateDatatypeProperties): UpdateMessage ={
     lib().enterCriticalSection(Lock.WRITE)
@@ -168,7 +163,7 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
     {
       for(prop <- setDataProp.propertyMap.keySet){
         var annotation = LibraryAccess.setDatatypeProperty(prop,
-          setDataProp.model,setDataProp.item, setDataProp.propertyMap.apply(prop))
+          setDataProp.model,setDataProp.item, setDataProp.propertyMap.apply(prop), lib())
         upd = upd.addDescriptions(ItemDescription()
           .withItemURI(setDataProp.item.getURI).addAllMetadata(annotation.map( v => (prop,v))))
       }
@@ -180,23 +175,26 @@ class CriticalOntologyAccess(lib: Agent[OntModel], uri: String) extends Actor wi
     UpdateMessage()
   }
 
-  override def handleJob(job: JobProtocol): JobReply = {
-    JobReply(job, ArrayBuffer[UpdateMessage]
-    (job match {
-      case removeIt: DeleteItem => removeItem(removeIt)
-      case updateMeta: UpdateMetadata => updateMetadata(updateMeta)
-      case addToColl: AddToCollectionMsg => addToCollection(addToColl)
-      case removeCollItem: RemoveCollectionItem => removeCollectionItem(removeCollItem)
-      case createRel: CreateRelation => modifyRelation(createRel.relationModification, true)
-      case removeRel: RemoveRelation => modifyRelation(removeRel.relationModification, false)
-      case regModel: RegisterOntology => registerOntology(regModel)
-      case genDataProp: GenerateDatatypeProperties => generateDatatypeProperties(genDataProp)
-      case setDataProp: SetDatatypeProperties => setDatatypeProperties(setDataProp)
-      case saveOnt: SaveOntology => saveOntology(saveOnt)
-    })
-    )
-  }
+//  override def handleJob(job: JobProtocol): JobReply = {
+//    JobReply(job, ArrayBuffer[UpdateMessage]
+//    (job match {
+//      case removeIt: DeleteItem => removeItem(removeIt)
+//      case updateMeta: UpdateMetadata => updateMetadata(updateMeta)
+//      case addToColl: AddToCollectionMsg => addToCollection(addToColl)
+//      case removeCollItem: RemoveCollectionItem => removeCollectionItem(removeCollItem)
+//      case createRel: CreateRelation => modifyRelation(createRel.relationModification, true)
+//      case removeRel: RemoveRelation => modifyRelation(removeRel.relationModification, false)
+//      case regModel: RegisterOntology => registerOntology(regModel)
+//      case genDataProp: GenerateDatatypeProperties => generateDatatypeProperties(genDataProp)
+//      case setDataProp: SetDatatypeProperties => setDatatypeProperties(setDataProp)
+//      case saveOnt: SaveOntology => saveOntology(saveOnt)
+//    })
+//    )
+//  }
 }
 
+
+
+}
 
 

@@ -1,4 +1,4 @@
-package core.library
+package core.library.storage.model
 
 import java.io.File
 import java.net.URI

@@ -4,7 +4,7 @@ import javax.imageio.ImageIO
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.routing.RoundRobinPool
-import core.library.FileLoader
+import core.library.storage.model.FileLoader
 import core.{JobHandling, JobProtocol, JobReply, ThumbnailJob}
 
 import scala.collection.mutable.HashMap

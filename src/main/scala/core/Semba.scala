@@ -1,6 +1,8 @@
 package core
 
+import java.io.File
 import java.net.URI
+import java.nio.file.{Files, Paths}
 import java.util.UUID
 
 import akka.pattern.ask
@@ -9,11 +11,13 @@ import akka.agent.Agent
 import akka.routing.RoundRobinPool
 import akka.util.Timeout
 import api._
-import app.{Application, Paths}
+import app.{Application, SembaPaths}
 import core.library._
-import core.{LibraryAccess => lib}
 import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
+import org.apache.jena.query.{Dataset, ReadWrite}
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.tdb.TDBFactory
+import org.apache.jena.tdb.base.file.Location
 import org.apache.jena.util.{FileUtils, URIref}
 import sembaGRPC.SourceFile.Source
 import sembaGRPC._
@@ -30,31 +34,73 @@ import scala.concurrent.duration._
   * Created by Eike on 06.04.2016.
   */
 
-case class LibInfo(system: ActorSystem, library: Agent[OntModel], basemodel: Agent[OntModel], libraryLocation: URI, config: Config, libAccess: ActorRef, libURI: String)
+case class LibInfo(system: ActorSystem, library: Dataset, basemodel: Agent[OntModel], libraryLocation: URI, config: Config, libAccess: ActorRef, libURI: String)
 
-class Semba(val path: String) extends Actor with JobHandling {
+class Semba(val root: String) extends Actor with JobHandling {
   var system = context.system
-  var library: Agent[OntModel] = _
   var basemodel: Agent[OntModel] = _
+  var ontology: Dataset = _
   var libraryLocation: URI = _
   var libRoot: URI = _
   var config: Config = _
   var libAccess: ActorRef = _
   var libInitialized: Future[JobReply] = _
   var resourceCreation: ActorRef = _
+  var path: String = _
   implicit val timeout = Timeout(300 seconds)
 
 
   override def preStart() = {
-    library = Agent(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM))
-    libAccess = system.actorOf(Props(new CriticalOntologyAccess(library, path)))
-    basemodel = Agent(ModelFactory.createOntologyModel())
-    Await.result(basemodel.alter(base => lib.load(base, path)), 10 second)
-    libRoot = new URI(getLiteral(basemodel().getIndividual(path + "#LibraryDefinition"), Paths.libraryRootFolder))
-    config = new Config(new URI(libRoot + Paths.libConfiguration))
+    initializeConfig()
+    libRoot = new URI(root)
+    config = new Config(new URI(root + SembaPaths.libConfiguration))
+    path = config.baseOntologyURI
+    initializeOntology()
+    libRoot  = new URI(root)
+    config = new Config(new URI(libRoot + SembaPaths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
-    libInitialized = ask(system.actorOf(Props(new LibImporter(library))), ImportLib(libraryLocation, libInfo)).mapTo[JobReply]
+    //libInitialized = ask(system.actorOf(Props(new LibImporter(ontology))), ImportLib(libraryLocation, libInfo)).mapTo[JobReply]
     resourceCreation = context.actorOf(Props(new ResourceCreation(libInfo)))
+
+
+  }
+  def initializeOntology() = {
+    val loc = new File(new URI(libRoot + config.tdbPath)).getAbsolutePath
+    libAccess = system.actorOf(Props(new CriticalStorageAccess(ontology, path)))
+    ontology = TDBFactory.createDataset(loc)
+    basemodel = Agent(ModelFactory.createOntologyModel())
+    if(!Files.exists(Paths.get(new URI(path))))
+    {
+      basemodel().createOntology(path)
+      basemodel().addLoadedImport(SembaPaths.mainUri)
+      basemodel().setNsPrefix(SembaPaths.mainUri, "main")
+      basemodel().setNsPrefix(path, "")
+    }
+    else
+    {
+      Await.result(basemodel.alter(base => lib.load(base, path)), 10 second)
+    }
+
+
+    ontology.begin(ReadWrite.WRITE)
+    try{
+      ontology.addNamedModel(path, basemodel())
+      ontology.commit()
+    }
+    finally ontology.end()
+
+
+  }
+
+  def initializeConfig(): Unit ={
+    val libConfig = Paths.get(new URI(libRoot + SembaPaths.libConfiguration))
+    if(!Files.exists(libConfig))
+    {
+       Files.copy(Paths.get("/src", "resources", "config.xml"), Paths.get(new URI(path)))
+    }
+
+    //TODO update baseOntologyURI to current path!
+    config = new Config(new URI(root + SembaPaths.libConfiguration))
   }
 
   override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {
@@ -91,9 +137,10 @@ class Semba(val path: String) extends Actor with JobHandling {
     case apiCall: SembaApiCall => {
       apiCall match {
         case openLib: OpenLib => {
-          println("Waiting for result")
+          val time = System.currentTimeMillis()
+          println("Loading Library")
           val test = Await.result(libInitialized, timeout.duration)
-          println("Result")
+          println("Loading took: " + (System.currentTimeMillis() - time)/1000)
           sender() ! getConcepts()
         }
         case addItem: AddToLibrary => {
@@ -128,7 +175,7 @@ class Semba(val path: String) extends Actor with JobHandling {
         }
         case sparql: SparqlFilter => {
           sender() ! LibraryContent()
-          system.actorOf(Props(new Search(library()))) ! sparql
+          system.actorOf(Props(new Search(ontology))) ! sparql
 
         }
 
@@ -149,7 +196,7 @@ class Semba(val path: String) extends Actor with JobHandling {
 
   def getLiteral(item: Individual, str: String): String = {
     try {
-      val prop = library().getProperty(str)
+      val prop = basemodel().getProperty(str)
       item.getPropertyValue(prop).toString
     }
     catch {
@@ -160,18 +207,18 @@ class Semba(val path: String) extends Actor with JobHandling {
 
 
 
-  def libInfo: LibInfo = LibInfo(system, library, basemodel, libraryLocation, config, libAccess, path)
+  def libInfo: LibInfo = LibInfo(system, ontology, basemodel, libraryLocation, config, libAccess, path)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path))
   }
 
   def getContents(): LibraryContent = {
-    LibraryAccess.retrieveLibContent(library(), Library(path))
+    LibraryAccess.retrieveLibContent(ontology, Library(path))
   }
 
   def getMetadata(item: String): ItemDescription = {
-    LibraryAccess.retrieveMetadata(item, library())
+    LibraryAccess.retrieveMetadata(item, ontology)
   }
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???
@@ -197,6 +244,8 @@ class Config(path: URI) {
   val lang = getString("language")
   val thumbnail = getString("thumbnailIdentifier")
   val dataPath = getString("dataPath")
+  val tdbPath = getString("libraryPath")
+
 
   def getString(s: String): String = configFile.getValueAt("config", s)
 

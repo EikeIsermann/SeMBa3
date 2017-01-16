@@ -1,0 +1,498 @@
+%\noembedding
+
+
+
+\title{Project Mobile - \\Eine P2P-Anwendung zum Thema Inklusion}
+\subtitle{Entwurf, Realisierung und Evaluation von Prototypen\\(Arbeitstitel)}
+\author[David Cyborra]{David Cyborra} 
+\institute{Informatik IX, Mensch-Computer-Interaktion\\
+Universität Würzburg}
+
+\titlepage
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Einleitung}
+\begin{subsection}{Einleitung}
+
+
+\begin{frame}{Was ist ''Project Mobile''?}
+\begin{definition}
+	Entstehen soll eine \textit{peer-to-peer} Anwendung für Desktop-PCs und mobile Endgeräte, welche Menschen mit Behinderung und solche ohne zusammenbringen soll. Kernpunkt ist das \strong{Zeichen 'B' im Schwerbehindertenausweis}, das einem Begleiter erlaubt kostenlos öffentliche Verkehrsmittel zu nutzen und viele andere Vergünstigungen in Anspruch zu nehmen.\\
+\end{definition}
+\pause
+\strong{$\rightarrow$ Beide Seiten profitieren}
+\end{frame}
+
+
+\end{subsection}
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Motivation}
+\begin{subsection}{Motivation - Probleme}
+\begin{frame}{Motivation, Probleme und Ziele}
+
+\begin{2columns}[0.35] %sizeOfFirstCol=[0.0,1.0]
+{\centering\includegraphics[scale=0.34]{figures/own/zachi.png}}
+{ 
+
+
+\pause
+\begin{titleditems}{Problemstellung}[<+->]
+\pause
+	\item[1.]Sehr geringe Barrierefreiheit bei der deutschen Bahn \cite{wittmann}
+	\pause
+	\begin{itemize}
+	  \item 24 Stunden vor Reise ankündigen
+	  \item Oftmals nur ein Rollstuhlplatz
+	  \item An vielen Bahnhöfen nur wenig Servicepersonal
+	  \item Unterschiedliche Bahnsteighöhen
+	\end{itemize} 
+	\item[2.]Wenig Bewusstsein unter Menschen ohne Behinderung \cite{wittmann}
+\end{titleditems}
+\pause
+
+}
+\end{2columns}
+
+\end{frame}
+\end{subsection} %Mot - Probleme
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Motivation und Ziele}
+\begin{frame}{Motivation, Probleme und Ziele}
+
+\begin{titleditems}{Motivation}[<+->]
+\pause
+\item Abhilfe bzgl. Barrieren schaffen
+\item Die Bahn (und Andere) auf Probleme hinweisen
+\item Allgemeines Bewusstsein schaffen
+\end{titleditems}
+
+\pause
+
+\begin{titleditems}{Ziele}[<+->]
+\pause
+\item Deutlich machen, dass auch Menschen mit Behinderung spontan sein wollen
+\item Menschen mit Behinderung mobiler machen
+\noindent\rule{8cm}{0.4pt}
+\item HCI-Projekt und Masterthesis gut abschließen
+\item Release der App in diesem Rahmen
+\end{titleditems}
+
+\end{frame}
+\end{subsection} %Motivation und Ziele
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Verwandte Arbeiten}
+
+\begin{subsection}{Soziale Netze}
+\begin{frame}{Soziale Netzwerke und Mitfahrgelegenheiten}
+
+\begin{2columns}[0.35] %sizeOfFirstCol=[0.0,1.0]
+{\centering\includegraphics[scale=0.1]{figures/own/social_networks.png}}
+{ 
+\pause
+\begin{itemize}
+	\item Zwischen einer und 34 Millionen Nutzer \cite{statista:2014}
+	\pause
+	\item Aber: Keine direkte Konkurrenz
+	\pause
+	\begin{itemize}
+	  \item[$\rightarrow$] Keine 1 zu 1 Relationen als Ziel
+	  \item[$\rightarrow$] Kein Fokus auf Events/Unternehmungen
+	  \noindent\rule{4cm}{0.4pt}
+	  \pause
+	  \item[$\rightarrow$] Keine Spezialisierung auf Menschen mit Behinderung
+	\end{itemize} 
+	\pause
+	 $\rightarrow$ \strong{Aber: Hohe Akzeptanz}
+\end{itemize}
+ }
+ 
+\end{2columns}
+
+\end{frame}
+\end{subsection} %Soziale Netze
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Inklusion}
+\begin{frame}{Inklusion von Menschen mit Behinderung}
+
+\begin{titleditems}{1. Nicht-interaktive Informationsdienste:}
+\pause
+\item Wheelmap.org \cite{wheelmap}
+\item Inklusionslandkarte.de \cite{Inklusionslandkarte}
+\item Handicapnet.com \cite{handicapnet}
+\item viele mehr..
+\end{titleditems}
+
+\begin{itemize}[<+->]
+\pause
+\item[\strong{$\rightarrow$}]Hauptsächlich Rollstuhlfahrer als Zielgruppe
+\item[\strong{$\rightarrow$}]Rein informativ \pause \strong{$\rightarrow$ keine direkte Absprache}
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------
+
+\begin{frame}{Inklusion von Menschen mit Behinderung}
+
+
+\begin{titleditems}{2. Dienste / Ansätze mit gleichem Ziel:}
+\pause
+\item \strong{''Ziemlich Beste Begleiter''} \cite{ziemlichbestebegleiter}
+	\pause
+	\begin{itemize}[<+->]
+	\item Inserate \pause \strong{$\rightarrow$ keine direkte Absprache} \pause
+	\item Kaum benutzt (Letzter Eintrag August '14)
+	\item Nicht gut bedienbar
+	\item Nicht wirklich responsiv (Landscape)
+	\end{itemize}
+	\pause
+\item \strong{''Kulturbörse''} \cite{dieglocke}
+	\pause
+	\begin{itemize}
+	\item Bisher nur Idee im Rahmen der Aktion ''Inklusion 2016''
+	\item Lokales Projekt in Augsburg
+	\end{itemize}
+
+\end{titleditems}
+
+\pause
+\strong{\strong{$\rightarrow$}Aber: Interesse wächst}
+
+
+\end{frame}
+
+\end{subsection} %Inklusion
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Eigener Ansatz}
+
+
+\begin{subsection}{Kernpunkte}
+\begin{frame}{Kernpunkte des eigenen Ansatzes}
+
+\strong{Schlussfolgerungen aus verwandten Arbeiten:}
+\pause
+\begin{itemize}[<+->]
+\item[1.]Usability und User Experience\\
+\item[2.]Accessibility\\
+\item[3.]WebApp \pause \strong{$\rightarrow$ Plattformübergreifende Applikation}
+\end{itemize}
+
+\end{frame}
+\end{subsection} %Kernpunkte
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Usability und User Experience}
+\begin{frame}{Usability und User Experience}
+
+\pause
+
+\begin{question}[Frage]
+Wie erreichen?
+\end{question}
+
+\pause
+
+\begin{itemize}[<+->]
+\item Erfahrung im User Centered Design
+\item Vorstudie zur Bestimmung der Zielgruppe
+\item Iterative Softwareentwicklung - \pause \strong{Papierprototyp:}
+	\pause
+	\begin{itemize}
+	\item Evaluation durch 4 Experten
+	\item[\strong{$\rightarrow$}]Qualitative Ergebnisse (Usability)
+	\end{itemize}
+\item Iterative Softwareentwicklung - \pause \strong{Virtueller Prototyp:}
+	\pause
+	\begin{itemize}
+	\item Aus Resultaten der Expertenbefragung
+	\item Novizenstudie mit n $\sim$ 30
+	\item[\strong{$\rightarrow$}]Quantitative Ergebnisse (auch UX)
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+\end{subsection} %Usab und UX
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Accessibility}
+\begin{frame}{Accessibility}
+
+\pause
+
+\begin{question}[Frage]
+Wie erreichen?
+\end{question}
+
+\pause
+
+\begin{itemize}[<+->]
+
+\item Einfachste Bedienung
+\item Hoher Kontrast $\rightarrow$ korrekte Farbgestaltung
+\item Typografie
+\item Bedienelemente in passender Größe/skalierbar
+\item Screenreader
+
+\noindent\rule{\linewidth}{0.4pt}
+\pause
+
+\item Einfache Sprache?
+
+\end{itemize}
+
+\end{frame}
+\end{subsection} %Accessibility
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Aktueller Stand}
+
+
+\begin{subsection}{Vorstudie}
+\begin{frame}{Vorstudie}
+
+
+\begin{titleditems}{1. Aufbau:}[<+->]
+\pause
+\item Limesurvey \cite{limesurvey}
+\item 25 Fragen in 5 Gruppen $\rightarrow$ ca. 10 Minuten
+\item "2-Rollen-System"
+	\pause
+	\begin{itemize}
+	\item Frage in erster Fragengruppe bestimmt "Rolle"
+	\item Weitere Fragen dementsprechend ausgewählt
+	\item[$\rightarrow$]Sinnvoller Ablauf
+	\item[$\rightarrow$]Einfachere Auswertung
+	\end{itemize}
+\end{titleditems}
+
+\end{frame}
+
+%-------------------------------
+
+\begin{frame}{Vorstudie}
+
+
+\begin{titleditems}{2. Ergebnisse (stehen noch aus)}[<+->]
+\pause
+\item Nutzungskontext
+	\pause
+	\begin{itemize}
+	\item Nutzung von PC \& Laptop
+	\item Nutzung von Smartphones \& Tablets
+	\item Nutzung des Internet
+	\item Usw.
+	\end{itemize}
+	
+\item Nutzerprofil/Personas
+	\pause
+	\begin{itemize}
+	\item Alter
+	\item (Grad der) Behinderung
+	\item Erfahrung mit Behinderten etc.
+	\item Personas
+	\end{itemize}
+	
+\end{titleditems}
+
+\end{frame}
+
+\end{subsection} %Vorstudie
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Papierprototyp}
+
+\begin{frame}{Papierprototyp}
+
+\strong{Grundidee:\\}
+Schnelle Sketches \pause $\rightarrow$ akkurate  Views \pause $\rightarrow$ Prototyp\\
+
+\pause
+
+\begin{question}[Frage]
+Warum ein Papierprototyp?
+\end{question}
+
+\end{frame}
+
+%--------------------------------------
+
+\begin{frame}{Papierprototyp}
+
+\begin{titleditems}{Vorteile Papierprototyp: \cite{Arnowitz:2006:EPS:1196696}}[<+->] 
+\pause
+\item[\strong{+}]Hohe Fidelität (''Degree of detail and finish'')
+\item[\strong{+}]Änderungen können sofort vorgenommen werden
+\item[\strong{+}]Geringer Aufwand
+\item[\strong{+}]Keine systembezogenen Einflüsse
+\item[\strong{+}]Unterstützung iterativer Entwicklung (mehr Ideen)
+\end{titleditems}
+
+
+\end{frame}
+\end{subsection} %Papierprototyp
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Experten Evaluation}
+\begin{frame}{Interner Review und Experten Evaluation}
+
+\begin{titleditems}{Evaluation des Papierprototypen:}
+\pause
+\item Interner Review nach unabhängiger Entwicklung\\
+\pause
+
+\item Evaluation mit 4 Experten:\\
+\pause
+	\begin{itemize}
+	\item Abschluss MCS und Studium der HCI
+	\item Cognitive Walkthrough
+	\item 3 Use-Cases (restliche Views auch besehen)
+	\item Thinking-Aloud und Sketchen
+	\end{itemize}
+\end{titleditems}
+
+
+
+\end{frame}
+\end{subsection} %Experten Evaluation
+
+\begin{subsection}{Ergebnisse}
+
+\begin{frame}{Ergebnisse der Evaluation}
+
+\begin{titleditems}{Was lernen wir?}[<+->]
+\pause
+\item \underline{Use cases sind Pflicht!}
+\item Viele kleinere Anmerkungen
+\item Einige (wenige) must-Anmerkungen
+	\begin{itemize}
+	\item[\strong{$\rightarrow$}]Fast alle von allen Experten gleich
+	\end{itemize}
+\end{titleditems}
+
+\end{frame}
+
+%------------------------------
+
+\begin{frame}{Beispiel: Prototyp - Nachrichten}
+
+\centering\includegraphics[scale=0.3]{figures/own/chat_ohne.jpg}
+
+\end{frame}
+
+%------------------------------
+
+\begin{frame}{Beispiel: Prototyp - Nachrichten ergänzt}
+
+\centering\includegraphics[scale=0.3]{figures/own/chat_mit.jpg}
+
+\end{frame}
+
+\end{subsection} %Ergebnisse der Experten Evaluation
+
+
+% ------------------------------------------------------------ %
+
+
+\titledsection{Ausblick}
+
+
+\begin{subsection}{HCI-Projekt}
+\begin{frame}{Im Rahmen des HCI-Projekts}
+
+
+	\begin{titleditems}{Nächste Schritte:}[<+->]
+	\pause
+	\item[1.]Auswertung Vorstudie
+	\item[2.]Digitaler interaktiver (virtueller) Prototyp \cite{Arnowitz:2006:EPS:1196696}
+		\pause
+		\begin{itemize}
+		\item[\strong{-}]Geringe Fidelität
+		\item[\strong{+}]Geringe Kosten
+		\item[\strong{+}]Geringer Aufwand
+		\item[\strong{+}]Kontext und Verhalten wie Endprodukt
+		\end{itemize}
+
+	\pause
+
+	\item[3.]Novizenstudie
+		\pause
+		\begin{itemize}
+		\item $\sim$ 30 Probanden
+		\item Menschen mit relevanten Behinderungen (B) und gesunde
+		\noindent\rule{8cm}{0.4pt}
+		\item 3 Use cases
+		\item Videoaufzeichnung mit Kommentaren
+		\item (Eigenes Sketchen)
+		\item Abschluss mit AttrakDiff/QUESI/Nasa TLX
+		\end{itemize}
+	\end{titleditems}
+
+\end{frame}
+\end{subsection} %HCI-Projekt
+
+
+% ------------------------------------------------------------ %
+
+
+\begin{subsection}{Masterthesis}
+\begin{frame}{Im Rahmen der Masterthesis}
+
+
+
+	\begin{titleditems}{Ab März:}[<+->]
+		\item[4.]Redesign aus Ergebnissen der Novizenstudie
+		\item[5.]\strong{Implementierung}
+		\item[6.]Finale Evaluation zur Vermeidung von Fehlern bei Release
+		\item[7.]Go-Live 
+	\end{titleditems}
+	
+\end{frame}
+\end{subsection} %Masterthesis
+
+\begin{frame}
+	\centering{\strong{Anregungen bitte!}}
+\end{frame}
+
+% ------------------------------------------------------------ %
+
+
+\bibliographystyle{abbrv}
+\bibliography{bibliography}

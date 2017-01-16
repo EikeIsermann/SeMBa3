@@ -8,6 +8,7 @@ import java.util.logging.{Level, Logger}
 import core.MainJob
 import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
+import org.apache.jena.graph.Node
 import org.apache.jena.util.FileUtils
 import sembaGRPC.SembaAPIGrpc.{SembaAPIBlockingStub, SembaAPIStub}
 import sembaGRPC._
@@ -17,10 +18,11 @@ import sembaGRPC._
   * This is a SeMBa3 class
   */
 object TestClient extends App {
+  var counter = 0
   val queryString =
   {
 
-        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Documents/SeMBa3/appdata/libraries/library.ttl#dc:creator> \"Florian Bötsch\" ." +
+        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Desktop/library/library.ttl#dc:creator> \"Florian Bötsch\" ." +
           "   }"
   }
 
@@ -40,18 +42,18 @@ object TestClient extends App {
 
   val client = TestClient("localhost", 50051)
   var testSessionID: String = ""
-
-  testLib()
-
-
-  def testLib()  ={
-
-
   var test: LibraryConcepts = LibraryConcepts()
-    testSessionID = client.registerSession().sessionID
-    var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
-    println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
-   //println(client.getContent(testLib))
+  testSessionID = client.registerSession().sessionID
+  var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
+  println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
+
+  tests()
+
+
+  def tests()  ={
+
+
+    println(client.getContent(testLib))
     client.subscribeForUpdates(testSessionID)
   //println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
 
@@ -63,8 +65,8 @@ object TestClient extends App {
    //   println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content", testLib))
   //println(client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_4/definition.ttl#content", testLib))
   //println(client.getContent(testLib))
-    for(i <- 1 to 2){
-      println(client.sparql(queryString2,testLib))
+    for(i <- 1 to 1){
+     println(client.sparql(queryString2,testLib))
       println(client.sparql(queryString,testLib))
 
     }
@@ -100,6 +102,7 @@ class TestClient private(
 
   def shutdown(session: SessionRequest): Unit = {
     blockingStub.closeConnection(session)
+    println("Added Objects: " + TestClient.counter)
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
   }
 
@@ -216,8 +219,8 @@ class TestClient private(
          override def onNext(value: UpdateMessage): Unit = {
            value.kindOfUpdate match {
              case UpdateType.NOTIFY =>
-             case UpdateType.DELETE => println(value)
-             case UpdateType.ADD => println(value)
+             case UpdateType.DELETE =>
+             case UpdateType.ADD => TestClient.counter += 1
            }
          }
        }

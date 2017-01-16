@@ -1,15 +1,12 @@
-package core.library
-
-import java.io.File
+package core.library.storage.model
 
 import akka.actor.Actor
-import app.{Paths, Presets}
-import core.{JobHandling, JobProtocol, JobReply, LibInfo}
-import org.apache.jena.ontology.OntModel
+import app.SembaPresets
+import core.library.RegisterOntology
+import core.{JobHandling, JobProtocol, JobReply}
+import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory
-
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * Author: Eike Isermann
@@ -33,14 +30,14 @@ class FileLoader extends Actor with JobHandling{
 
   def readFolder(job: LoadFolder) = {
 
-    for (source <- FileFactory.filterFileExtension(job.folder, Presets.validOntologyExtensions)) {
-      val ontology = ModelFactory.createOntologyModel()
+    for (source <- FileFactory.filterFileExtension(job.folder, SembaPresets.validOntologyExtensions)) {
+      val ontology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
       ontology.read(source.toString)
-       if(ontology.hasLoadedImport("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl")) {
-         val uri = ontology.listIndividuals(ontology.getOntClass(Paths.resourceDefinitionURI)).next().getURI
+       //if(ontology.hasLoadedImport("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl")) {
+         val uri = ontology.getNsPrefixURI("resource") + job.libInfo.config.itemName
          job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
 
-       }
+      // }
 
 
     }

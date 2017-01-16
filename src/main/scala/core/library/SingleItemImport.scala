@@ -4,10 +4,10 @@ import java.io.{File, FileInputStream, FileNotFoundException}
 import java.net.URI
 
 import akka.actor.{Actor, ActorRef, PoisonPill, Props}
-import app.{Application, Paths}
+import app.{Application, SembaPaths}
 import core._
 import core.metadata.ThumbActor
-import org.apache.jena.ontology.{Individual, OntModel}
+import org.apache.jena.ontology.{Individual, OntModel, OntModelSpec}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
 import org.apache.tika.Tika
@@ -108,7 +108,7 @@ class SingleItemImport extends Actor with JobHandling {
       createJob(GenerateDatatypeProperties(readMetadataProperties.keySet, job.libInfo.basemodel()),job)
     title = Option(metadata.get(TikaCoreProperties.TITLE)).getOrElse(TextFactory.omitExtension(job.item.getAbsolutePath))
 
-    readMetadataProperties.put(Paths.sembaTitle, Array(title))
+    readMetadataProperties.put(SembaPaths.sembaTitle, Array(title))
 
     job.libInfo.libAccess !
       createJob(SetDatatypeProperties(readMetadataProperties, itemIndividual, itemOntology), job)
@@ -135,18 +135,19 @@ class SingleItemImport extends Actor with JobHandling {
   def setupOntology(): OntModel = {
 
 
-    val network = ModelFactory.createOntologyModel()
+    val network = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
 
     val ont = network.createOntology(uri)
     job.libInfo.library().enterCriticalSection(Lock.READ)
     job.libInfo.basemodel().enterCriticalSection(Lock.READ)
     try {
-      ont.addImport(job.libInfo.basemodel().getOntology(job.libInfo.config.baseOntologyURI))
-      network.addSubModel(job.libInfo.basemodel())
+      //ont.addImport(job.libInfo.basemodel().getOntology(job.libInfo.config.baseOntologyURI))
+      //network.addSubModel(job.libInfo.basemodel())
       network.setNsPrefix("base", job.libInfo.config.baseOntologyURI+"#")
-      itemIndividual = network.createIndividual(uri + job.libInfo.config.itemName, network.getOntClass(Paths.itemClassURI))
+      network.setNsPrefix("resource", uri + "#")
+      itemIndividual = network.createIndividual(network.getNsPrefixURI("resource") + job.libInfo.config.itemName, network.getOntClass(SembaPaths.itemClassURI))
       itemIndividual.addProperty(network.getProperty(job.libInfo.config.sourceLocation), item.toURI.toString)
-      itemIndividual.addProperty(network.getProperty(Paths.thumbnailLocationURI), thumbLocation)
+      itemIndividual.addProperty(network.getProperty(SembaPaths.thumbnailLocationURI), thumbLocation)
     }
     finally {job.libInfo.basemodel().leaveCriticalSection() ;job.libInfo.library().leaveCriticalSection()}
     network

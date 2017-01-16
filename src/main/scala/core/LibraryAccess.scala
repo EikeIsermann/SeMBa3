@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.UUID
 
 import akka.agent.Agent
-import app.Paths
+import app.{SembaPaths}
 import org.apache.jena.ontology.impl.OntModelImpl
 import org.apache.jena.ontology._
 import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode}
@@ -21,7 +21,7 @@ import scala.collection.mutable.ArrayBuffer
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-        //TODO static access to used properties etc. instead of Paths.XXX, Selector for Queries
+        //TODO static access to used properties etc. instead of SembaPaths.XXX, Selector for Queries
 
 object LibraryAccess {
 
@@ -103,8 +103,8 @@ object LibraryAccess {
         prop = Option(model.getDatatypeProperty(key))
         if( prop.isEmpty ) {
         prop = Some(model.createDatatypeProperty(key, functional))
-        prop.get.addSuperProperty(model.getDatatypeProperty(Paths.generatedDatatypePropertyURI))
-        prop.get.addDomain(model.getResource(Paths.resourceDefinitionURI))
+        prop.get.addSuperProperty(model.getDatatypeProperty(SembaPaths.generatedDatatypePropertyURI))
+        prop.get.addDomain(model.getResource(SembaPaths.resourceDefinitionURI))
         //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
          }
         else prop = None
@@ -186,7 +186,7 @@ object LibraryAccess {
     model.enterCriticalSection(Lock.READ)
     try {
       val metadataProperties =
-        Option(model.getDatatypeProperty(Paths.metadataPropertyURI))
+        Option(model.getDatatypeProperty(SembaPaths.metadataPropertyURI))
       if (metadataProperties.isDefined) {
         val iter = metadataProperties.get.listSubProperties()
         while (iter.hasNext) {
@@ -196,7 +196,7 @@ object LibraryAccess {
         }
       }
       val relationProperties =
-        Option(model.getObjectProperty(Paths.sembaRelationURI))
+        Option(model.getObjectProperty(SembaPaths.sembaRelationURI))
       if (relationProperties.isDefined) {
         val iter = relationProperties.get.listSubProperties()
         while (iter.hasNext) {
@@ -216,7 +216,7 @@ object LibraryAccess {
     var indUris = ArrayBuffer[String]()
     model.enterCriticalSection(Lock.READ)
     try {
-      val ontClass = model.getOntClass(Paths.resourceDefinitionURI)
+      val ontClass = model.getOntClass(SembaPaths.resourceDefinitionURI)
       var individuals = Option(model.listIndividuals(ontClass))
       if (individuals.isDefined) {
         var iter = individuals.get
@@ -235,7 +235,7 @@ object LibraryAccess {
     model.enterCriticalSection(Lock.READ)
     try {
       val indOption = Option(model.getIndividual(item))
-      val superPropOption = Option(model.getDatatypeProperty(Paths.metadataPropertyURI))
+      val superPropOption = Option(model.getDatatypeProperty(SembaPaths.metadataPropertyURI))
       if(superPropOption.isDefined && indOption.isDefined){
         val ind = indOption.get
         val superProp = superPropOption.get
@@ -270,12 +270,12 @@ object LibraryAccess {
     val retVal = scala.collection.mutable.HashMap[String,String]()
     model.enterCriticalSection(Lock.READ)
     try {
-      val linksToSource = model.getProperty(Paths.linksToSource)
+      val linksToSource = model.getProperty(SembaPaths.linksToSource)
       val individual = model.getIndividual(item)
       val results = model.listSubjectsWithProperty(linksToSource, individual)
       while (results.hasNext) {
         val collItem = results.next()
-        val isPartOfCollection = model.getProperty(Paths.isPartOfCollection)
+        val isPartOfCollection = model.getProperty(SembaPaths.isPartOfCollection)
         val collections = model.listObjectsOfProperty(collItem, isPartOfCollection)
         while (collections.hasNext){
           retVal.put(collections.next().asResource().getURI, collItem.getURI)
@@ -332,16 +332,16 @@ object LibraryAccess {
     model.enterCriticalSection(Lock.WRITE)
     try{
        val newUri = Convert.uri2ont(collection) + UUID.randomUUID()
-       val collItem = model.createIndividual(newUri, model.getOntClass(Paths.collectionItemURI))
+       val collItem = model.createIndividual(newUri, model.getOntClass(SembaPaths.collectionItemURI))
        val coll = model.getIndividual(collection)
        val itemModel = getModelForItem(item)
        val itemIndividual = itemModel.getIndividual(item)
-       val hasMediaItem = model.getObjectProperty(Paths.hasMediaItem)
-       val hasCollectionItem = model.getObjectProperty(Paths.hasCollectionItem)
-       val isPart = model.getObjectProperty(Paths.isPartOfCollection)
+       val hasMediaItem = model.getObjectProperty(SembaPaths.hasMediaItem)
+       val hasCollectionItem = model.getObjectProperty(SembaPaths.hasCollectionItem)
+       val isPart = model.getObjectProperty(SembaPaths.isPartOfCollection)
 
 
-       collItem.setPropertyValue(model.getProperty(Paths.linksToSource),itemIndividual )
+       collItem.setPropertyValue(model.getProperty(SembaPaths.linksToSource),itemIndividual )
        collItem.setPropertyValue(isPart, coll)
         coll.setPropertyValue(hasCollectionItem, collItem)
        if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
