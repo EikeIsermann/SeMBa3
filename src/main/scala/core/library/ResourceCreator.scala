@@ -16,7 +16,8 @@ import utilities.FileFactory
   * This is a SeMBa3 class
   */
 
-class ResourceCreation(libInfo: LibInfo) extends Actor with JobHandling {
+class ResourceCreator(libInfo: LibInfo) extends Actor with JobHandling {
+
   val singleItemImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
   val singleCollectionImport = context.actorOf(new RoundRobinPool(10).props(Props[CollectionHandler]))
 
@@ -58,4 +59,7 @@ class ResourceCreation(libInfo: LibInfo) extends Actor with JobHandling {
       case Source.Empty =>
     }
   }
+}
+object ResourceCreator{
+  def props(libInfo: LibInfo): Props = Props(new ResourceCreator(libInfo))
 }

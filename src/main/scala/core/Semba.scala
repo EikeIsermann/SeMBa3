@@ -6,7 +6,7 @@ import java.nio.file.{Files, Paths}
 import java.util.UUID
 
 import akka.pattern.ask
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
 import akka.util.Timeout
@@ -21,6 +21,7 @@ import org.apache.jena.tdb.base.file.Location
 import org.apache.jena.util.{FileUtils, URIref}
 import sembaGRPC.SourceFile.Source
 import sembaGRPC._
+import utilities.SembaConstants.StorageSolution
 import utilities.debug.DC
 import utilities.{Convert, FileFactory, XMLFactory}
 
@@ -36,16 +37,16 @@ import scala.concurrent.duration._
 
 case class LibInfo(system: ActorSystem, library: Dataset, basemodel: Agent[OntModel], libraryLocation: URI, config: Config, libAccess: ActorRef, libURI: String)
 
-class Semba(val root: String) extends Actor with JobHandling {
+class Semba(val root: String) extends Actor with Stash with ActorFeatures
+  with JobHandling with AccessToStorage with ResourceCreation with DataExport  {
+
   var system = context.system
   var basemodel: Agent[OntModel] = _
   var ontology: Dataset = _
   var libraryLocation: URI = _
   var libRoot: URI = _
   var config: Config = _
-  var libAccess: ActorRef = _
   var libInitialized: Future[JobReply] = _
-  var resourceCreation: ActorRef = _
   var path: String = _
   implicit val timeout = Timeout(300 seconds)
 
@@ -60,13 +61,11 @@ class Semba(val root: String) extends Actor with JobHandling {
     config = new Config(new URI(libRoot + SembaPaths.libConfiguration))
     libraryLocation = new URI(libRoot + config.dataPath)
     //libInitialized = ask(system.actorOf(Props(new LibImporter(ontology))), ImportLib(libraryLocation, libInfo)).mapTo[JobReply]
-    resourceCreation = context.actorOf(Props(new ResourceCreation(libInfo)))
 
 
   }
   def initializeOntology() = {
     val loc = new File(new URI(libRoot + config.tdbPath)).getAbsolutePath
-    libAccess = system.actorOf(Props(new CriticalStorageAccess(ontology, path)))
     ontology = TDBFactory.createDataset(loc)
     basemodel = Agent(ModelFactory.createOntologyModel())
     if(!Files.exists(Paths.get(new URI(path))))
@@ -91,6 +90,11 @@ class Semba(val root: String) extends Actor with JobHandling {
 
 
   }
+
+
+
+
+
 
   def initializeConfig(): Unit ={
     val libConfig = Paths.get(new URI(libRoot + SembaPaths.libConfiguration))
@@ -207,7 +211,7 @@ class Semba(val root: String) extends Actor with JobHandling {
 
 
 
-  def libInfo: LibInfo = LibInfo(system, ontology, basemodel, libraryLocation, config, libAccess, path)
+  def libInfo: LibInfo = LibInfo(system, ontology, basemodel, libraryLocation, config, queryExecutor, path)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path))
@@ -226,25 +230,21 @@ class Semba(val root: String) extends Actor with JobHandling {
 
 class Config(path: URI) {
   val configFile = XMLFactory.getXMLAsElemAdv(path)
-
   val baseOntologyURI = getString("baseOntologyURI")
-
   val itemClassURI = getString("itemClassURI")
-
   val sourceLocation = getString("sourceLocation")
-
   val defaultCollectionIcon = getString("defaultCollectionIcon")
-
   val ontName = getString("ontName")
-
   val itemName = getString("itemName")
-
   val thumbResolution = getString("thumbnailResolution")
-
   val lang = getString("language")
   val thumbnail = getString("thumbnailIdentifier")
   val dataPath = getString("dataPath")
-  val tdbPath = getString("libraryPath")
+  val storagePath = getString("libraryPath")
+  val storageType = StorageSolution.withName(getString("storageType"))
+  val temp = getString("temporaryFolder")
+  val name = getString("libraryName")
+
 
 
   def getString(s: String): String = configFile.getValueAt("config", s)

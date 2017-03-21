@@ -6,6 +6,7 @@ import java.net.URI
 import akka.actor.{Actor, Props}
 import app.SembaPaths
 import core._
+import data.storage.RegisterOntology
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock

@@ -15,7 +15,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
-//TODO model file versioning
 /** Entry point of the Application. Provides global access to sessions and loaded libraries.
   *
   * Author: Eike Isermann

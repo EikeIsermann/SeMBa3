@@ -4,7 +4,8 @@ import java.io.File
 import java.net.URI
 import java.util.UUID
 
-import akka.actor.ActorRef
+import akka.actor.Actor.Receive
+import akka.actor.{Actor, ActorRef}
 import sembaGRPC.UpdateMessage
 
 import scala.collection.mutable
@@ -18,49 +19,44 @@ trait JobProtocol {
   var jobID: UUID = UUID.randomUUID()
   def newId() = jobID = UUID.randomUUID()
 }
+case class JobResult()
 
-case class ThumbnailJob(src: File, dest: URI, config: Config) extends JobProtocol
+case class JobReply(job: JobProtocol, result: JobResult)
 
-case class MainJob() extends JobProtocol
-
-case class JobReply(job: JobProtocol, updates: ArrayBuffer[UpdateMessage] = ArrayBuffer[UpdateMessage]())
-
-trait JobHandling {
+trait JobHandling extends Actor {
   var waitingForCompletion = Set.empty[(UUID, JobProtocol)]
   var originalSender =  mutable.HashMap[UUID, ActorRef]()
-  val updates =  mutable.HashMap[UUID, ArrayBuffer[UpdateMessage]]()
-  def handleJob(jobProtocol: JobProtocol): JobReply
+  val results =  mutable.HashMap[UUID, ArrayBuffer[JobResult]]()
+  //def handleJob(T <: JobProtocol[T])
 
-  def handleReply(reply: JobReply, selfRef: ActorRef): Boolean = {
+  def handleReply(reply: JobReply): Boolean = {
     var completed = false
     val entry = waitingForCompletion.find(_._1 == reply.job.jobID)
     if (entry.isDefined) {
 
-      updates.apply(entry.get._2.jobID).++=(reply.updates)
+      results.apply(entry.get._2.jobID).+=(reply.result)
       waitingForCompletion -= entry.get
       completed = !waitingForCompletion.exists(_._2.jobID == entry.get._2.jobID)
       if (completed) {
         val jobMaster = originalSender.apply(entry.get._2.jobID)
-        if (jobMaster != selfRef ) {
-          jobMaster ! JobReply(entry.get._2, updates.apply(entry.get._2.jobID))
-          updates.remove(entry.get._2.jobID)
-        }
-        else processUpdates(entry.get._2)
+        val originalJob = entry.get._2
+        val resultBuffer = results.apply(originalJob.jobID)
+
+        finishedJob(originalJob, jobMaster, resultBuffer)
+        results.remove(entry.get._2.jobID)
+        originalSender.remove(entry.get._2.jobID)
       }
     }
-    if(completed) finishedJob()
     completed
 
   }
 
-  def finishedJob() = {
-  }
-  def processUpdates(jobProtocol: JobProtocol) = {
-      updates.remove(jobProtocol.jobID)
-  }
+  def finishedJob(job: JobProtocol, master: ActorRef, results: ArrayBuffer[JobResult])
 
-  def acceptJob(newJob: JobProtocol, sender: ActorRef): Unit = {
-    createMasterJob(newJob, sender)
+  def acceptJob(newJob: JobProtocol, sender: ActorRef): JobProtocol = {
+    results.put(newJob.jobID, ArrayBuffer[JobResult]())
+    originalSender.put(newJob.jobID, sender)
+    newJob
   }
 
 
@@ -69,12 +65,29 @@ trait JobHandling {
     newJob
   }
 
-  def createMasterJob(newJob: JobProtocol, actorRef: ActorRef): JobProtocol = {
-    updates.put(newJob.jobID, ArrayBuffer[UpdateMessage]())
-    originalSender.put(newJob.jobID, actorRef)
-    waitingForCompletion.+=((newJob.jobID, newJob))
-    newJob
+  def createJobCluster(cluster: JobProtocol, originalJob: JobProtocol): JobProtocol = {
+     createJob(cluster, originalJob)
+     createMasterJob(cluster)
   }
 
+  def createMasterJob(newJob: JobProtocol): JobProtocol = {
+    acceptJob(newJob, self)
+  }
 
+  def sendJobReply(job: JobProtocol, master: ActorRef, result: JobResult) = {
+    master ! JobReply(job, result)
+  }
+
+}
+
+trait JobExecution extends Actor{
+
+  override def receive: Receive = {
+    case job: JobProtocol => {
+      sender() ! JobReply(job, handleJob(job))
+    }
+    case other => super.receive(other)
+  }
+
+  def handleJob(job: JobProtocol): JobResult
 }

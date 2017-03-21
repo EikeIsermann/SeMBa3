@@ -1,9 +1,9 @@
-package core.library.storage.model
+package data.storage
 
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class ModelBasedStorage {
+object DatastructureMapping {
 
 }

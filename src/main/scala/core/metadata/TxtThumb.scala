@@ -6,9 +6,11 @@ import java.awt.{Color, Font, RenderingHints}
 import java.io.File
 import java.net.URI
 import java.util
+import java.util.UUID
 import javax.imageio.ImageIO
 
-import core.ThumbnailJob
+import core.JobResult
+import core.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.apache.commons.io.IOUtils
 import org.imgscalr.Scalr.pad
 
@@ -18,8 +20,9 @@ import org.imgscalr.Scalr.pad
   */
 class TxtThumb extends ThumbActor {
 
-  override def createThumbnail(thumb: ThumbnailJob): Unit = {
+  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
     val src = IOUtils.toString(thumb.src.toURI)
+    val path = new URI(thumb.config.temp + UUID.randomUUID())
     val res = thumb.config.thumbResolution.toInt - TxtThumb.padding
     val thumbnail = new BufferedImage(res, res, BufferedImage.TYPE_INT_RGB)
     val bounds = TxtThumb.font.getStringBounds(src, new FontRenderContext(null, true, true))
@@ -56,8 +59,9 @@ class TxtThumb extends ThumbActor {
 
     pic.dispose
 
-    ImageIO.write(pad(thumbnail, TxtThumb.padding / 2, TxtThumb.background), "JPEG", new File(new URI(thumb.dest + thumb.config.thumbnail)))
+    ImageIO.write(pad(thumbnail, TxtThumb.padding / 2, TxtThumb.background), "JPEG", new File(path))
     thumbnail.flush()
+    ThumbnailResult(path)
   }
 
 

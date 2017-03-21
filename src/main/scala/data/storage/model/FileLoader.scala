@@ -1,9 +1,9 @@
-package core.library.storage.model
+package data.storage.model
 
 import akka.actor.Actor
 import app.SembaPresets
-import core.library.RegisterOntology
 import core.{JobHandling, JobProtocol, JobReply}
+import data.storage.RegisterOntology
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory

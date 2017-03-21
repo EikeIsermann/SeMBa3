@@ -1,6 +1,9 @@
 package core.metadata
 
-import core.ThumbnailJob
+import java.net.URI
+
+import core.JobResult
+import core.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 
 /**
   * Author: Eike Isermann
@@ -9,7 +12,7 @@ import core.ThumbnailJob
 //TODO implement VLCJ Library
 
 class MultiMediaThumb extends ThumbActor {
-  override def createThumbnail(thumb: ThumbnailJob): Unit = {
-
+  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
+   ThumbnailResult(URI.create("TODO"))
   }
 }

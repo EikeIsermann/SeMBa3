@@ -1,4 +1,4 @@
-package core.library
+package data.storage
 
 import akka.actor.{Actor, ActorRef}
 import core.JobHandling
@@ -10,29 +10,28 @@ import org.apache.jena.rdf.model.Model
   */
 
 
-abstract class SembaStorage extends Actor with JobHandling {
-
-  val writer: ActorRef
-  val readers: ActorRef
+trait SembaStorage {
 
   def getModel(uri: String): Model
 
   def getOntModel(uri: String): Model
 
+  def getUnionModel(): Model
+
   def performRead()
 
   def performWrite()
+
+  def endRead()
+
+  def endWrite()
 
   def save()
 
   def load()
 
-
 }
 
-object SembaStorage {
-
-}
 
 
 

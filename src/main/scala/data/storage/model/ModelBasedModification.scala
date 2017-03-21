@@ -1,8 +1,9 @@
-package core.library.storage.model
+package data.storage.model
 
 import akka.agent.Agent
 import core.{JobProtocol, JobReply, LibraryAccess}
-import core.library.{DeleteItem, RegisterOntology, SaveOntology, StorageModification}
+import core.library.{DeleteItem, RegisterOntology, SaveOntology}
+import data.storage.{DeleteItem, RegisterOntology, StorageModification}
 import org.apache.jena.rdf.model.Model
 import sembaGRPC.{CollectionItem, UpdateMessage}
 import utilities.UpdateMessageFactory
@@ -14,8 +15,7 @@ import scala.collection.immutable.HashMap
   * This is a SeMBa3 class
   */
 
-class ModelBasedModification(data: Agent[HashMap[String, Model]], uri: String) extends StorageModification(uri)
-{
+class ModelBasedModification(data: Agent[HashMap[String, Model]], uri: String) extends StorageModification(uri) {
   override def library: Model = ???
 
   override def registerOntology(regModel: RegisterOntology): UpdateMessage = ???
@@ -48,3 +48,4 @@ class ModelBasedModification(data: Agent[HashMap[String, Model]], uri: String) e
     upd = upd.addItems(removeIt.item)
     upd
   }
+}

@@ -1,20 +1,14 @@
-package core.library
+package data.storage
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
-import akka.agent.Agent
 import api._
-import app.Application
-import core.{JobHandling, JobProtocol, JobReply, LibraryAccess}
+import core.library.{GenerateDatatypeProperties, SaveOntology, SetDatatypeProperties}
+import core.{JobHandling, JobProtocol, LibraryAccess}
 import org.apache.jena.ontology.OntModel
-import org.apache.jena.query.{Dataset, ReadWrite}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import utilities.{Convert, UpdateMessageFactory}
-
-import scala.collection.immutable.HashMap
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * Author: Eike Isermann
@@ -195,6 +189,6 @@ def registerOntology(regModel: RegisterOntology): UpdateMessage//   ={
 
 
 
-}
+
 
 

@@ -1,11 +1,14 @@
 package core.metadata
 
+import java.io.File
 import javax.imageio.ImageIO
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.routing.RoundRobinPool
-import core.library.storage.model.FileLoader
-import core.{JobHandling, JobProtocol, JobReply, ThumbnailJob}
+import data.storage.model.FileLoader
+import core._
+import core.metadata.MetadataMessages.ExtractThumbnail
+import org.apache.tika.Tika
 
 import scala.collection.mutable.HashMap
 
@@ -14,26 +17,20 @@ import scala.collection.mutable.HashMap
   *
   */
 
-abstract class ThumbActor extends Actor with JobHandling {
+abstract class ThumbActor extends Actor with JobExecution {
 
-
-  override def receive: Receive = {
-    case thumb: ThumbnailJob => {
-      acceptJob(thumb, sender())
-      createThumbnail(thumb)
-      self ! JobReply(thumb)
+  override def handleJob(job: JobProtocol): JobResult = {
+    job match {
+      case thumb: ExtractThumbnail => createThumbnail(thumb)
     }
-    case reply: JobReply => handleReply(reply, self)
   }
-
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
-
 
   /** ThumbnailActors only need to implement createThumbnail providing logic to render and write the image.
     *
     * @param thumb
     */
-  def createThumbnail(thumb: ThumbnailJob)
+  def createThumbnail(thumb: ExtractThumbnail): JobResult
+
 
 }
 
@@ -43,7 +40,7 @@ abstract class ThumbActor extends Actor with JobHandling {
   *
   */
 object ThumbActor {
-
+  val tika = new Tika()
   /** Supported picture formats */
   val MIMETYPES_IMAGE = (Props[PicThumb],
     ImageIO.getReaderMIMETypes.toSet)
@@ -73,11 +70,13 @@ object ThumbActor {
   private val supportedContentTypes: scala.collection.mutable.HashMap[String, ActorRef] = HashMap[String, ActorRef]()
   /** Returns the correct actor constructor registered for a given MimeType
     *
-    * @param mime MimeType
+    * @param file The file to be thumbnailed
     * @return Props for the required ThumbActor
     */
-  def getThumbActor(mime: String): ActorRef = {
-    supportedContentTypes.get(mime).getOrElse(supportedContentTypes.apply("GenericThumbActor"))
+  def getThumbActor(file: File): ActorRef = {
+    val mimeType = tika.detect(file)
+
+    supportedContentTypes.get(mimeType).getOrElse(supportedContentTypes.apply("GenericThumbActor"))
   }
 
   def initialize(system: ActorSystem) = {

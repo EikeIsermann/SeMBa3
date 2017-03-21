@@ -1,4 +1,4 @@
-package core.library.storage.dataset
+package data.storage.dataset
 
 import core.{JobProtocol, JobReply}
 import org.apache.jena.query.Dataset
