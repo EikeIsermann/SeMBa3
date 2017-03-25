@@ -3,7 +3,7 @@ package utilities
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-import app.SembaPaths
+import globalConstants.SembaPaths
 import org.apache.jena.ontology.{DatatypeProperty, Individual, ObjectProperty, OntModel}
 import org.apache.jena.shared.Lock
 import sembaGRPC._

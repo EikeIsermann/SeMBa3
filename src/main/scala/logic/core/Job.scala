@@ -1,11 +1,9 @@
-package core
+package logic.core
 
-import java.io.File
-import java.net.URI
 import java.util.UUID
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef}
+import globalConstants.GlobalMessages.UpdateResult
 import sembaGRPC.UpdateMessage
 
 import scala.collection.mutable
@@ -19,14 +17,15 @@ trait JobProtocol {
   var jobID: UUID = UUID.randomUUID()
   def newId() = jobID = UUID.randomUUID()
 }
-case class JobResult()
+abstract class JobResult
+case class EmptyResult() extends JobResult
 
 case class JobReply(job: JobProtocol, result: JobResult)
 
 trait JobHandling extends Actor {
   var waitingForCompletion = Set.empty[(UUID, JobProtocol)]
   var originalSender =  mutable.HashMap[UUID, ActorRef]()
-  val results =  mutable.HashMap[UUID, ArrayBuffer[JobResult]]()
+  val results =  mutable.HashMap[UUID, ResultArray[JobResult]]()
   //def handleJob(T <: JobProtocol[T])
 
   def handleReply(reply: JobReply): Boolean = {
@@ -51,10 +50,11 @@ trait JobHandling extends Actor {
 
   }
 
-  def finishedJob(job: JobProtocol, master: ActorRef, results: ArrayBuffer[JobResult])
+
+  def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult])
 
   def acceptJob(newJob: JobProtocol, sender: ActorRef): JobProtocol = {
-    results.put(newJob.jobID, ArrayBuffer[JobResult]())
+    results.put(newJob.jobID, new ResultArray[JobResult]())
     originalSender.put(newJob.jobID, sender)
     newJob
   }
@@ -78,7 +78,26 @@ trait JobHandling extends Actor {
     master ! JobReply(job, result)
   }
 
+
+
+  class ResultArray[A <: JobResult] extends ArrayBuffer[A]
+  {
+    def get[T <: A]( aClass: Class[T]): T  = {
+      this.find(x => x.getClass.equals(aClass)).get.asInstanceOf[T]
+    }
+    def getAll[T <: A]( aClass: Class[T]): ArrayBuffer[T] = {
+      this.filter( x => x.getClass.equals(aClass)).asInstanceOf[ArrayBuffer[T]]
+    }
+
+    def processUpdates(): ArrayBuffer[UpdateMessage] = {
+      this.filter( x => x.getClass.equals(classOf[UpdateResult])).asInstanceOf[ArrayBuffer[UpdateResult]].flatMap(x => x.messages)
+    }
+
+  }
+
 }
+
+
 
 trait JobExecution extends Actor{
 

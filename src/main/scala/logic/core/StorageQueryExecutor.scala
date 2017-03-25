@@ -1,9 +1,7 @@
-package core.library
+package logic.core
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.actor.Actor.Receive
-import core.library.StorageQueryExecutor.{StorageReadRequest, StorageWriteRequest}
-import core.{JobHandling, JobProtocol, JobReply}
+import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest}
 
 /**
   * Author: Eike Isermann
@@ -22,17 +20,12 @@ class StorageQueryExecutor(storage: ActorRef) extends Actor with JobHandling {
 
     case other => super.receive(other)
   }
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
 
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
 }
 
 object StorageQueryExecutor {
 
   def props(storage: ActorRef): Props = Props(new StorageQueryExecutor(storage))
-
-
-  trait StorageOperation extends JobProtocol
-  case class StorageReadRequest() extends StorageOperation
-  case class StorageWriteRequest() extends StorageOperation
 
 }

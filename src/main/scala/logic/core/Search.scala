@@ -1,13 +1,10 @@
-package core.library
-
+package logic.core
 
 import akka.actor.Actor
 import api.SparqlFilter
-import core.{JobHandling, JobProtocol, JobReply}
 import org.apache.jena.ontology.OntModel
-import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
+import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.shared.Lock
-import sembaGRPC.SparqlQuery
 
 /**
   * Author: Eike Isermann
@@ -30,12 +27,12 @@ class Search(model: OntModel) extends Actor with JobHandling {
   override def receive: Receive = {
     case job: JobProtocol => {
       acceptJob(job, sender())
-      self ! handleJob(job)
+//      self ! handleJob(job)
     }
 
-    case reply: JobReply => handleReply(reply, self)
+    case reply: JobReply => handleReply(reply)
   }
-
+      /*
   override def handleJob(jobProtocol: JobProtocol): JobReply = {
     jobProtocol match {
       case sparql: SparqlFilter => performSparqlQuery(sparql.sparqlQuery.key)
@@ -43,7 +40,7 @@ class Search(model: OntModel) extends Actor with JobHandling {
      JobReply(jobProtocol)
   }
 
-
+     */
 
  def performSparqlQuery(strQuery: String) = {
 

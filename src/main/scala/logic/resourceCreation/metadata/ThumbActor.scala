@@ -1,4 +1,4 @@
-package core.metadata
+package logic.resourceCreation.metadata
 
 import java.io.File
 import javax.imageio.ImageIO
@@ -6,8 +6,9 @@ import javax.imageio.ImageIO
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.routing.RoundRobinPool
 import data.storage.model.FileLoader
-import core._
-import core.metadata.MetadataMessages.ExtractThumbnail
+import logic._
+import logic.core.{JobExecution, JobProtocol, JobResult}
+import logic.resourceCreation.metadata.MetadataMessages.ExtractThumbnail
 import org.apache.tika.Tika
 
 import scala.collection.mutable.HashMap

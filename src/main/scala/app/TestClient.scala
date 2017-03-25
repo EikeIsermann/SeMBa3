@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
-import core.MainJob
+import logic.MainJob
 import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import org.apache.jena.graph.Node

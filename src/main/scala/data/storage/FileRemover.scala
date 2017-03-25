@@ -1,15 +1,11 @@
-package core.library
+package data.storage
 
 import java.io.File
 import java.net.URI
 
 import akka.actor.{Actor, ActorRef}
-import akka.actor.Actor.Receive
-import core.{JobHandling, JobProtocol, JobReply}
-import data.storage.DeleteItem
+import logic.core.{JobHandling, JobProtocol, JobReply}
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.StringUtils
-import org.apache.jena.ontology.OntModel
 import sembaGRPC.Resource
 
 case class RemoveFromOntology(item: Resource, libraryAccess: ActorRef, deleteFiles: Boolean = true) extends JobProtocol

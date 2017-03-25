@@ -1,4 +1,4 @@
-package core
+package logic.core
 
 import akka.actor.{Actor, ActorRef, Props, Stash}
 
@@ -11,7 +11,7 @@ case class InitializationComplete(ref: ActorRef)
 
 
 trait ActorFeatures extends Actor with Stash {
-   var initializingFeatures: Set[ActorRef]
+   var initializingFeatures: Set[ActorRef] = Set[ActorRef]()
 
   override def preStart(): Unit = {
     context.become(initialReceive())
@@ -19,9 +19,7 @@ trait ActorFeatures extends Actor with Stash {
     super.preStart()
   }
 
-  def initialization() = {
-
-  }
+  def initialization()
 
   def initializeFeature(props: Props): ActorRef = {
     var ref = context.actorOf(props)

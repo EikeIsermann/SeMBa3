@@ -1,6 +1,7 @@
 package data.storage.dataset
 
-import core.{JobProtocol, JobReply}
+import logic.JobReply
+import logic.core.{JobProtocol, JobReply}
 import org.apache.jena.query.Dataset
 import org.apache.jena.rdf.model.Model
 import sembaGRPC.UpdateMessage

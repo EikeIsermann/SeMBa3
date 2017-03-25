@@ -6,7 +6,8 @@ import java.net.URI
 import akka.actor.{Actor, Props}
 import akka.agent.Agent
 import akka.routing.RoundRobinPool
-import core._
+import logic._
+import logic.core.{JobHandling, JobProtocol, JobReply, LibInfo}
 import org.apache.jena.ontology.OntModel
 
 import scala.collection.mutable.ArrayBuffer

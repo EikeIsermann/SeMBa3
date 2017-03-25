@@ -1,9 +1,9 @@
 package data.storage.model
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
 import akka.actor.Actor.Receive
-import core.{JobHandling, JobProtocol, JobReply}
 import data.storage.SembaStorage
+import logic.core.{JobHandling, JobProtocol, JobReply, JobResult}
 import org.apache.jena.rdf.model.Model
 
 /**
@@ -13,7 +13,6 @@ import org.apache.jena.rdf.model.Model
 class ModelBasedStorage extends Actor with JobHandling with SembaStorage {
   override def receive: Receive = ???
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
 
   override def getModel(uri: String): Model = ???
 
@@ -30,4 +29,8 @@ class ModelBasedStorage extends Actor with JobHandling with SembaStorage {
   override def save(): Unit = ???
 
   override def load(): Unit = ???
+
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
+
+  override def getUnionModel(): Model = ???
 }

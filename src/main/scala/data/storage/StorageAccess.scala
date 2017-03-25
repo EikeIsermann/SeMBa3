@@ -2,7 +2,7 @@ package data.storage
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.actor.Actor.Receive
-import core.{JobHandling, JobProtocol, JobReply}
+import logic.core.{JobHandling, JobProtocol, JobReply, JobResult}
 
 /**
   * Author: Eike Isermann
@@ -11,7 +11,7 @@ import core.{JobHandling, JobProtocol, JobReply}
 class StorageAccess() extends Actor with JobHandling {
   override def receive: Receive = ???
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
 }
 
 object StorageAccess{

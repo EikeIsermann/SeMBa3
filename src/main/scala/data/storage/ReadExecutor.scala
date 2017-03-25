@@ -1,15 +1,19 @@
 package data.storage
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef, Props}
 import akka.actor.Actor.Receive
-import core.{JobHandling, JobProtocol, JobReply}
+import logic.core.{JobHandling, JobProtocol, JobReply, JobResult}
 
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class ReadExecutor extends Actor with JobHandling{
+class ReadExecutor(storage: SembaStorageComponent) extends Actor with JobHandling{
   override def receive: Receive = ???
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
+}
+
+object ReadExecutor {
+  def props(storage: SembaStorageComponent): Props = Props(new ReadExecutor(storage))
 }

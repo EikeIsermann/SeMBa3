@@ -1,9 +1,9 @@
-package core.metadata
+package logic.resourceCreation.metadata
 
 import java.net.URI
 
-import core.JobResult
-import core.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
+import logic.core.JobResult
+import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 
 /**
   * Author: Eike Isermann

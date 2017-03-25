@@ -2,8 +2,11 @@ package data.storage
 
 import akka.actor.Actor
 import api._
-import core.library.{GenerateDatatypeProperties, SaveOntology, SetDatatypeProperties}
-import core.{JobHandling, JobProtocol, LibraryAccess}
+import AccessMethods
+import logic.core.{JobHandling, JobProtocol}
+import logic.library.SetDatatypeProperties
+import logic.resourceCreation.{GenerateDatatypeProperties, SetDatatypeProperties}
+import logic.{JobHandling, SaveOntology}
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock
@@ -39,7 +42,7 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
       var save: Option[String] = None
       library.enterCriticalSection(Lock.WRITE)
       try{
-        save = LibraryAccess.writeModel(saveOnt.model)
+        save = AccessMethods.writeModel(saveOnt.model)
       }
       finally library.leaveCriticalSection()
       UpdateMessage(kindOfUpdate = UpdateType.NOTIFY, lib = uri).addNotes(
@@ -51,13 +54,13 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
     def updateMetadata( updateMeta: UpdateMetadata ): UpdateMessage = {
       val item = updateMeta.metadataUpdate.item.get.uri
       val itemDesc = updateMeta.metadataUpdate.desc.get
-      val model = LibraryAccess.getModelForItem(item)
+      val model = AccessMethods.getModelForItem(item)
       val isDeletion = updateMeta.metadataUpdate.kindOfUpdate.isDelete
 
       library.enterCriticalSection(Lock.WRITE)
         try {
           val values = itemDesc.metadata.mapValues( v => v.value.toArray)
-          LibraryAccess.updateMetadata(values, item, model, library, isDeletion)
+          AccessMethods.updateMetadata(values, item, model, library, isDeletion)
         }
         finally library.leaveCriticalSection()
       self ! createJob(SaveOntology(model), updateMeta)
@@ -68,8 +71,8 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
     def addToCollection( addToColl: AddToCollectionMsg): UpdateMessage ={
       val collection = addToColl.addToCollection.collection.get.uri
       val item = addToColl.addToCollection.newItem.get.uri
-      val model = LibraryAccess.getModelForItem(collection)
-      LibraryAccess.addCollectionItem(collection, item, model)
+      val model = AccessMethods.getModelForItem(collection)
+      AccessMethods.addCollectionItem(collection, item, model)
       self ! createJob(SaveOntology(model), addToColl)
 
       //TODO: return CollectionUpdate
@@ -77,10 +80,10 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
     }
 
     def removeCollectionItem( removeCollItem: RemoveCollectionItem ): UpdateMessage ={
-      val model = LibraryAccess.getModelForItem(removeCollItem.collectionItem.parentCollection)
+      val model = AccessMethods.getModelForItem(removeCollItem.collectionItem.parentCollection)
       library.enterCriticalSection(Lock.WRITE)
       try{
-         LibraryAccess.removeIndividual(removeCollItem.collectionItem.uri, model)
+         AccessMethods.removeIndividual(removeCollItem.collectionItem.uri, model)
       }
       finally library.leaveCriticalSection()
       self ! createJob(SaveOntology(model), removeCollItem)
@@ -92,7 +95,7 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
     val startItem = relMod.start.get.uri
     val endItem = relMod.end.get.uri
     val relation = relMod.rel.get.uri
-    val model = LibraryAccess.getModelForItem(
+    val model = AccessMethods.getModelForItem(
       relMod.start.get.parentCollection)
     var upd = UpdateMessageFactory.getAddMessage(uri)
       .addRelations(
@@ -103,10 +106,10 @@ abstract class StorageModification (uri: String) extends Actor with JobHandling{
     library.enterCriticalSection(Lock.WRITE)
     try {
       if (add) {
-        LibraryAccess.createRelation(startItem, endItem, relation, model)
+        AccessMethods.createRelation(startItem, endItem, relation, model)
       }
       else {
-        LibraryAccess.removeRelation(startItem, endItem, relation, model)
+        AccessMethods.removeRelation(startItem, endItem, relation, model)
         upd = upd.withKindOfUpdate(UpdateType.DELETE)
       }
     }
@@ -134,7 +137,7 @@ def registerOntology(regModel: RegisterOntology): UpdateMessage//   ={
         LibraryConcepts().withLib(Convert.lib2grpc(uri))
     try{
     for( key <- genDataProp.keys){
-      val newProp = LibraryAccess.generateDatatypeProperty(key, genDataProp.model)
+      val newProp = AccessMethods.generateDatatypeProperty(key, genDataProp.model)
       if(newProp.isDefined)
         {
           update = true
@@ -156,7 +159,7 @@ def registerOntology(regModel: RegisterOntology): UpdateMessage//   ={
     try
     {
       for(prop <- setDataProp.propertyMap.keySet){
-        var annotation = LibraryAccess.setDatatypeProperty(prop,
+        var annotation = AccessMethods.setDatatypeProperty(prop,
           setDataProp.model,setDataProp.item, setDataProp.propertyMap.apply(prop), lib())
         upd = upd.addDescriptions(ItemDescription()
           .withItemURI(setDataProp.item.getURI).addAllMetadata(annotation.map( v => (prop,v))))

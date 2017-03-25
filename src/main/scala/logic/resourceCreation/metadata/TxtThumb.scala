@@ -1,4 +1,4 @@
-package core.metadata
+package logic.resourceCreation.metadata
 
 import java.awt.font.FontRenderContext
 import java.awt.image.BufferedImage
@@ -9,8 +9,8 @@ import java.util
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import core.JobResult
-import core.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
+import logic.core.JobResult
+import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.apache.commons.io.IOUtils
 import org.imgscalr.Scalr.pad
 

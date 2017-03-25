@@ -1,8 +1,8 @@
-package core
+package logic.core
 
-import akka.actor.{Actor, ActorRef, Props}
-import akka.routing.RoundRobinPool
-import core.library.StorageQueryExecutor
+import akka.actor.Actor.Receive
+import akka.actor.{Actor, ActorRef}
+import api.{GetMetadata, OpenLib, RequestContents}
 import data.storage.StorageAccess
 import utilities.SembaConstants.StorageSolution.StorageSolution
 
@@ -12,7 +12,7 @@ import utilities.SembaConstants.StorageSolution.StorageSolution
   */
 case class StorageInitialization(storageType: StorageSolution, storagePath: String)
 
-trait AccessToStorage extends Actor with ActorFeatures{
+trait AccessToStorage extends Actor with ActorFeatures with JobHandling {//with Actor with ActorFeatures with JobHandling {
 
   var storageAccess: ActorRef = _
   var queryExecutor: ActorRef = _
@@ -23,9 +23,24 @@ trait AccessToStorage extends Actor with ActorFeatures{
     super.initialization()
   }
   override def receive: Receive = {
-    case _ => {}
+    case openLib: OpenLib => {
+       //return Concepts
+    }
 
+
+    case contents: RequestContents => {
+
+    }
+
+
+    case getMeta: GetMetadata => {
+
+    }
+
+
+    case x => super.receive(x)
   }
+
 }
 
 

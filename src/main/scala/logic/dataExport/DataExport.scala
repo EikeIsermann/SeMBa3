@@ -1,6 +1,7 @@
-package core
+package logic.dataExport
 
 import akka.actor.Actor
+import logic.core.{AccessToStorage, ActorFeatures}
 
 /**
   * Author: Eike Isermann

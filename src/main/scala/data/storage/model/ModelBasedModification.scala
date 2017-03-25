@@ -1,9 +1,10 @@
 package data.storage.model
 
 import akka.agent.Agent
-import core.{JobProtocol, JobReply, LibraryAccess}
-import core.library.{DeleteItem, RegisterOntology, SaveOntology}
-import data.storage.{DeleteItem, RegisterOntology, StorageModification}
+import logic.{JobReply, SaveOntology}
+import logic.library.{DeleteItem, RegisterOntology}
+import data.storage.{DeleteItem, AccessMethods, RegisterOntology, StorageModification}
+import logic.core.{JobProtocol, JobReply}
 import org.apache.jena.rdf.model.Model
 import sembaGRPC.{CollectionItem, UpdateMessage}
 import utilities.UpdateMessageFactory
@@ -29,12 +30,12 @@ class ModelBasedModification(data: Agent[HashMap[String, Model]], uri: String) e
 
     var upd = UpdateMessageFactory.getDeletionMessage(uri)
     /** Remove all collectionitems referencing this item */
-    val linkedCollectionItems = LibraryAccess.getCollectionItems(item, library)
+    val linkedCollectionItems = AccessMethods.getCollectionItems(item, library)
     val mapIt = linkedCollectionItems.iterator
     while (mapIt.hasNext) {
       val keyVal = mapIt.next()
-      val model = LibraryAccess.getModelForItem(keyVal._1)
-      LibraryAccess.removeIndividual(keyVal._2, model)
+      val model = AccessMethods.getModelForItem(keyVal._1)
+      AccessMethods.removeIndividual(keyVal._2, model)
       self ! createJob(SaveOntology(model), removeIt)
       upd = upd.addCollectionItems(
         CollectionItem(
@@ -43,8 +44,8 @@ class ModelBasedModification(data: Agent[HashMap[String, Model]], uri: String) e
         ))
     }
 
-    val model = LibraryAccess.getModelForItem(item)
-    LibraryAccess.removeFromLib(model, library)
+    val model = AccessMethods.getModelForItem(item)
+    AccessMethods.removeFromLib(model, library)
     upd = upd.addItems(removeIt.item)
     upd
   }

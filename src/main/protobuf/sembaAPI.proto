@@ -72,11 +72,13 @@ message SourceFile {
         bytes data = 3;
         NewCollection coll = 4;
     }
+    string ontClass = 5;
 }
 
 message NewCollection {
     string name = 1;
-    string ontClass = 2;
+   // string ontClass = 2;
+    string picture = 3;
 }
 
 message RelationModification {

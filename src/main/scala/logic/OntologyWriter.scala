@@ -1,11 +1,9 @@
-package core.library
-
-import java.net.URI
+package logic
 
 import akka.actor.Actor
-import core.{JobHandling, JobProtocol, JobReply}
+import data.storage.AccessMethods
+import logic.core.{EmptyResult, JobHandling, JobProtocol, JobReply}
 import org.apache.jena.ontology.OntModel
-import org.apache.jena.shared.Lock
 
 /**
   * Author: Eike Isermann
@@ -17,13 +15,13 @@ class OntologyWriter extends Actor with JobHandling{
     case save: SaveOntology => {
       acceptJob(save, sender)
       writeOntology(save.model)
-      self ! JobReply(save)
+      self ! JobReply(save, EmptyResult())
     }
-    case reply: JobReply => handleReply(reply, self)
+    case reply: JobReply => handleReply(reply)
   }
 
   def writeOntology(model:OntModel) = {
-      LibraryAccess.writeModel(model)
+      AccessMethods.writeModel(model)
   }
 
   override def handleJob(jobProtocol: JobProtocol): JobReply = ???

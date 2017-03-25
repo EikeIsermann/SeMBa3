@@ -1,9 +1,10 @@
 package data.storage.model
 
 import akka.actor.Actor
-import app.SembaPresets
-import core.{JobHandling, JobProtocol, JobReply}
+import logic.{JobHandling, JobReply}
 import data.storage.RegisterOntology
+import globalConstants.SembaPresets
+import logic.core.{JobHandling, JobProtocol, JobReply}
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory
@@ -34,7 +35,7 @@ class FileLoader extends Actor with JobHandling{
       val ontology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
       ontology.read(source.toString)
        //if(ontology.hasLoadedImport("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl")) {
-         val uri = ontology.getNsPrefixURI("resource") + job.libInfo.config.itemName
+         val uri = ontology.getNsPrefixURI("resource") + job.libInfo.constants.itemName
          job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
 
       // }

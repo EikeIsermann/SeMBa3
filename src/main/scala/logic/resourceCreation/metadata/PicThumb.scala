@@ -1,12 +1,12 @@
-package core.metadata
+package logic.resourceCreation.metadata
 
 import java.io.File
 import java.net.URI
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import core.JobResult
-import core.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
+import logic.core.JobResult
+import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.imgscalr.Scalr
 
 /**
