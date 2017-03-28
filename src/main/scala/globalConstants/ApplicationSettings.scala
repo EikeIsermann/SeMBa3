@@ -44,8 +44,14 @@ object SembaPaths {
   /** URI of the Datatype Superproperty all valid Metadata inherit */
   val metadataPropertyURI = getString("metadataPropertyURI")
 
-  /** URI of the Object Superproperty all valid Relations inherit */
-  val sembaRelationURI = getString("sembaRelationURI")
+  /** URI of the Object Superproperty all valid CollectionRelations (CollectionItem - CollectionItem) inherit */
+  val sembaCollectionRelationURI = getString("sembaCollectionRelationURI")
+
+  /** URI of the Object Superproperty all valid DescriptiveRelations (Resource - Knowledge) inherit */
+  val sembaDescriptiveRelationURI = getString("sembaDescriptiveRelationURI")
+
+  /** URI of the Object Superproperty all valid GeneralRelations (Resource - Resource) inherit */
+  val sembaGeneralRelationURI = getString("sembaGeneralRelationURI")
 
   /** URI of the Data Property defining the main title of a Resource. Required for all valid Resources. */
   val sembaTitle = getString("sembaTitleURI")
@@ -66,6 +72,7 @@ object SembaPaths {
 
   val mainUri = getString("sembaMainURI")
 
+  val sourceLocationURI = getString("sourceLocation")
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }

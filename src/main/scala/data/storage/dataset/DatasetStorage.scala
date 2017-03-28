@@ -35,7 +35,7 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
         AccessMethods.load(basemodel, path)
       }
     }
-    basemodel.leaveCriticalSection()
+    finally basemodel.leaveCriticalSection()
 
   data.begin(ReadWrite.WRITE)
   try{
@@ -66,4 +66,6 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
   override def save(): Unit = ???
 
   override def load(path: URI): Unit = ???
+
+  override def containsModel(uri: String): Boolean = ???
 }

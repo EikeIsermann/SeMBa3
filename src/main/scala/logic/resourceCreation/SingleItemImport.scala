@@ -4,10 +4,11 @@ import java.io.File
 
 import akka.actor.{Actor, ActorRef}
 import akka.routing.RoundRobinPool
-import globalConstants.GlobalMessages.UpdateResult
+import data.storage.SembaStorageComponent
+import globalConstants.GlobalMessages.{ReadMetadataRequest, ReadMetadataResult, UpdateResult}
 import logic._
 import logic.core._
-import logic.resourceCreation.CreationMessages.CreateInStorage
+import logic.resourceCreation.CreationStorageMethods.CreateInStorage
 import logic.resourceCreation.metadata.MetadataMessages._
 import logic.resourceCreation.metadata.{ThumbActor, TikaExtractor}
 import org.apache.jena.ontology.{Individual, OntModel}
@@ -36,23 +37,30 @@ class SingleItemImport extends Actor with JobHandling {
     super.preStart()
   }
   override def receive: Receive = {
-    case job: ImportNewItem =>
+    case importItem: ImportNewItem =>
       {
-        acceptJob(job, context.sender())
-        val cluster = createJobCluster(ExtractionJob(job), job)
-        ThumbActor.getThumbActor(job.item) ! ExtractThumbnail(job.item, job.libInfo.constants)
-        tikaExtractor ! ExtractMetadata(job.item)
+        acceptJob(importItem, context.sender())
+        val cluster = createJobCluster(ExtractionJob(importItem), importItem)
+        ThumbActor.getThumbActor(importItem.item) !
+          createJob(ExtractThumbnail(importItem.item, importItem.libInfo.constants), cluster)
+        tikaExtractor ! createJob(ExtractMetadata(importItem.item), cluster)
       }
 
     case reply: JobReply => handleReply(reply)
   }
+
 
   override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = {
 
     job match {
       case ex: ExtractionJob => {
         finishExtraction(ex, results)
-        master ! JobReply(job, EmptyResult())
+        master ! JobReply(ex, EmptyResult())
+      }
+
+      case sto: StorageJob => {
+
+        master ! JobReply(sto, UpdateResult(results.processUpdates()))
       }
 
       case itemImport: ImportNewItem => {
@@ -64,12 +72,11 @@ class SingleItemImport extends Actor with JobHandling {
   def finishExtraction(ex: ExtractionJob, results: ResultArray[JobResult]) = {
     val queryExecutor = ex.importJob.libInfo.libAccess
     val itemType: ItemType = ItemType.ITEM
-    val src = ex.importJob.item.getAbsolutePath
+    val fileName = ex.importJob.item.getName
     val ontClass = ex.importJob.ontClass
     val desc = results.get(classOf[MetadataResult]).content
-    val thumb = results.get(classOf[ThumbnailResult]).content
-    val job = CreateInStorage(itemType, src, ontClass, desc, thumb)
-    queryExecutor ! createJob(job, ex.importJob)
-
+    val job = CreateInStorage(itemType, ontClass, fileName, desc, ex.importJob.libInfo)
+    val cluster = createJobCluster(StorageJob(ex.importJob), ex.importJob)
+    queryExecutor ! createJob(job, cluster)
   }
 }

@@ -5,11 +5,10 @@ import java.net.URI
 
 import akka.actor.{Actor, ActorRef}
 import logic._
-import data.storage.RegisterOntology
 import globalConstants.GlobalMessages.UpdateResult
 import globalConstants.SembaPaths
 import logic.core._
-import logic.resourceCreation.CreationMessages.CreateInStorage
+import logic.resourceCreation.CreationStorageMethods.CreateInStorage
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.shared.Lock
@@ -42,11 +41,11 @@ class SingleCollectionImport extends Actor with JobHandling {
 
   def createCollection(job: CreateCollection): Unit = {
     val itemType = ItemType.COLLECTION
-    val src = job.newColl.name
+    val name = job.newColl.name
     val ontClass = job.ontClass
     val thumb = URI.create(job.newColl.picture)
 
-    job.libInfo.libAccess ! CreateInStorage(itemType, src, ontClass, ItemDescription(), thumb)
+    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo)
 
   }
 

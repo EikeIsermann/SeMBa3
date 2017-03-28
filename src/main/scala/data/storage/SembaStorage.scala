@@ -40,7 +40,7 @@ object SembaStorage {
 object SembaStorageComponent {
   def getStorage(config: LibInfo): SembaStorageComponent = {
     config.constants.storageType match {
-      case StorageSolution.InMemory =>
+      //case StorageSolution.InMemory => new ModelBase
       case StorageSolution.TDB => new DatasetStorage(config)
     }
   }
@@ -52,28 +52,18 @@ object SembaStorageComponent {
 
 abstract class SembaStorageComponent {
   
-  
-  def getModel(uri: String): Model
+  def getABox(): OntModel
 
-  def getOntModel(uri: String): OntModel
+  def getTBox(): OntModel
 
-  def getUnionModel(): Model
+  def performRead[T](f: => T): T
 
-  def getBaseModel(): Model
-
-  def performRead(model: Model)
-
-  def performWrite(model: Model)
-
-  def endRead(model: Model)
-
-  def endWrite(model: Model)
-
+  def performWrite[T](f: => T): T
+  /*
   def save()
 
   def load(path: URI)
-
-  def containsModel(uri:String): Boolean
+  */
 
 }
 

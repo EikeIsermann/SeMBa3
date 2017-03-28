@@ -2,17 +2,15 @@ package data.storage
 
 import akka.actor.Actor
 import api._
-import AccessMethods
 import logic.core.{JobHandling, JobProtocol}
-import logic.library.SetDatatypeProperties
 import logic.resourceCreation.{GenerateDatatypeProperties, SetDatatypeProperties}
-import logic.{JobHandling, SaveOntology}
+import logic.SaveOntology
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import utilities.{Convert, UpdateMessageFactory}
-
+          /
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
@@ -192,6 +190,6 @@ def registerOntology(regModel: RegisterOntology): UpdateMessage//   ={
 
 
 
-
+          */
 
 

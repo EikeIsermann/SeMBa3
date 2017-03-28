@@ -46,11 +46,7 @@ object Convert {
 
   def item2grpc(lib: Library, itemURI: String, model: OntModel): Resource = {
     var retVal = Resource()
-    model.enterCriticalSection(Lock.READ)
-    try {
       val item = model.getIndividual(itemURI)
-      var test = item.listOntClasses(true).toList
-
       require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
       retVal = new Resource(
         Some(lib),
@@ -63,8 +59,7 @@ object Convert {
         item.getPropertyValue(model.getDatatypeProperty(SembaPaths.sembaTitle)).asLiteral().toString,
         item.getPropertyValue(model.getDatatypeProperty(SembaPaths.thumbnailLocationURI)).asLiteral().toString
       )
-    }
-    finally model.leaveCriticalSection()
+
     retVal
   }
 

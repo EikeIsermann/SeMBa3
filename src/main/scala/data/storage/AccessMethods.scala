@@ -5,12 +5,14 @@ import java.net.URI
 import java.util.UUID
 
 import globalConstants.SembaPaths
+import logic.core.LibInfo
 import org.apache.jena.ontology._
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory}
 import org.apache.jena.shared.Lock
+import org.apache.jena.util.FileUtils
 import sembaGRPC._
-import utilities.Convert
+import utilities.{Convert, FileFactory, TextFactory}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -72,71 +74,65 @@ object AccessMethods {
     clone
   }
   */
-  def generateDatatypeProperty(key: String, model: OntModel, functional: Boolean = false): Option[DatatypeProperty] = {
+  def generateDatatypeProperty(rawKey: String, model: OntModel, config: LibInfo, functional: Boolean = false): Option[DatatypeProperty] = {
     var prop = None: Option[DatatypeProperty]
-
+        val key = config.libURI + TextFactory.cleanString(rawKey)
         prop = Option(model.getDatatypeProperty(key))
         if( prop.isEmpty ) {
-        prop = Some(model.createDatatypeProperty(key, functional))
-        prop.get.addSuperProperty(model.getDatatypeProperty(SembaPaths.generatedDatatypePropertyURI))
-        prop.get.addDomain(model.getResource(SembaPaths.resourceDefinitionURI))
+        val property = model.createDatatypeProperty(key, functional)
+        property.addSuperProperty(model.getDatatypeProperty(SembaPaths.generatedDatatypePropertyURI))
+        property.addDomain(model.getResource(SembaPaths.resourceDefinitionURI))
+        property.addLabel(ResourceFactory.createLangLiteral(rawKey, config.constants.language))
+        prop = Some(property)
         //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
          }
         else prop = None
     prop
   }
 
-  def setDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): ArrayBuffer[AnnotationValue] = {
-    var prop: Option[DatatypeProperty] = None
-    model.enterCriticalSection(Lock.WRITE)
-    var retVal = ArrayBuffer[AnnotationValue]()
-    try {
-      prop = Some(model.getDatatypeProperty(uri))
-    }
-
-    finally model.leaveCriticalSection()
-    if (prop.isDefined) {
-       retVal = setDatatypeProperty(prop.get, item.getOntModel, item, values)
-    }
-    retVal
+  def setDatatypeProperty(uri: String, itemURI: String, model: OntModel, values: Array[String]): ArrayBuffer[AnnotationValue] = {
+    val item = model.getIndividual(itemURI)
+    setDatatypeProperty(uri, item, model, values)
   }
 
-  def setDatatypeProperty(
-                           prop: DatatypeProperty, model: OntModel, item: Individual, values: Array[String]
-                         ): ArrayBuffer[AnnotationValue] = {
-    val functional = false /*{
-      model.enterCriticalSection(Lock.READ)
-      try {
-        prop.isFunctionalProperty
-      }
-      finally model.leaveCriticalSection()
-    }           */
-
-
-      if (functional) {
-        require(values.length == 1)
-        item.removeAll(prop)
-        item.addProperty(prop, values.head)
-      }
-
-      else {
+  def setDatatypeProperty(uri: String, item: Individual, model: OntModel, values:Array[String]): ArrayBuffer[AnnotationValue] = {
+    var propertyOption: Option[DatatypeProperty] = None
+    var retVal = AnnotationValue()
+    propertyOption = Some(model.getDatatypeProperty(uri))
+    require(propertyOption.isDefined)
+    val prop = propertyOption.get
+    if (prop.isFunctionalProperty) {
+      require(values.length == 1)
+      item.removeAll(prop)
+      item.addProperty(prop, values.head)
+      retVal = retVal.addValue(values.head)
+    }
+    else
+    {
+      {
         values.foreach(x => {
           item.addProperty(prop, model.createLiteral(x))
+          retVal = retVal.addValue(x)
         })
       }
-    ArrayBuffer[AnnotationValue](AnnotationValue().addAllValue(values))
+    }
+
+    ArrayBuffer[AnnotationValue](retVal)
   }
 
-  def removeDatatypeProperty(uri: String, model: OntModel, item: Individual, values: Array[String]): ArrayBuffer[AnnotationValue] =
+  def removeDatatypeProperty(uri: String, itemURI: String, model: OntModel,  values: Array[String]): ArrayBuffer[AnnotationValue] =
   {
-
-      val p =  model.getProperty(uri)
-      for( value <- values){
-        val o = model.createLiteral(value)
-        model.remove(item, p, o)
-      }
-  //TODO!
-
+      val item = model.getIndividual(itemURI)
+      removeDatatypeProperty(uri, item, model, values)
+  }
+  def removeDatatypeProperty(uri: String, item: Individual, model: OntModel, values: Array[String]): ArrayBuffer[AnnotationValue] = {
+    val p =  model.getProperty(uri)
+    values.foreach( v =>
+    {
+      model.remove(item, p, model.createLiteral(v))
+    }
+    )
+    //TODO!
     ArrayBuffer[AnnotationValue](AnnotationValue().addAllValue(values))
   }
 
@@ -145,44 +141,55 @@ object AccessMethods {
     * Retrieval
     */
 
-  def retrieveLibConcepts(model: OntModel): LibraryConcepts = {
+  def retrieveLibConcepts(model: OntModel, config: LibInfo): LibraryConcepts = {
     var retVal = new LibraryConcepts()
-      val metadataProperties =
-        Option(model.getDatatypeProperty(SembaPaths.metadataPropertyURI))
-      if (metadataProperties.isDefined) {
-        val iter = metadataProperties.get.listSubProperties()
-        while (iter.hasNext) {
-          val prop = iter.next()
-          val annotation = Convert.ann2grpc(prop.asDatatypeProperty())
-          retVal = retVal.addAnnotations((prop.getLocalName, annotation))
-        }
-      }
-      val relationProperties =
-        Option(model.getObjectProperty(SembaPaths.sembaRelationURI))
-      if (relationProperties.isDefined) {
-        val iter = relationProperties.get.listSubProperties()
-        while (iter.hasNext) {
-          val prop = iter.next()
-          val relation = Convert.rel2grpc(prop.asObjectProperty())
-          retVal = retVal.addRelations((prop.getLocalName, relation))
-        }
-      }
+    retVal = retVal.addAllAnnotations(listSubDatatypeProperties(model, SembaPaths.metadataPropertyURI, config))
+      .addAllCollectionRelations(listSubObjectProperties(model, SembaPaths.sembaCollectionRelationURI, config))
+      .addAllDescriptiveRelations(listSubObjectProperties(model, SembaPaths.sembaDescriptiveRelationURI, config))
+      .addAllGeneralRelations(listSubObjectProperties(model, SembaPaths.sembaGeneralRelationURI, config))
     retVal
+  }
+
+  def listSubDatatypeProperties(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String , Annotation)] = {
+    val annotations = Option(model.getDatatypeProperty(uri))
+    var retVal = ArrayBuffer[(String , Annotation)]()
+    if (annotations.isDefined) {
+       val iter = annotations.get.listSubProperties()
+        while (iter.hasNext) {
+        val prop = iter.next
+        val annotation = (prop.getLocalName, DatastructureMapping.wrapAnnotation(prop.asDatatypeProperty(), config))
+        retVal += annotation
+      }
+    }
+    retVal
+  }
+
+  def listSubObjectProperties(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String, Relation)] = {
+    val relations = Option(model.getObjectProperty(uri))
+    var retVal = ArrayBuffer[(String , Relation)]()
+    if (relations.isDefined) {
+      val iter = relations.get.listSubProperties()
+      while (iter.hasNext) {
+        val prop = iter.next
+        val relation = (prop.getLocalName, DatastructureMapping.wrapRelation(prop.asObjectProperty(), config))
+        retVal += relation
+      }
+    }
+    retVal
+
   }
 
   def retrieveLibContent(model: OntModel, lib: Library): LibraryContent = {
     var retVal = LibraryContent()
-    var indUris = ArrayBuffer[String]()
       val ontClass = model.getOntClass(SembaPaths.resourceDefinitionURI)
       var individuals = Option(model.listIndividuals(ontClass))
       if (individuals.isDefined) {
         var iter = individuals.get
         while (iter.hasNext) {
-          indUris += iter.next().getURI
+        val resource = iter.next()
+        retVal = retVal.addLibContent((resource.getURI, DatastructureMapping.wrapResource(resource, model)))
         }
       }
-
-    indUris.foreach(uri => retVal = retVal.addLibContent((uri, Convert.item2grpc(lib, uri, model))))
     retVal
   }
 
@@ -217,8 +224,6 @@ object AccessMethods {
   //TODO test for inverse property?
   def getCollectionItems(item: String, model: OntModel): scala.collection.mutable.HashMap[String, String] = {
     val retVal = scala.collection.mutable.HashMap[String,String]()
-    model.enterCriticalSection(Lock.READ)
-    try {
       val linksToSource = model.getProperty(SembaPaths.linksToSource)
       val individual = model.getIndividual(item)
       val results = model.listSubjectsWithProperty(linksToSource, individual)
@@ -230,8 +235,6 @@ object AccessMethods {
           retVal.put(collections.next().asResource().getURI, collItem.getURI)
         }
       }
-    }
-    finally model.leaveCriticalSection()
     retVal
   }
 
@@ -250,26 +253,24 @@ object AccessMethods {
       ind.removeProperty(prop, destInd)
   }
 
-  def updateMetadata(dataSet: Map[String, Array[String]], item: String, model: OntModel, delete: Boolean ): Unit ={
+  def updateMetadata(dataSet: Map[String, AnnotationValue], item: String, model: OntModel, delete: Boolean ): Unit ={
     var ind : Option[Individual] = None
     ind = Option(model.getIndividual(item))
 
     if (ind.isDefined){
     for((prop, values) <- dataSet)
       {
-        if (delete) setDatatypeProperty(prop, model, ind.get, values)
-        else removeDatatypeProperty(prop, model, ind.get, values)
+        if (!delete) setDatatypeProperty(prop, ind.get, model, values.value.toArray)
+        else removeDatatypeProperty(prop, ind.get, model, values.value.toArray)
       }
     }
   }
 
-  def addCollectionItem(collection: String, item: String, model: OntModel) = {
-    //TODO import item ontmodel in collection?
-       val newUri = Convert.uri2ont(collection) + UUID.randomUUID()
+  def addCollectionItem(collection: String, item: String, model: OntModel, config: LibInfo): CollectionItem = {
+       val newUri = config.libURI + UUID.randomUUID()
        val collItem = model.createIndividual(newUri, model.getOntClass(SembaPaths.collectionItemURI))
        val coll = model.getIndividual(collection)
-       val itemModel = getModelForItem(item)
-       val itemIndividual = itemModel.getIndividual(item)
+       val itemIndividual = model.getIndividual(item)
        val hasMediaItem = model.getObjectProperty(SembaPaths.hasMediaItem)
        val hasCollectionItem = model.getObjectProperty(SembaPaths.hasCollectionItem)
        val isPart = model.getObjectProperty(SembaPaths.isPartOfCollection)
@@ -277,9 +278,10 @@ object AccessMethods {
 
        collItem.setPropertyValue(model.getProperty(SembaPaths.linksToSource),itemIndividual )
        collItem.setPropertyValue(isPart, coll)
-        coll.setPropertyValue(hasCollectionItem, collItem)
-       if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
-      //TODO figure out URI and CI format
+       itemIndividual.setPropertyValue(isPart,collItem)
+       coll.setPropertyValue(hasCollectionItem, collItem)
+       //if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
+      DatastructureMapping.wrapCollectionItem(collItem, model)
   }
 
   def retrieveSimpleSearchStatements(): Unit ={
@@ -292,7 +294,36 @@ object AccessMethods {
     ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF, retVal)
   }
 
+  def uriExists(uri: String, model: OntModel): Boolean = {
+    var toCheck = ResourceFactory.createResource(uri)
+    model.containsResource(toCheck)
+  }
 
+  def createName(baseURI: String, name: String, model: OntModel): String = {
+    val sanitizedName = TextFactory.sanitizeFilename(name)
+    var itemName = sanitizedName
+    var counts = 1
+    while(uriExists((baseURI + itemName), model )){
+      itemName = sanitizedName + "-" + counts
+      counts += 1
+    }
+    itemName
+  }
+
+  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo): Resource = {
+    val itemName = createName(config.libURI, name, model)
+    val uri = config.libURI + itemName
+    val root =  config.constants.dataPath + "/" + itemName + "/"
+    val item = model.createIndividual(uri, model.getOntClass(ontClass))
+    item.addProperty(model.getProperty(SembaPaths.sourceLocationURI),
+       root + fileName)
+    item.addProperty(model.getProperty(SembaPaths.thumbnailLocationURI),
+      root + config.constants.thumbnail
+    )
+    item.addProperty(model.getProperty(SembaPaths.sembaTitle),
+      name)
+    DatastructureMapping.wrapResource(item, model)
+  }
 
 
 

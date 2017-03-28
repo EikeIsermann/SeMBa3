@@ -3,13 +3,13 @@ package logic.resourceCreation.metadata
 import java.io.{File, FileInputStream}
 
 import akka.actor.{Actor, ActorRef, Props}
-
 import logic.core.{JobExecution, JobProtocol, JobResult}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractMetadata, MetadataResult}
 import org.apache.tika.Tika
 import org.apache.tika.metadata.{Metadata, Property, TikaCoreProperties}
 import org.apache.tika.parser.AutoDetectParser
 import sembaGRPC.{AnnotationValue, ItemDescription}
+import utilities.TextFactory
 
 
 /**
@@ -39,6 +39,10 @@ class TikaExtractor extends Actor with JobExecution {
     metadata.names().map( x => description = description.addMetadata(
       (x, new AnnotationValue(metadata.getValues(x)))
     ))
+    description = description.update(_.name :=
+      Option(metadata.get(TikaCoreProperties.TITLE))
+        .getOrElse(TextFactory.omitExtension(src.getAbsolutePath))
+    )
     stream.close()
     MetadataResult(description)
   }

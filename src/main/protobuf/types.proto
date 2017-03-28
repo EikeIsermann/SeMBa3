@@ -32,7 +32,9 @@ message Library {
 message LibraryConcepts {
     Library lib = 1;
     map<string, Annotation> annotations = 2;
-    map<string, Relation> relations = 3;
+    map<string, Relation> collectionRelations = 3;
+    map<string, Relation> descriptiveRelations = 5;
+    map<string, Relation> generalRelations = 6;
     map<string, CollectionClass> classes = 4;
 }
 
@@ -54,6 +56,7 @@ message Resource {
     string uri = 3;
     string name = 4;
     string thumbnailLocation = 5;
+    string sourceFile = 6;
     //repeated Annotation properties = 6;
 }
 
@@ -78,6 +81,7 @@ message LibraryContent {
 message ItemDescription {
     string itemURI = 1;
     map<string, AnnotationValue> metadata = 2;
+    string name = 3;
 }
 
 

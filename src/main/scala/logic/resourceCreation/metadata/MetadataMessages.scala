@@ -19,7 +19,7 @@ object MetadataMessages {
   case class ExtractThumbnail(src: File, config: Config) extends JobProtocol
   case class ThumbnailResult(content: URI) extends JobResult
   case class ExtractionJob(importJob: ImportNewItem) extends JobProtocol
-
+  case class StorageJob(importJob: ImportNewItem) extends JobProtocol
 
 
 }
