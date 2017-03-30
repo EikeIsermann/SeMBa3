@@ -72,7 +72,7 @@ object SembaPaths {
 
   val mainUri = getString("sembaMainURI")
 
-  val sourceLocationURI = getString("sourceLocation")
+  val sourceLocationURI = getString("sourceLocationURI")
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }

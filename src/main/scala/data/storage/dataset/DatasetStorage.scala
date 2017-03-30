@@ -10,6 +10,7 @@ import logic.core.{JobHandling, JobProtocol, JobReply, LibInfo}
 import org.apache.jena.ontology.{OntModel, OntModelSpec}
 import org.apache.jena.query.ReadWrite
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.reasoner.ReasonerRegistry
 import org.apache.jena.shared.Lock
 import org.apache.jena.tdb.{TDB, TDBFactory}
 
@@ -18,54 +19,96 @@ import org.apache.jena.tdb.{TDB, TDBFactory}
   * This is a SeMBa3 class
   */
 class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
-  val loc = new File(new URI(config.constants.storagePath)).getAbsolutePath
+  val tBoxName = "tBox"
+  val aBoxName = "aBox"
+  val deductionsName = "deductions"
+
+  val loc = new File(new URI(config.rootFolder + config.constants.storagePath)).getAbsolutePath
   val data = TDBFactory.createDataset(loc)
   data.getContext.set(TDB.symUnionDefaultGraph, true)
-  val basemodel = ModelFactory.createOntologyModel()
-  val path = config.constants.baseOntologyURI
-  basemodel.enterCriticalSection(Lock.WRITE)
+  val tBox = ModelFactory.createOntologyModel()
+  val path = config.libURI
+
+  tBox.enterCriticalSection(Lock.WRITE)
     try {
       if (!Files.exists(Paths.get(new URI(path)))) {
-        basemodel.createOntology(path)
-        basemodel.addLoadedImport(SembaPaths.mainUri)
-        basemodel.setNsPrefix(SembaPaths.mainUri, "main")
-        basemodel.setNsPrefix(path, "")
+        tBox.createOntology(path)
+        tBox.addLoadedImport(SembaPaths.mainUri)
+        tBox.setNsPrefix(SembaPaths.mainUri, "main")
+        tBox.setNsPrefix(path, "")
       }
       else {
-        AccessMethods.load(basemodel, path)
+        AccessMethods.load(tBox, path)
       }
     }
-    finally basemodel.leaveCriticalSection()
+    finally tBox.leaveCriticalSection()
 
   data.begin(ReadWrite.WRITE)
   try{
-    var model = data.getNamedModel(path)
-    model = model.union(basemodel)
-    val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, basemodel)
-    data.addNamedModel(path, withReasoning)
+    var model = Option(data.getNamedModel(tBoxName))
+    var unionModel = model.getOrElse(tBox).union(tBox)
+    val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, unionModel)
+    data.addNamedModel(tBoxName, withReasoning)
+    if(!data.containsNamedModel(aBoxName))
+      {
+        data.addNamedModel(aBoxName, ModelFactory.createDefaultModel())
+      }
     data.commit()
   }
   finally data.end()
 
-  override def getModel(uri: String): Model = ???
 
-  override def getOntModel(uri: String): OntModel = ???
+  override def getABox(): OntModel = {
+    val schema = data.getNamedModel(tBoxName)
+    val aBoxModel =  ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_RDFS_INF,
+      data.getNamedModel(aBoxName))
+    aBoxModel.addSubModel(schema)
+    aBoxModel
+    //val reasoner = ReasonerRegistry.getOWLMicroReasoner.bindSchema(schema)
+    //ModelFactory.createInfModel(reasoner, aBoxModel)
+  }
 
-  override def getUnionModel(): Model = ???
+  override def getTBox(): OntModel = {
+     ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RDFS_INF,
+       data.getNamedModel(tBoxName))
+  }
 
-  override def getBaseModel(): Model = ???
+  override def saveTBox(model: OntModel) = {
+    if(data.getLock.equals(Lock.WRITE))
+    data.addNamedModel(tBoxName, model)
+  }
 
-  override def performRead(model: Model): Unit = ???
+  override def saveABox(model: OntModel) = {
+    if(data.getLock.equals(Lock.WRITE))
+      data.addNamedModel(aBoxName, model.getBaseModel)
+  }
 
-  override def performWrite(model: Model): Unit = ???
+  //TODO even if this works - look into separating deductions, having InfModels
+  //TODO or plain Models in Union for read access and separating the reasoning process
 
-  override def endRead(model: Model): Unit = ???
+  override def performRead[T](f: => T): T = {
+    var retVal = None: Option[T]
+    data.begin(ReadWrite.READ)
+    try {
+      retVal = Option(f)
+      data.commit()
 
-  override def endWrite(model: Model): Unit = ???
+    }
+     //TODO ExceptionHandling
+    finally data.end()
+    retVal.get
 
-  override def save(): Unit = ???
+  }
 
-  override def load(path: URI): Unit = ???
+  override def performWrite[T](f: => T): T = {
+    var retVal = None: Option[T]
+    data.begin(ReadWrite.WRITE)
+    try {
+      retVal = Option(f)
+      data.commit()
 
-  override def containsModel(uri: String): Boolean = ???
+    }
+    finally data.end()
+    retVal.get
+  }
 }

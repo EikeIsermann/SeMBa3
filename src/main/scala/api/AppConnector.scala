@@ -27,15 +27,25 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Case classes for sending gRPC calls to Semba Actors
   */
-trait SembaApiCall extends JobProtocol
+abstract class SembaApiCall extends JobProtocol
 
-case class OpenLib() extends SembaApiCall
+trait RequestResult{val resultClass: Class[_]}
+
+case class OpenLib(resultClass: Class[_] = classOf[LibraryConcepts])
+  extends SembaApiCall with RequestResult
+
+case class GetMetadata(resource: Resource,
+                       resultClass: Class[_] = classOf[ItemDescription])
+  extends SembaApiCall with RequestResult
+
+case class RequestContents(library: Library,
+                           resultClass: Class[_] = classOf[LibraryContent])
+  extends SembaApiCall with RequestResult
+
 
 case class RemoveCollectionItem(collectionItem: CollectionItem) extends SembaApiCall
 
-case class GetMetadata(resource: Resource) extends SembaApiCall
 
-case class RequestContents(library: Library) extends SembaApiCall
 
 case class AddToLibrary(sourceFile: SourceFile) extends SembaApiCall
 

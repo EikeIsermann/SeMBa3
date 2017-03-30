@@ -1,6 +1,6 @@
 package logic.itemModification
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Props}
 import api._
 import logic.core._
 
@@ -8,9 +8,9 @@ import logic.core._
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-trait ItemModification extends Actor with ActorFeatures with JobHandling with AccessToStorage{
+trait ItemModification extends SembaBaseActor with AccessToStorage{
 
-  override def initialization(): Unit = {
+abstract override def initialization(): Unit = {
     super.initialization()
   }
 
@@ -34,5 +34,5 @@ trait ItemModification extends Actor with ActorFeatures with JobHandling with Ac
     }
     case x => super.receive(x)
   }
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
 }

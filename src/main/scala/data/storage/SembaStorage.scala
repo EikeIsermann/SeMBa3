@@ -6,7 +6,9 @@ import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import data.storage.dataset.DatasetStorage
-import logic.core.{JobHandling, JobProtocol, JobResult, LibInfo}
+import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest}
+import logic.core._
+import logic.resourceCreation.CreationStorageMethods.CreateInStorage
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.Model
 import utilities.SembaConstants.StorageSolution
@@ -16,15 +18,35 @@ import utilities.SembaConstants.StorageSolution
   * This is a SeMBa3 class
   */
 
-class SembaStorage(config: LibInfo) extends Actor with JobHandling {
+class SembaStorage(config: LibInfo) extends Actor with ActorFeatures with JobHandling {
 
   val storage: SembaStorageComponent = SembaStorageComponent.getStorage(config)
-  val readExecutor = context.actorOf(new RoundRobinPool(10).props(ReadExecutor.props(storage)))
+  val readExecutors = context.actorOf(new RoundRobinPool(10).props(ReadExecutor.props(storage)))
   val writeExecutor = context.actorOf(WriteExecutor.props(storage))
 
-  override def receive: Receive = ???
+  override def preStart(): Unit = {
+    context.parent ! InitializationComplete(self)
+    super.preStart()
+  }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
+  def wrappedReceive: Receive = {
+    case read: StorageReadRequest => handleReadRequest(read, sender())
+
+    case write: StorageWriteRequest => handleWriteRequest(write, sender())
+  }
+
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+    master ! JobReply(job, results)
+  }
+
+  def handleReadRequest(read: StorageReadRequest, master: ActorRef) = {
+    readExecutors ! forwardJob(read, master)
+  }
+
+  def handleWriteRequest(write: StorageWriteRequest, master: ActorRef) = {
+    writeExecutor ! forwardJob(write, master)
+  }
+
 }
 
 
@@ -55,6 +77,10 @@ abstract class SembaStorageComponent {
   def getABox(): OntModel
 
   def getTBox(): OntModel
+
+  def saveABox(model: OntModel)
+
+  def saveTBox(model: OntModel)
 
   def performRead[T](f: => T): T
 

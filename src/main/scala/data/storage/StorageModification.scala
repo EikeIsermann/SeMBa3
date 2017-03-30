@@ -10,7 +10,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock
 import sembaGRPC._
 import utilities.{Convert, UpdateMessageFactory}
-          /
+          /*
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class

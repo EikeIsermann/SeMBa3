@@ -1,6 +1,6 @@
 package logic.core
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
 import api.SparqlFilter
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
@@ -14,7 +14,7 @@ import org.apache.jena.shared.Lock
 
 
 //TODO SimpleSearch, Sparql Request, JobHandler
-class Search(model: OntModel) extends Actor with JobHandling {
+class Search(model: OntModel) extends Actor with ActorFeatures with JobHandling {
   var searchableModel: OntModel = _
   /*
   override def preStart(): Unit = {
@@ -24,7 +24,7 @@ class Search(model: OntModel) extends Actor with JobHandling {
 
   }
       */
-  override def receive: Receive = {
+  def wrappedReceive: Receive = {
     case job: JobProtocol => {
       acceptJob(job, sender())
 //      self ! handleJob(job)
@@ -64,6 +64,8 @@ class Search(model: OntModel) extends Actor with JobHandling {
    finally model.leaveCriticalSection()
 
  }
+
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
 }
 
 

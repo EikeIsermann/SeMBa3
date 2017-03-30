@@ -179,8 +179,8 @@ object AccessMethods {
 
   }
 
-  def retrieveLibContent(model: OntModel, lib: Library): LibraryContent = {
-    var retVal = LibraryContent()
+  def retrieveLibContent(model: OntModel, config: LibInfo): LibraryContent = {
+    var retVal = LibraryContent().withLib(Library(config.libURI))
       val ontClass = model.getOntClass(SembaPaths.resourceDefinitionURI)
       var individuals = Option(model.listIndividuals(ontClass))
       if (individuals.isDefined) {

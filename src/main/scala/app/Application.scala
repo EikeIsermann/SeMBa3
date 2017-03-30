@@ -49,7 +49,7 @@ object Application extends App {
     */
   def loadLibrary(path: String, session: UUID): ActorRef = {
     if (!libraries.contains(path)) {
-      val backend = system.actorOf(Props(new Semba(path)))
+      val backend = system.actorOf(Props(new Semba(path)), "SembaActor")
       libraries.put(path, backend)
     }
     if (!sessions.contains(path)) sessions.put(path, ArrayBuffer[UUID](session))

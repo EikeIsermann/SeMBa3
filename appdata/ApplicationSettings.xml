@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <application>
 <paths>
-    <ontologyDefinition>appdata\semba-main.owl</ontologyDefinition>
-    <libraryDefinition>appdata\libraries</libraryDefinition>
     <libraryConfigurationFile>config.xml</libraryConfigurationFile>
-<libraryRootFolder>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder</libraryRootFolder>
+    <libraryRootFolder>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#libraryRootFolder</libraryRootFolder>
+    <resourceDefinitionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource</resourceDefinitionURI>
     <itemClassURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem</itemClassURI>
-    <collectionClassURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaCollection</collectionClassURI>
+    <collectionClassURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#CollectionItem</collectionClassURI>
     <thumbnailLocationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#thumbLocation</thumbnailLocationURI>
     <generatedDatatypePropertyURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#generatedProperty</generatedDatatypePropertyURI>
     <customDatatypePropertyURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaMetadata</customDatatypePropertyURI>
     <metadataPropertyURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaMetadata</metadataPropertyURI>
-    <sembaRelationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaRelation"</sembaRelationURI>
+    <sembaCollectionRelationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaCollectionRelation"</sembaCollectionRelationURI>
+    <sembaDescriptiveRelationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaDescriptiveRelation"</sembaDescriptiveRelationURI>
+    <sembaGeneralRelationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaGeneralRelation"</sembaGeneralRelationURI>
     <sembaTitleURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaTitle</sembaTitleURI>
     <mediaItemLink>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#linksToMediaItem</mediaItemLink>
     <isPartOfCollectionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#isPartOfCollection</isPartOfCollectionURI>
     <hasCollectionItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#containsCollectionItem</hasCollectionItemURI>
-    <collectionItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#CollectionItem</collectionItemURI>
-    <resourceDefinitionURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource</resourceDefinitionURI>
+    <collectionItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaCollection</collectionItemURI>
     <hasMediaItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasMediaItem</hasMediaItemURI>
     <sembaMainURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl</sembaMainURI>
+    <sourceLocationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sourceLocation</sourceLocationURI>
+    <ontologyDefinition>appdata\semba-main.owl</ontologyDefinition>
+    <libraryDefinition>appdata\libraries</libraryDefinition>
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>

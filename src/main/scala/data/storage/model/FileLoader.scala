@@ -1,10 +1,8 @@
 package data.storage.model
 
-import akka.actor.Actor
-import logic.{JobHandling, JobReply}
-import data.storage.RegisterOntology
+import akka.actor.{Actor, ActorRef}
 import globalConstants.SembaPresets
-import logic.core.{JobHandling, JobProtocol, JobReply}
+import logic.core._
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory
@@ -17,15 +15,15 @@ import utilities.FileFactory
 
 //TODO Scaladoc
 
-class FileLoader extends Actor with JobHandling{
+class FileLoader extends Actor with ActorFeatures with JobHandling{
 
-  override def receive: Receive = {
+   def wrappedReceive: Receive = {
     case load: LoadFolder => {
       acceptJob(load, sender())
       readFolder(load)
-      self ! JobReply(load)
+     // self ! JobReply(load)
     }
-    case reply: JobReply => handleReply(reply, self)
+    case reply: JobReply => handleReply(reply)
   }
 
 
@@ -36,7 +34,7 @@ class FileLoader extends Actor with JobHandling{
       ontology.read(source.toString)
        //if(ontology.hasLoadedImport("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl")) {
          val uri = ontology.getNsPrefixURI("resource") + job.libInfo.constants.itemName
-         job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
+         //job.libInfo.libAccess ! createJob(RegisterOntology(uri, ontology), job)
 
       // }
 
@@ -44,5 +42,5 @@ class FileLoader extends Actor with JobHandling{
     }
   }
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
 }

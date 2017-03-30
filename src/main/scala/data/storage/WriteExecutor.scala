@@ -1,21 +1,21 @@
 package data.storage
 
-import akka.actor.{Actor, ActorRef, Props}
-import akka.actor.Actor.Receive
-import logic.core.{JobHandling, JobProtocol, JobReply, JobResult}
-import org.apache.jena.rdf.model.Model
+import akka.actor.{Actor, Props}
+import globalConstants.GlobalMessages.StorageWriteRequest
+import logic.core._
 
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class WriteExecutor(storage: SembaStorageComponent) extends Actor with JobHandling {
-  override def receive: Receive = ???
+class WriteExecutor(storage: SembaStorageComponent) extends Actor with JobExecution {
+  override def handleJob(job: JobProtocol): JobResult = {
+    job match{
+      case write: StorageWriteRequest => write.operation(storage)
+      case _ => JobResult(ErrorResult())
+    }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = ???
-
-
-
+  }
 }
 object WriteExecutor {
   def props(storage: SembaStorageComponent): Props = Props(new WriteExecutor(storage))

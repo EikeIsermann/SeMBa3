@@ -1,7 +1,7 @@
 package globalConstants
 
 import data.storage.SembaStorageComponent
-import logic.core.{JobProtocol, JobResult}
+import logic.core.{JobProtocol, JobResult, ResultContent}
 import sembaGRPC.{ItemDescription, UpdateMessage}
 
 import scala.collection.mutable.ArrayBuffer
@@ -12,19 +12,17 @@ import scala.collection.mutable.ArrayBuffer
   */
 object GlobalMessages {
 
-  case class UpdateResult(messages: ArrayBuffer[UpdateMessage]) extends JobResult
+
+  case class UpdateResult(payload: ArrayBuffer[UpdateMessage]) extends ResultContent
 
   abstract class StorageOperation() extends JobProtocol
 
-  abstract case class StorageReadRequest[T](operation: (SembaStorageComponent => T)) extends StorageOperation
+  abstract class StorageReadRequest(val operation: (SembaStorageComponent => JobResult)) extends StorageOperation
 
-  case class StorageWriteRequest(operation: (SembaStorageComponent => UpdateResult)) extends StorageOperation
+  abstract  class StorageWriteRequest(val operation: (SembaStorageComponent => JobResult)) extends StorageOperation
 
-  case class ReadMetadataResult(itemDescription: ItemDescription) extends JobResult
-  case class ReadMetadataRequest() extends StorageReadRequest(test(_ : SembaStorageComponent))
-  def test(sembaStorageComponent: SembaStorageComponent): ReadMetadataResult = {
-    ReadMetadataResult(ItemDescription())
+
   }
 
 
-}
+

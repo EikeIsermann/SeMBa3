@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
-import logic.MainJob
+import globalConstants.SembaPaths
 import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import org.apache.jena.graph.Node
@@ -44,10 +44,13 @@ object TestClient extends App {
   var testSessionID: String = ""
   var test: LibraryConcepts = LibraryConcepts()
   testSessionID = client.registerSession().sessionID
-  var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
+  var testLib = Library(uri = "file:///Users/uni/Desktop/library/")
   println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
+  println(client.getContent(testLib))
 
-  tests()
+  //client.addItem("file:/users/uni/desktop/Unknown-1.jpeg", testLib)
+
+  //tests()
 
 
   def tests()  ={
@@ -139,7 +142,7 @@ class TestClient private(
   def addItem(src: String, lib: Library): VoidResult = {
     //logger.info("Trying to add item")
     var retVal = VoidResult()
-    val source = SourceFile().withLibrary(lib).withPath(src)
+    val source = SourceFile().withLibrary(lib).withPath(src).withOntClass(SembaPaths.itemClassURI)
     try {
       retVal = blockingStub.addToLibrary(source)
     }
@@ -153,7 +156,7 @@ class TestClient private(
   def addColl(collName: String, clazz: String, lib: Library): VoidResult = {
     logger.info("Trying to add collection")
     var retVal = VoidResult()
-    val source = SourceFile().withLibrary(lib).withColl(NewCollection(ontClass = clazz, name = collName))
+    val source = SourceFile().withLibrary(lib).withOntClass(clazz).withColl(NewCollection(name = collName))
     try {
       retVal = blockingStub.addToLibrary(source)
     }

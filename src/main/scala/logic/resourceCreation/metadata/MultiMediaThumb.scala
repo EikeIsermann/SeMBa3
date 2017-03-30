@@ -2,7 +2,7 @@ package logic.resourceCreation.metadata
 
 import java.net.URI
 
-import logic.core.JobResult
+import logic.core.{JobResult, ResultContent}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 
 /**
@@ -12,7 +12,7 @@ import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, Thumb
 //TODO implement VLCJ Library
 
 class MultiMediaThumb extends ThumbActor {
-  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
+  override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
    ThumbnailResult(URI.create("TODO"))
   }
 }

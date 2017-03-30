@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.routing.RoundRobinPool
 import data.storage.model.FileLoader
 import logic._
-import logic.core.{JobExecution, JobProtocol, JobResult}
+import logic.core._
 import logic.resourceCreation.metadata.MetadataMessages.ExtractThumbnail
 import org.apache.tika.Tika
 
@@ -20,17 +20,21 @@ import scala.collection.mutable.HashMap
 
 abstract class ThumbActor extends Actor with JobExecution {
 
+
   override def handleJob(job: JobProtocol): JobResult = {
     job match {
-      case thumb: ExtractThumbnail => createThumbnail(thumb)
+      case thumb: ExtractThumbnail =>  JobResult(createThumbnail(thumb))
+      case _ => JobResult(ErrorResult())
     }
+
   }
 
   /** ThumbnailActors only need to implement createThumbnail providing logic to render and write the image.
     *
     * @param thumb
     */
-  def createThumbnail(thumb: ExtractThumbnail): JobResult
+
+  def createThumbnail(thumb: ExtractThumbnail): ResultContent
 
 
 }

@@ -34,37 +34,36 @@ import scala.concurrent.{Await, Future}
   * Created by Eike on 06.04.2016.
   */
 
-case class LibInfo(system: ActorSystem, library: Dataset, basemodel: Agent[OntModel], libraryLocation: URI, constants: Config, libAccess: ActorRef, libURI: String)
-//abstract class SembaBaseActor extends
-
-class Semba(val root: String) extends Actor with Stash with ActorFeatures
-  with JobHandling with AccessToStorage with ResourceCreation with DataExport  {
-
-  var config: Config = _
-  val system = context.system
+case class LibInfo(system: ActorSystem, constants: Config, libAccess: ActorRef, libURI: String, rootFolder: String)
+abstract class SembaBaseActor(val root: String) extends Actor with Stash with Initialization with ActorFeatures with JobHandling
+{
   val libRoot = new URI(root)
+  val config: Config = initializeConfig()
+  val system = context.system
   initializeConfig()
   val libraryLocation: URI = new URI(libRoot + config.dataPath)
 
+  def initializeConfig(): Config
+  def libInfo(): LibInfo
 
-  override def preStart() = {
+}
 
-  }
+class Semba(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation //with DataExport
+{
 
 
-  def initializeConfig(): Unit ={
+  def initializeConfig(): Config = {
     val libConfig = Paths.get(new URI(libRoot + SembaPaths.libConfiguration))
     if(!Files.exists(libConfig))
     {
        Files.copy(Paths.get("/src", "resources", "config.xml"), Paths.get(libRoot))
     }
     //TODO update baseOntologyURI to current path!
-    config = new Config(libConfig.toUri)
+    new Config(libConfig.toUri, root)
   }
 
-  override def receive: Receive = {
-
-
+  override def wrappedReceive: Receive =
+  {
 
     case jobReply: JobReply => {
       handleReply(jobReply)
@@ -74,6 +73,8 @@ class Semba(val root: String) extends Actor with Stash with ActorFeatures
     case _ => {
     }
   }
+  def libInfo: LibInfo = LibInfo(system, config, queryExecutor, config.baseOntologyURI, root)
+
   /*
   override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {
     updates(jobProtocol.jobID).foreach(update => Application.api ! update)
@@ -85,13 +86,6 @@ class Semba(val root: String) extends Actor with Stash with ActorFeatures
     system.actorOf(Props[FileRemover]) ! createMasterJob(RemoveFromOntology(resource, libAccess), self)
     VoidResult().withAccepted(true)
   }
-
-
-
-
-
-
-  def libInfo: LibInfo = LibInfo(system, ontology, basemodel, libraryLocation, config, queryExecutor, path)
 
   def getConcepts(): LibraryConcepts = {
     LibraryAccess.retrieveLibConcepts(basemodel()).withLib(Convert.lib2grpc(path))
@@ -105,24 +99,26 @@ class Semba(val root: String) extends Actor with Stash with ActorFeatures
     LibraryAccess.retrieveMetadata(item, ontology)
   }
    */
+
 }
 
-class Config(path: URI) {
+class Config(path: URI,  root: String) {
+  val rootFolder = root
   val configFile = XMLFactory.getXMLAsElemAdv(path)
+  val name = getString("libraryName")
   val baseOntologyURI = getString("baseOntologyURI")
   val itemClassURI = getString("itemClassURI")
   val defaultCollectionIcon = getString("defaultCollectionIcon")
   val ontName = getString("ontName")
   val itemName = getString("itemName")
   val thumbResolution = getString("thumbnailResolution")
-  val lang = getString("language")
   val thumbnail = getString("thumbnailIdentifier")
   val dataPath = getString("dataPath")
   val storagePath = getString("libraryPath")
   val storageType = StorageSolution.withName(getString("storageType"))
   val temp = getString("temporaryFolder")
-  val name = getString("libraryName")
   val language = getString("language")
+  val lang = getString("language")
 
 
   def getString(s: String): String = configFile.getValueAt("config", s)

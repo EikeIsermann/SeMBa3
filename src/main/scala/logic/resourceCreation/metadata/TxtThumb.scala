@@ -9,7 +9,7 @@ import java.util
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import logic.core.JobResult
+import logic.core.{JobResult, ResultContent}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.apache.commons.io.IOUtils
 import org.imgscalr.Scalr.pad
@@ -20,9 +20,9 @@ import org.imgscalr.Scalr.pad
   */
 class TxtThumb extends ThumbActor {
 
-  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
+  override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
     val src = IOUtils.toString(thumb.src.toURI)
-    val path = new URI(thumb.config.temp + UUID.randomUUID())
+    val path = new URI(thumb.config.rootFolder + thumb.config.temp + UUID.randomUUID())
     val res = thumb.config.thumbResolution.toInt - TxtThumb.padding
     val thumbnail = new BufferedImage(res, res, BufferedImage.TYPE_INT_RGB)
     val bounds = TxtThumb.font.getStringBounds(src, new FontRenderContext(null, true, true))

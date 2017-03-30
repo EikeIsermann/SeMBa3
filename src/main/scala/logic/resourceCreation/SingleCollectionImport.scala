@@ -25,9 +25,9 @@ import scala.collection.mutable
 
 case class CreateCollection(newColl: NewCollection, ontClass: String, libInfo: LibInfo) extends JobProtocol
 
-class SingleCollectionImport extends Actor with JobHandling {
-  override def receive: Receive = {
+class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
 
+  def wrappedReceive: Receive = {
     case job: CreateCollection => {
       acceptJob(job, context.sender())
       createCollection(job)
@@ -50,10 +50,10 @@ class SingleCollectionImport extends Actor with JobHandling {
   }
 
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = {
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
     job match {
       case createCollection: CreateCollection => {
-        master ! JobReply(createCollection, UpdateResult(results.processUpdates()))
+        master ! JobReply(createCollection, results)
       }
     }
   }

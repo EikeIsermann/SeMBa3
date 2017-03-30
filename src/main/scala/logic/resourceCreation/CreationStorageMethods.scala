@@ -5,7 +5,7 @@ import java.net.URI
 
 import data.storage.{AccessMethods, DatastructureMapping, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest, UpdateResult}
-import logic.core.{JobProtocol, JobReply, JobResult, LibInfo}
+import logic.core._
 import sembaGRPC._
 import utilities.{TextFactory, UpdateMessageFactory}
 
@@ -22,13 +22,17 @@ object CreationStorageMethods {
 
 
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
-                       config: LibInfo, storage: SembaStorageComponent): UpdateResult =
+                       config: LibInfo, storage: SembaStorageComponent): JobResult =
    {
+
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
 
      val newResource = storage.performWrite(
         {
-           AccessMethods.createItem(storage.getABox, desc.name, ontClass, fileName, config )
+          val model = storage.getABox()
+          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config )
+          storage.saveABox(model)
+          res
         }
      )
 
@@ -37,7 +41,8 @@ object CreationStorageMethods {
      var itemDescription = desc
      val generatedProperties = storage.performWrite(
        {
-         itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, storage.getTBox(), config))
+         val model = storage.getTBox()
+         val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, model, config))
            .foldLeft(Map.empty[String, Annotation])
            {
              case (annotations, property) =>
@@ -46,6 +51,8 @@ object CreationStorageMethods {
              else annotations
              }
            }
+         storage.saveTBox(model)
+         desc
        }
      )
      update = update.withConcepts(LibraryConcepts().withAnnotations(generatedProperties))
@@ -58,11 +65,16 @@ object CreationStorageMethods {
      itemDescription = itemDescription.withMetadata(validKeys)
 
      val setProperties = storage.performWrite(
-        AccessMethods.updateMetadata(itemDescription.metadata, newResource.uri, storage.getABox, false)
+       {
+       val model = storage.getABox()
+        val props = AccessMethods.updateMetadata(itemDescription.metadata, newResource.uri, model, false)
+        storage.saveABox(model)
+        props
+       }
      )
      update = update.addDescriptions(itemDescription)
 
-     UpdateResult(ArrayBuffer[UpdateMessage](update))
+     JobResult(UpdateResult(ArrayBuffer[UpdateMessage](update)))
    }
 
 

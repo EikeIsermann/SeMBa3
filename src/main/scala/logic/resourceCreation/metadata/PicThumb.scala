@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import logic.core.JobResult
+import logic.core.{JobResult, ResultContent}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.imgscalr.Scalr
 
@@ -15,8 +15,8 @@ import org.imgscalr.Scalr
   */
 class PicThumb extends ThumbActor {
 
-  override def createThumbnail(job: ExtractThumbnail): JobResult = {
-    val path = new URI(job.config.temp + UUID.randomUUID())
+  override def createThumbnail(job: ExtractThumbnail): ResultContent = {
+    val path = new URI(job.config.rootFolder + job.config.temp + UUID.randomUUID())
     val imgBuff = ImageIO.read(job.src)
     val pic = Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, job.config.thumbResolution.toInt, job.config.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)

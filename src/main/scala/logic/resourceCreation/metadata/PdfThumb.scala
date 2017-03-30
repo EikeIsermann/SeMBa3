@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import logic.core.JobResult
+import logic.core.{JobResult, ResultContent}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
@@ -22,11 +22,11 @@ class PdfThumb extends ThumbActor {
     *
     * @param thumb [[ExtractThumbnail]] containing the required information
     */
-  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
+  override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
     val doc = PDDocument.load(thumb.src)
     val renderer = new PDFRenderer(doc)
     val imgBuff = renderer.renderImage(0)
-    val path = new URI(thumb.config.temp + UUID.randomUUID())
+    val path = new URI(thumb.config.rootFolder + thumb.config.temp + UUID.randomUUID())
     Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, thumb.config.thumbResolution.toInt, thumb.config.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
     ImageIO.write(imgBuff, "jpeg", new File(path))

@@ -14,25 +14,15 @@ import org.apache.jena.rdf.model.Model
   * This is a SeMBa3 class
   */
 class ModelBasedStorage extends SembaStorageComponent {
-  override def getModel(uri: String): Model = ???
+  override def getABox(): OntModel = ???
 
-  override def getOntModel(uri: String): OntModel = ???
+  override def getTBox(): OntModel = ???
 
-  override def getUnionModel(): Model = ???
+  override def performRead[T](f: => T): T = ???
 
-  override def getBaseModel(): Model = ???
+  override def performWrite[T](f: => T): T = ???
 
-  override def performRead(model: Model): Unit = ???
+  override def saveABox(model: OntModel): Unit = ???
 
-  override def performWrite(model: Model): Unit = ???
-
-  override def endRead(model: Model): Unit = ???
-
-  override def endWrite(model: Model): Unit = ???
-
-  override def save(): Unit = ???
-
-  override def load(path: URI): Unit = ???
-
-  override def containsModel(uri: String): Boolean = ???
+  override def saveTBox(model: OntModel): Unit = ???
 }

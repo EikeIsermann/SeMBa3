@@ -18,7 +18,7 @@ import scala.collection.mutable
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-
+     /*
 trait Temporary {
 
   def createFileStructure(): File = {

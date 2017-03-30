@@ -15,17 +15,17 @@ import utilities.FileFactory
   * This is a SeMBa3 class
   */
 
-class ResourceCreator(libInfo: LibInfo) extends Actor with JobHandling {
+class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with JobHandling {
 
-  var singleItemImport: ActorRef =_
-  var singleCollectionImport: ActorRef =_
+  val singleItemImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
+  val singleCollectionImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleCollectionImport]))
+
 
   override def preStart(): Unit = {
-    singleItemImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
-    singleCollectionImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleCollectionImport]))
+    context.parent ! InitializationComplete(self)
     super.preStart()
   }
-  override def receive: Receive = {
+  def wrappedReceive: Receive = {
     case job: AddToLibrary => {
       acceptJob(job, context.sender())
       addItems(job)
@@ -57,10 +57,10 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with JobHandling {
     }
   }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray[JobResult]): Unit = {
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
     job match {
       case add: AddToLibrary => {
-        master ! JobReply(add, UpdateResult(results.processUpdates()))
+        master ! JobReply(add, results)
       }
     }
 

@@ -3,7 +3,7 @@ package logic.resourceCreation.metadata
 import java.io.File
 import java.net.URI
 
-import logic.core.JobResult
+import logic.core.{JobResult, ResultContent}
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import utilities.WriterFactory
 
@@ -13,7 +13,7 @@ import utilities.WriterFactory
   */
 //TODO copies the default thumbnail. Just a reference would be smarter.
 class GenericThumbActor extends ThumbActor {
-  override def createThumbnail(thumb: ExtractThumbnail): JobResult = {
+  override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
     ThumbnailResult(URI.create(thumb.config.defaultCollectionIcon))
   }
 }

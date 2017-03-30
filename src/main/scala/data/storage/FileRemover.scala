@@ -4,7 +4,7 @@ import java.io.File
 import java.net.URI
 
 import akka.actor.{Actor, ActorRef}
-import logic.core.{JobHandling, JobProtocol, JobReply}
+import logic.core._
 import org.apache.commons.io.FileUtils
 import sembaGRPC.Resource
 
@@ -14,22 +14,21 @@ case class RemoveFromOntology(item: Resource, libraryAccess: ActorRef, deleteFil
   * This is a SeMBa3 class
   */
 
-class FileRemover extends Actor with JobHandling {
+class FileRemover extends Actor with ActorFeatures with JobHandling {
 
-
-  override def receive: Receive = {
+  override def wrappedReceive: Receive = {
     case removeItem: RemoveFromOntology => {
       acceptJob(removeItem, sender())
       removeFromOntology(removeItem)
-      if(removeItem.deleteFiles) removeFromFileSystem(removeItem.item.uri)
-      self ! JobReply(removeItem)
+      if (removeItem.deleteFiles) removeFromFileSystem(removeItem.item.uri)
+      //  self ! JobReply(removeItem)
     }
-    case reply: JobReply => handleReply(reply, self)
   }
+
 
   def removeFromOntology(removeItem: RemoveFromOntology): Unit = {
 
-    removeItem.libraryAccess ! createJob(DeleteItem(removeItem.item), removeItem)
+//    removeItem.libraryAccess ! createJob(DeleteItem(removeItem.item), removeItem)
   }
 
   def removeFromFileSystem(item: String) = {
@@ -39,5 +38,10 @@ class FileRemover extends Actor with JobHandling {
     }
   }
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+
+    }
+
+
+
 }

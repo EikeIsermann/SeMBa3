@@ -1,8 +1,8 @@
 package logic
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
 import data.storage.AccessMethods
-import logic.core.{EmptyResult, JobHandling, JobProtocol, JobReply}
+import logic.core.{ResultArray, _}
 import org.apache.jena.ontology.OntModel
 
 /**
@@ -10,12 +10,12 @@ import org.apache.jena.ontology.OntModel
   * This is a SeMBa3 class
   */
 case class SaveOntology(model: OntModel) extends JobProtocol
-class OntologyWriter extends Actor with JobHandling{
-  override def receive: Receive = {
+class OntologyWriter extends Actor with ActorFeatures with JobHandling{
+  def wrappedReceive: Receive = {
     case save: SaveOntology => {
       acceptJob(save, sender)
       writeOntology(save.model)
-      self ! JobReply(save, EmptyResult())
+      self ! JobReply(save, new ResultArray())
     }
     case reply: JobReply => handleReply(reply)
   }
@@ -24,5 +24,5 @@ class OntologyWriter extends Actor with JobHandling{
       AccessMethods.writeModel(model)
   }
 
-  override def handleJob(jobProtocol: JobProtocol): JobReply = ???
+  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
 }
