@@ -229,7 +229,7 @@ object AccessMethods {
       val results = model.listSubjectsWithProperty(linksToSource, individual)
       while (results.hasNext) {
         val collItem = results.next()
-        val isPartOfCollection = model.getProperty(SembaPaths.isPartOfCollection)
+        val isPartOfCollection = model.getProperty(SembaPaths.containedByCollectionURI)
         val collections = model.listObjectsOfProperty(collItem, isPartOfCollection)
         while (collections.hasNext){
           retVal.put(collections.next().asResource().getURI, collItem.getURI)
@@ -272,8 +272,8 @@ object AccessMethods {
        val coll = model.getIndividual(collection)
        val itemIndividual = model.getIndividual(item)
        val hasMediaItem = model.getObjectProperty(SembaPaths.hasMediaItem)
-       val hasCollectionItem = model.getObjectProperty(SembaPaths.hasCollectionItem)
-       val isPart = model.getObjectProperty(SembaPaths.isPartOfCollection)
+       val hasCollectionItem = model.getObjectProperty(SembaPaths.containsItemURI)
+       val isPart = model.getObjectProperty(SembaPaths.containedByCollectionURI)
 
 
        collItem.setPropertyValue(model.getProperty(SembaPaths.linksToSource),itemIndividual )

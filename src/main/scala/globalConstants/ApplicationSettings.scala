@@ -60,10 +60,10 @@ object SembaPaths {
   val linksToSource = getString("mediaItemLink")
 
   /** URI of the Object Property linking collection items to their collection */
-  val isPartOfCollection = getString("isPartOfCollectionURI")
+  val containedByCollectionURI = getString("containedByCollectionURI")
 
   /** URI of the Object Property linking collections to collection items */
-  val hasCollectionItem = getString("hasCollectionItemURI")
+  val containsItemURI = getString("containsItemURI")
 
   /** URI of the superclass all valid SeMBa collection items inherit */
   val collectionItemURI = getString("collectionItemURI")
@@ -78,7 +78,7 @@ object SembaPaths {
 }
 
 /** Global Presets
-  *
+  *                                                                      c
   */
 object SembaPresets {
 

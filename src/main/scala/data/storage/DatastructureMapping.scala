@@ -48,7 +48,7 @@ object DatastructureMapping {
     var retVal = CollectionItem()
       .withLib(Library(item.getNameSpace))
       .withLibraryResource(item.getPropertyValue(model.getProperty(SembaPaths.linksToSource)).asLiteral().toString)
-      .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.isPartOfCollection)).asLiteral().toString)
+      .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asLiteral().toString)
       .withUri(item.getURI)
 
     // TODO does this work or do we need to iterate over all subproperties of CollectionRelation?
