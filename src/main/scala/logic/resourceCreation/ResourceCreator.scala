@@ -5,8 +5,10 @@ import java.net.URI
 import akka.actor.{Actor, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import api.AddToLibrary
-import globalConstants.GlobalMessages.UpdateResult
+import globalConstants.GlobalMessages.StorageWriteResult
 import logic.core._
+import logic.resourceCreation.CreationStorageMethods.CreateInStorage
+import logic.resourceCreation.metadata.MetadataMessages.ThumbnailResult
 import sembaGRPC.SourceFile.Source
 import utilities.FileFactory
 
@@ -19,8 +21,8 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with Jo
 
   val singleItemImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
   val singleCollectionImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleCollectionImport]))
-
-
+  val fileMover = context.actorOf(new RoundRobinPool(5).props(Props[FileMover]))
+  var counter = 0
   override def preStart(): Unit = {
     context.parent ! InitializationComplete(self)
     super.preStart()
@@ -32,6 +34,36 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with Jo
 
     }
     case reply: JobReply => handleReply(reply)
+
+  }
+
+  override def reactOnReply(reply: JobReply, originalJob: JobProtocol, results: ResultArray): Unit = {
+    reply.job match {
+      case item: ImportNewItem => {
+          counter += 1
+          val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
+          val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
+          val tempThumbnail = results.get(classOf[ThumbnailResult]).payload.toString
+        println("received successful import nr " + counter + newItem.uri)
+
+        fileMover ! createJob(moveSourceFile, originalJob)
+        if(newItem.thumbnailLocation != item.libInfo.constants.defaultCollectionIcon)
+         fileMover ! createJob(MoveFile(tempThumbnail, newItem.thumbnailLocation, true), originalJob)
+
+      }
+      case _ =>
+
+        //TODO CollectionImage
+      /*case collection: CreateCollection  => {
+        val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
+        val tempThumbnail = results.get(classOf[ThumbnailResult]).payload.toString
+        fileMover ! createJob(moveSourceFile, item)
+        if(newItem.thumbnailLocation != item.libInfo.constants.defaultCollectionIcon)
+          fileMover ! createJob(MoveFile(tempThumbnail, newItem.thumbnailLocation, true), item)
+      }           */
+
+
+    }
 
   }
 

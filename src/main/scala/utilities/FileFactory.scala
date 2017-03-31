@@ -81,7 +81,7 @@ object FileFactory {
         )
       }
       else {
-        buffer += dir
+        if(dir.exists()) buffer += dir
       }
     }
 

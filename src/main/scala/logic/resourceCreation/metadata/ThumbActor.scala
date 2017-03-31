@@ -10,6 +10,7 @@ import logic._
 import logic.core._
 import logic.resourceCreation.metadata.MetadataMessages.ExtractThumbnail
 import org.apache.tika.Tika
+import utilities.FileFactory
 
 import scala.collection.mutable.HashMap
 
@@ -45,7 +46,6 @@ abstract class ThumbActor extends Actor with JobExecution {
   *
   */
 object ThumbActor {
-  val tika = new Tika()
   /** Supported picture formats */
   val MIMETYPES_IMAGE = (Props[PicThumb],
     ImageIO.getReaderMIMETypes.toSet)
@@ -69,7 +69,7 @@ object ThumbActor {
       "application/x-tex"))
    val MIMETYPES_GENERIC = (Props[GenericThumbActor], Set("GenericThumbActor"))
   /** All available ThumbnailActor definitions */
-  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_GENERIC, MIMETYPES_IMAGE,  MIMETYPES_TXT) //MIMETYPES_PDF,)
+  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_GENERIC, MIMETYPES_IMAGE,  MIMETYPES_TXT, MIMETYPES_PDF) //MIMETYPES_PDF,)
 
 
   private val supportedContentTypes: scala.collection.mutable.HashMap[String, ActorRef] = HashMap[String, ActorRef]()
@@ -79,7 +79,7 @@ object ThumbActor {
     * @return Props for the required ThumbActor
     */
   def getThumbActor(file: File): ActorRef = {
-    val mimeType = tika.detect(file)
+    val mimeType = FileFactory.getMimeTypeOf(file)
 
     supportedContentTypes.get(mimeType).getOrElse(supportedContentTypes.apply("GenericThumbActor"))
   }

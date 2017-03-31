@@ -26,37 +26,6 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
   val loc = new File(new URI(config.rootFolder + config.constants.storagePath)).getAbsolutePath
   val data = TDBFactory.createDataset(loc)
   data.getContext.set(TDB.symUnionDefaultGraph, true)
-  val tBox = ModelFactory.createOntologyModel()
-  val path = config.libURI
-
-  tBox.enterCriticalSection(Lock.WRITE)
-    try {
-      if (!Files.exists(Paths.get(new URI(path)))) {
-        tBox.createOntology(path)
-        tBox.addLoadedImport(SembaPaths.mainUri)
-        tBox.setNsPrefix(SembaPaths.mainUri, "main")
-        tBox.setNsPrefix(path, "")
-      }
-      else {
-        AccessMethods.load(tBox, path)
-      }
-    }
-    finally tBox.leaveCriticalSection()
-
-  data.begin(ReadWrite.WRITE)
-  try{
-    var model = Option(data.getNamedModel(tBoxName))
-    var unionModel = model.getOrElse(tBox).union(tBox)
-    val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, unionModel)
-    data.addNamedModel(tBoxName, withReasoning)
-    if(!data.containsNamedModel(aBoxName))
-      {
-        data.addNamedModel(aBoxName, ModelFactory.createDefaultModel())
-      }
-    data.commit()
-  }
-  finally data.end()
-
 
   override def getABox(): OntModel = {
     val schema = data.getNamedModel(tBoxName)
@@ -111,4 +80,39 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
     finally data.end()
     retVal.get
   }
+
+  override def initialize() = {
+    val tBox = ModelFactory.createOntologyModel()
+    val path = config.libURI
+
+    tBox.enterCriticalSection(Lock.WRITE)
+    try {
+      if (!Files.exists(Paths.get(new URI(path)))) {
+        tBox.createOntology(path)
+        tBox.addLoadedImport(SembaPaths.mainUri)
+        tBox.setNsPrefix(SembaPaths.mainUri, "main")
+        tBox.setNsPrefix(path, "")
+      }
+      else {
+        AccessMethods.load(tBox, path)
+      }
+    }
+    finally tBox.leaveCriticalSection()
+
+    data.begin(ReadWrite.WRITE)
+    try{
+      var model = Option(data.getNamedModel(tBoxName))
+      var unionModel = model.getOrElse(tBox).union(tBox)
+      val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, unionModel)
+      data.addNamedModel(tBoxName, withReasoning)
+      if(!data.containsNamedModel(aBoxName))
+      {
+        data.addNamedModel(aBoxName, ModelFactory.createDefaultModel())
+      }
+      data.commit()
+    }
+    finally data.end()
+
+  }
+
 }

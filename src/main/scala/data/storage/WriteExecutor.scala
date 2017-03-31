@@ -8,9 +8,13 @@ import logic.core._
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class WriteExecutor(storage: SembaStorageComponent) extends Actor with JobExecution {
+class WriteExecutor(config: LibInfo) extends Actor with JobExecution {
+  val storage = SembaStorageComponent.getStorage(config)
+  storage.initialize()
+  context.parent ! InitializedStorage()
   override def handleJob(job: JobProtocol): JobResult = {
     job match{
+
       case write: StorageWriteRequest => write.operation(storage)
       case _ => JobResult(ErrorResult())
     }
@@ -18,5 +22,5 @@ class WriteExecutor(storage: SembaStorageComponent) extends Actor with JobExecut
   }
 }
 object WriteExecutor {
-  def props(storage: SembaStorageComponent): Props = Props(new WriteExecutor(storage))
+  def props(config: LibInfo): Props = Props(new WriteExecutor(config))
 }

@@ -4,7 +4,7 @@ import java.io.File
 import java.net.URI
 
 import data.storage.{AccessMethods, DatastructureMapping, SembaStorageComponent}
-import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest, UpdateResult}
+import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest, StorageWriteResult}
 import logic.core._
 import sembaGRPC._
 import utilities.{TextFactory, UpdateMessageFactory}
@@ -16,13 +16,13 @@ import scala.collection.mutable.ArrayBuffer
   * This is a SeMBa3 class
   */
 object CreationStorageMethods {
-   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: LibInfo)
-     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, _ ))
+   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: LibInfo, thumb: String)
+     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb, _ ))
 
 
 
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
-                       config: LibInfo, storage: SembaStorageComponent): JobResult =
+                       config: LibInfo, thumb: String, storage: SembaStorageComponent): JobResult =
    {
 
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
@@ -30,7 +30,7 @@ object CreationStorageMethods {
      val newResource = storage.performWrite(
         {
           val model = storage.getABox()
-          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config )
+          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb)
           storage.saveABox(model)
           res
         }
@@ -60,7 +60,7 @@ object CreationStorageMethods {
 
      val validKeys = itemDescription.metadata.foldLeft(Map.empty[String, AnnotationValue])
      {
-       case (acc, (key, value)) => acc.updated(config.libURI + TextFactory.cleanString(key), value)
+       case (acc, (key, value)) => acc.updated(config.constants.resourceBaseURI + TextFactory.cleanString(key), value)
      }
      itemDescription = itemDescription.withMetadata(validKeys)
 
@@ -74,7 +74,7 @@ object CreationStorageMethods {
      )
      update = update.addDescriptions(itemDescription)
 
-     JobResult(UpdateResult(ArrayBuffer[UpdateMessage](update)))
+     JobResult(StorageWriteResult(update))
    }
 
 

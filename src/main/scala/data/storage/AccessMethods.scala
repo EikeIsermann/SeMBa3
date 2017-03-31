@@ -76,7 +76,7 @@ object AccessMethods {
   */
   def generateDatatypeProperty(rawKey: String, model: OntModel, config: LibInfo, functional: Boolean = false): Option[DatatypeProperty] = {
     var prop = None: Option[DatatypeProperty]
-        val key = config.libURI + TextFactory.cleanString(rawKey)
+        val key = config.constants.resourceBaseURI + TextFactory.cleanString(rawKey)
         prop = Option(model.getDatatypeProperty(key))
         if( prop.isEmpty ) {
         val property = model.createDatatypeProperty(key, functional)
@@ -310,15 +310,18 @@ object AccessMethods {
     itemName
   }
 
-  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo): Resource = {
-    val itemName = createName(config.libURI, name, model)
-    val uri = config.libURI + itemName
+  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo, thumb: String): Resource = {
+    val itemName = createName(config.constants.resourceBaseURI, name, model)
+    val uri = config.constants.resourceBaseURI + itemName
     val root =  config.constants.dataPath + "/" + itemName + "/"
     val item = model.createIndividual(uri, model.getOntClass(ontClass))
     item.addProperty(model.getProperty(SembaPaths.sourceLocationURI),
        root + fileName)
     item.addProperty(model.getProperty(SembaPaths.thumbnailLocationURI),
-      root + config.constants.thumbnail
+      {
+        if (thumb.equals(config.constants.defaultCollectionIcon)) config.constants.defaultCollectionIcon
+        else root + config.constants.thumbnail
+      }
     )
     item.addProperty(model.getProperty(SembaPaths.sembaTitle),
       name)

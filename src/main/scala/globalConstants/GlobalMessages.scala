@@ -13,7 +13,7 @@ import scala.collection.mutable.ArrayBuffer
 object GlobalMessages {
 
 
-  case class UpdateResult(payload: ArrayBuffer[UpdateMessage]) extends ResultContent
+  case class StorageWriteResult(payload: UpdateMessage) extends ResultContent
 
   abstract class StorageOperation() extends JobProtocol
 

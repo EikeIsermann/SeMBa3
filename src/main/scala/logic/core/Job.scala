@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef}
-import globalConstants.GlobalMessages.UpdateResult
+import globalConstants.GlobalMessages.{StorageWriteResult}
 import sembaGRPC.UpdateMessage
 import utilities.debug.DC
 
@@ -24,6 +24,7 @@ case class JobResult(val content: ResultContent)
 trait ResultContent{val payload: Any}
 case class ErrorResult(payload: String = "Error in Job") extends ResultContent
 case class JobReply(job: JobProtocol, result: ResultArray)
+case class EmptyResult(val payload: Any = None) extends ResultContent()
 
 trait JobHandling extends Actor with ActorFeatures {
 
@@ -48,6 +49,7 @@ trait JobHandling extends Actor with ActorFeatures {
       val originalJob = entry.get._2
       val newResults = reply.result
       jobResults.apply(originalJob.jobID).add(newResults.results)
+      reactOnReply(reply, originalJob, jobResults.apply(originalJob.jobID))
       waitingForCompletion -= entry.get
       completed = !waitingForCompletion.exists(_._2.jobID == entry.get._2.jobID)
       if (completed) {
@@ -60,6 +62,9 @@ trait JobHandling extends Actor with ActorFeatures {
       }
     }
     completed
+
+  }
+  def reactOnReply(reply: JobReply, originalJob: JobProtocol, results: ResultArray) = {
 
   }
 
@@ -118,7 +123,7 @@ class ResultArray(input: ArrayBuffer[JobResult] = ArrayBuffer[JobResult]())
   }
 
   def processUpdates(): ArrayBuffer[UpdateMessage] = {
-    results.filter( x => x.getClass.equals(classOf[UpdateResult])).asInstanceOf[ArrayBuffer[UpdateResult]].flatMap(x => x.payload)
+    getAll(classOf[StorageWriteResult]).map(x => x.payload)
   }
 
   def extract[T]( aClass: Class[T]): T  = {

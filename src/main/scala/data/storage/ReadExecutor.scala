@@ -9,7 +9,8 @@ import logic.core._
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class ReadExecutor(storage: SembaStorageComponent) extends Actor with JobExecution {
+class ReadExecutor(config: LibInfo) extends Actor with JobExecution {
+  val storage = SembaStorageComponent.getStorage(config)
   override def handleJob(job: JobProtocol): JobResult = {
     job match {
       case read: StorageReadRequest => read.operation(storage)
@@ -19,5 +20,5 @@ class ReadExecutor(storage: SembaStorageComponent) extends Actor with JobExecuti
 }
 
 object ReadExecutor {
-  def props(storage: SembaStorageComponent): Props = Props(new ReadExecutor(storage))
+  def props(config: LibInfo): Props = Props(new ReadExecutor(config))
 }

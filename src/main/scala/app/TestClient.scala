@@ -48,8 +48,11 @@ object TestClient extends App {
   println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
   println(client.getContent(testLib))
 
-  //client.addItem("file:/users/uni/desktop/Unknown-1.jpeg", testLib)
+  //lient.addItem("file:/users/uni/desktop/image.jpg", testLib)
+  for(i <- 1 to 500){
+    //client.addItem("file:/users/uni/desktop/test/", testLib)
 
+  }
   //tests()
 
 

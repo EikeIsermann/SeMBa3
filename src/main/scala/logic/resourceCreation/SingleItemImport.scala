@@ -1,6 +1,7 @@
 package logic.resourceCreation
 
 import java.io.File
+import java.net.URI
 
 import akka.actor.{Actor, ActorRef}
 import akka.routing.RoundRobinPool
@@ -41,7 +42,7 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
         acceptJob(importItem, context.sender())
         val cluster = createJobCluster(ExtractionJob(importItem), importItem)
         ThumbActor.getThumbActor(importItem.item) !
-          createJob(ExtractThumbnail(importItem.item, importItem.libInfo.constants), cluster)
+          createJob(ExtractThumbnail(importItem.item, URI.create(importItem.libInfo.constants.rootFolder + importItem.libInfo.constants.temp + importItem.jobID + ".jpeg") ,importItem.libInfo.constants), cluster)
         tikaExtractor ! createJob(ExtractMetadata(importItem.item), cluster)
       }
   }
@@ -52,7 +53,7 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
     job match {
       case ex: ExtractionJob => {
         finishExtraction(ex, results)
-        master ! JobReply(ex, new ResultArray())
+        master ! JobReply(ex, results)
       }
 
       case sto: StorageJob => {
@@ -72,7 +73,8 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
     val fileName = ex.importJob.item.getName
     val ontClass = ex.importJob.ontClass
     val desc = results.get(classOf[MetadataResult]).payload
-    val job = CreateInStorage(itemType, ontClass, fileName, desc, ex.importJob.libInfo)
+    val thumb = results.get(classOf[ThumbnailResult]).payload.toString
+    val job = CreateInStorage(itemType, ontClass, fileName, desc, ex.importJob.libInfo, thumb)
     val cluster = createJobCluster(StorageJob(ex.importJob), ex.importJob)
     ex.importJob.libInfo.libAccess  ! createJob(job, cluster)
   }

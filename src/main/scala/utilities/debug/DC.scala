@@ -13,7 +13,7 @@ import utilities.Convert
   */
 object DC {
 
-  private val debug = true
+  private val debug = false
   /**
     * set true/false for main.scala.utilities.debug messages on/off
     */

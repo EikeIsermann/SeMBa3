@@ -25,4 +25,6 @@ class ModelBasedStorage extends SembaStorageComponent {
   override def saveABox(model: OntModel): Unit = ???
 
   override def saveTBox(model: OntModel): Unit = ???
+
+  override def initialize(): Unit = ???
 }

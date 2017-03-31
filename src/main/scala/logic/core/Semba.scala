@@ -107,6 +107,7 @@ class Config(path: URI,  root: String) {
   val configFile = XMLFactory.getXMLAsElemAdv(path)
   val name = getString("libraryName")
   val baseOntologyURI = getString("baseOntologyURI")
+  val resourceBaseURI = baseOntologyURI + "#"
   val itemClassURI = getString("itemClassURI")
   val defaultCollectionIcon = getString("defaultCollectionIcon")
   val ontName = getString("ontName")

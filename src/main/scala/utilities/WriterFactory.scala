@@ -49,11 +49,11 @@ object WriterFactory {
     retVal
   }
 
-  def writeFile(origin: File, destination: File, copy: Boolean = true): File = {
+  def writeFile(origin: File, destination: File, name: String, delete: Boolean = true): File = {
     if (!destination.exists()) {
       destination.mkdirs()
     }
-    var addedItem = new File(new URI(destination.toURI + TextFactory.sanitizeFilename(origin.getName)))
+    var addedItem = new File(new URI(destination.toURI + TextFactory.sanitizeFilename(name)))
     /*if (addedItem.exists()){
       var i = 1
       while(addedItem.exists){
@@ -64,7 +64,7 @@ object WriterFactory {
 
     }   */
     new FileOutputStream(addedItem) getChannel() transferFrom(new FileInputStream(origin).getChannel, 0, Long.MaxValue)
-    if (!copy) {
+    if (delete) {
       origin.delete()
     }
     addedItem

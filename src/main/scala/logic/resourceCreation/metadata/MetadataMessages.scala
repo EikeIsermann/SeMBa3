@@ -15,7 +15,7 @@ import sembaGRPC.ItemDescription
 object MetadataMessages {
   case class ExtractMetadata(src: File) extends JobProtocol
   case class MetadataResult(payload: ItemDescription) extends ResultContent
-  case class ExtractThumbnail(src: File, config: Config) extends JobProtocol
+  case class ExtractThumbnail(src: File, path: URI, config: Config) extends JobProtocol
   case class ThumbnailResult(payload: URI) extends ResultContent
   case class ExtractionJob(importJob: ImportNewItem) extends JobProtocol
   case class StorageJob(importJob: ImportNewItem) extends JobProtocol

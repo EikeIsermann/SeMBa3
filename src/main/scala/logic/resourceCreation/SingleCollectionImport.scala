@@ -5,7 +5,6 @@ import java.net.URI
 
 import akka.actor.{Actor, ActorRef}
 import logic._
-import globalConstants.GlobalMessages.UpdateResult
 import globalConstants.SembaPaths
 import logic.core._
 import logic.resourceCreation.CreationStorageMethods.CreateInStorage
@@ -43,9 +42,9 @@ class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
     val itemType = ItemType.COLLECTION
     val name = job.newColl.name
     val ontClass = job.ontClass
-    val thumb = URI.create(job.newColl.picture)
+    val thumb = job.newColl.picture
 
-    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo)
+    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo, thumb)
 
   }
 
