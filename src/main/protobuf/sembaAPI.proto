@@ -109,6 +109,7 @@ enum UpdateType {
     DELETE = 0;
     ADD = 1;
     NOTIFY = 2;
+    REPLACE = 3;
 }
 
 message UpdateMessage {

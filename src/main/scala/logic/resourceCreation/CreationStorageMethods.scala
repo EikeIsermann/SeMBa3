@@ -20,7 +20,7 @@ object CreationStorageMethods {
      extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb, _ ))
 
 
-
+   //TODO performing all operations in one performWrite cycle returning the completed UpdateMessage might add performance.
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
                        config: LibInfo, thumb: String, storage: SembaStorageComponent): JobResult =
    {

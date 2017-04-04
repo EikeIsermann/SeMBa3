@@ -28,10 +28,10 @@ object DatastructureMapping {
       label = Option(rel.getLabel(config.constants.language)).getOrElse(rel.getLocalName)
     )
   }
-  def wrapResource(item: Individual, model: OntModel): Resource = {
+  def wrapResource(item: Individual, model: OntModel, config: LibInfo): Resource = {
     require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
     val retVal = Resource(
-      Some(Library(item.getNameSpace)), {
+      Some(Library(config.libURI)), {
         if (item.hasOntClass(SembaPaths.itemClassURI)) ItemType.ITEM
         else ItemType.COLLECTION
         },
@@ -43,10 +43,10 @@ object DatastructureMapping {
     retVal
   }
 
-  def wrapCollectionItem(item: Individual, model: OntModel): CollectionItem = {
+  def wrapCollectionItem(item: Individual, model: OntModel, config: LibInfo): CollectionItem = {
     require(item.hasOntClass(SembaPaths.collectionItemURI))
     var retVal = CollectionItem()
-      .withLib(Library(item.getNameSpace))
+      .withLib(Library(config.libURI))
       .withLibraryResource(item.getPropertyValue(model.getProperty(SembaPaths.linksToSource)).asLiteral().toString)
       .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asLiteral().toString)
       .withUri(item.getURI)

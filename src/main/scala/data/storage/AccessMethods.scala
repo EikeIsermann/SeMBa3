@@ -12,7 +12,8 @@ import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory}
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.FileUtils
 import sembaGRPC._
-import utilities.{Convert, FileFactory, TextFactory}
+import utilities.debug.DC
+import utilities.{Convert, FileFactory, TextFactory, UpdateMessageFactory}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -187,11 +188,12 @@ object AccessMethods {
         var iter = individuals.get
         while (iter.hasNext) {
         val resource = iter.next()
-        retVal = retVal.addLibContent((resource.getURI, DatastructureMapping.wrapResource(resource, model)))
+        retVal = retVal.addLibContent((resource.getURI, DatastructureMapping.wrapResource(resource, model, config)))
         }
       }
     retVal
   }
+
 
   def retrieveMetadata(item: String, model: OntModel): ItemDescription = {
     var retVal = ItemDescription().withItemURI(item)
@@ -216,28 +218,49 @@ object AccessMethods {
     retVal
   }
 
-  def removeIndividual(item: String, model: OntModel) = {
-      val ind = model.getIndividual(item)
-      ind.remove()
+  def removeIndividual(item: String, model: OntModel, config: LibInfo): Resource = {
+    val ind = model.getIndividual(item)
+    val retVal = DatastructureMapping.wrapResource(ind, model, config)
+    ind.remove()
+    retVal
+  }
+  def removeCollectionItem(uri: String, model: OntModel, config: LibInfo): CollectionItem = {
+    val individual = model.getIndividual(uri)
+    removeCollectionItem(individual, model, config)
   }
 
-  //TODO test for inverse property?
-  def getCollectionItems(item: String, model: OntModel): scala.collection.mutable.HashMap[String, String] = {
-    val retVal = scala.collection.mutable.HashMap[String,String]()
-      val linksToSource = model.getProperty(SembaPaths.linksToSource)
-      val individual = model.getIndividual(item)
-      val results = model.listSubjectsWithProperty(linksToSource, individual)
-      while (results.hasNext) {
-        val collItem = results.next()
-        val isPartOfCollection = model.getProperty(SembaPaths.containedByCollectionURI)
-        val collections = model.listObjectsOfProperty(collItem, isPartOfCollection)
-        while (collections.hasNext){
-          retVal.put(collections.next().asResource().getURI, collItem.getURI)
-        }
-      }
+
+  def removeCollectionItem(item: Individual, model: OntModel, config: LibInfo): CollectionItem = {
+
+
+    val retVal = new CollectionItem().withLib(new Library(config.libURI)).withUri(item.getURI)
+    item.remove()
     retVal
   }
 
+  //TODO test for inverse property?
+  def getCollectionItems(item: String, model: OntModel): Seq[org.apache.jena.rdf.model.Resource] = {
+    val retVal = ArrayBuffer[org.apache.jena.rdf.model.Resource]()
+    val linksToSource = model.getProperty(SembaPaths.linksToSource)
+    val individual = model.getIndividual(item)
+    val results = model.listSubjectsWithProperty(linksToSource, individual)
+    while(results.hasNext){
+      retVal += results.nextResource()
+    }
+    retVal
+  }
+
+ /* def getCollectionsForItem() = {
+    val results = model.listSubjectsWithProperty(linksToSource, individual)
+    while (results.hasNext) {
+      val collItem = results.next()
+      val isPartOfCollection = model.getProperty(SembaPaths.containedByCollectionURI)
+      val collections = model.listObjectsOfProperty(collItem, isPartOfCollection)
+      while (collections.hasNext){
+        retVal.put(collections.next().asResource().getURI, collItem.getURI)
+      }
+  }
+   */
 
 
   def createRelation(origin: String, destination: String, relation: String, model: OntModel ): Unit ={
@@ -253,15 +276,23 @@ object AccessMethods {
       ind.removeProperty(prop, destInd)
   }
 
-  def updateMetadata(dataSet: Map[String, AnnotationValue], item: String, model: OntModel, delete: Boolean ): Unit ={
+  def updateMetadata(item: String, name: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = { //: ItemDescription ={
     var ind : Option[Individual] = None
     ind = Option(model.getIndividual(item))
+    //var retVal = ItemDescription().withItemURI(item)
+
 
     if (ind.isDefined){
+      val item = ind.get
+      item.setPropertyValue(model.getProperty(SembaPaths.sembaTitle),
+        model.createLiteral(name))
     for((prop, values) <- dataSet)
       {
-        if (!delete) setDatatypeProperty(prop, ind.get, model, values.value.toArray)
-        else removeDatatypeProperty(prop, ind.get, model, values.value.toArray)
+      //  val entry = {
+        if (!delete) setDatatypeProperty(prop, item, model, values.value.toArray)
+        else removeDatatypeProperty(prop, item, model, values.value.toArray)
+    //    }
+    //    retVal = retVal.addAllMetadata(entry.map(x => (prop,x)))
       }
     }
   }
@@ -281,7 +312,7 @@ object AccessMethods {
        itemIndividual.setPropertyValue(isPart,collItem)
        coll.setPropertyValue(hasCollectionItem, collItem)
        //if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
-      DatastructureMapping.wrapCollectionItem(collItem, model)
+      DatastructureMapping.wrapCollectionItem(collItem, model, config)
   }
 
   def retrieveSimpleSearchStatements(): Unit ={
@@ -295,8 +326,10 @@ object AccessMethods {
   }
 
   def uriExists(uri: String, model: OntModel): Boolean = {
+
     var toCheck = ResourceFactory.createResource(uri)
-    model.containsResource(toCheck)
+    var retVal = model.containsResource(toCheck)
+    retVal
   }
 
   def createName(baseURI: String, name: String, model: OntModel): String = {
@@ -311,10 +344,14 @@ object AccessMethods {
   }
 
   def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo, thumb: String): Resource = {
-    val itemName = createName(config.constants.resourceBaseURI, name, model)
+    val start = System.currentTimeMillis()
+    //val itemName = createName(config.constants.resourceBaseURI, name, model)
+    val itemName = UUID.randomUUID()
     val uri = config.constants.resourceBaseURI + itemName
     val root =  config.constants.dataPath + "/" + itemName + "/"
+
     val item = model.createIndividual(uri, model.getOntClass(ontClass))
+
     item.addProperty(model.getProperty(SembaPaths.sourceLocationURI),
        root + fileName)
     item.addProperty(model.getProperty(SembaPaths.thumbnailLocationURI),
@@ -325,7 +362,10 @@ object AccessMethods {
     )
     item.addProperty(model.getProperty(SembaPaths.sembaTitle),
       name)
-    DatastructureMapping.wrapResource(item, model)
+   val retVal =  DatastructureMapping.wrapResource(item, model, config)
+    DC.log("Creation took " + (System.currentTimeMillis() - start))
+
+    retVal
   }
 
 

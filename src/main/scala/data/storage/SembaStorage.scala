@@ -21,7 +21,7 @@ import utilities.SembaConstants.StorageSolution
 case class InitializedStorage()
 class SembaStorage(config: LibInfo) extends Actor with ActorFeatures with JobHandling {
 
-  val readExecutors = context.actorOf(new RoundRobinPool(10).props(ReadExecutor.props(config)))
+  val readExecutors = context.actorOf(new RoundRobinPool(50).props(ReadExecutor.props(config)))
   val writeExecutor = context.actorOf(WriteExecutor.props(config))
 
   override def preStart(): Unit = {

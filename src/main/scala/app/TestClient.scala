@@ -46,12 +46,15 @@ object TestClient extends App {
   testSessionID = client.registerSession().sessionID
   var testLib = Library(uri = "file:///Users/uni/Desktop/library/")
   println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
-  println(client.getContent(testLib))
 
   //lient.addItem("file:/users/uni/desktop/image.jpg", testLib)
-  for(i <- 1 to 500){
+  for(i <- 1 to 50){
     //client.addItem("file:/users/uni/desktop/test/", testLib)
+    val start = System.currentTimeMillis()
+   client.getContent(testLib)
+    println("Content took " + (System.currentTimeMillis() - start) )
 
+    //client.getMetadata("file:///Users/uni/Desktop/library/library.ttl#f747fae9-a4d4-49e6-8861-7549d255d6c9", testLib)
   }
   //tests()
 

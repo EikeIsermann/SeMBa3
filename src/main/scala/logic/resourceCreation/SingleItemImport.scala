@@ -13,6 +13,7 @@ import logic.resourceCreation.metadata.MetadataMessages._
 import logic.resourceCreation.metadata.{ThumbActor, TikaExtractor}
 import org.apache.jena.ontology.{Individual, OntModel}
 import sembaGRPC.{ItemDescription, ItemType}
+import utilities.debug.DC
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -57,7 +58,6 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
       }
 
       case sto: StorageJob => {
-
         master ! JobReply(sto, results)
       }
 

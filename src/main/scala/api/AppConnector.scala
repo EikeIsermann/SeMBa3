@@ -30,6 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 abstract class SembaApiCall extends JobProtocol
 
 trait RequestResult{val resultClass: Class[_]}
+trait LibModification
 
 case class OpenLib(resultClass: Class[_] = classOf[LibraryConcepts])
   extends SembaApiCall with RequestResult
@@ -42,22 +43,27 @@ case class RequestContents(library: Library,
                            resultClass: Class[_] = classOf[LibraryContent])
   extends SembaApiCall with RequestResult
 
-
-case class RemoveCollectionItem(collectionItem: CollectionItem) extends SembaApiCall
-
-
-
 case class AddToLibrary(sourceFile: SourceFile) extends SembaApiCall
 
+
+case class RemoveCollectionItem(collectionItem: CollectionItem) extends SembaApiCall
+with LibModification
+
+
 case class RemoveFromLibrary(resource: Resource) extends SembaApiCall
+with LibModification
 
 case class AddToCollectionMsg(addToCollection: AddToCollection) extends SembaApiCall
+  with LibModification
 
 case class CreateRelation(relationModification: RelationModification) extends SembaApiCall
+  with LibModification
 
 case class RemoveRelation(relationModification: RelationModification) extends SembaApiCall
+  with LibModification
 
 case class UpdateMetadata(metadataUpdate: MetadataUpdate) extends SembaApiCall
+  with LibModification
 
 case class SimpleSearch(simpleQuery: SimpleQuery) extends SembaApiCall
 

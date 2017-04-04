@@ -3,6 +3,7 @@ package data.storage
 import akka.actor.{Actor, Props}
 import globalConstants.GlobalMessages.StorageWriteRequest
 import logic.core._
+import utilities.debug.DC
 
 /**
   * Author: Eike Isermann
@@ -15,7 +16,11 @@ class WriteExecutor(config: LibInfo) extends Actor with JobExecution {
   override def handleJob(job: JobProtocol): JobResult = {
     job match{
 
-      case write: StorageWriteRequest => write.operation(storage)
+      case write: StorageWriteRequest => {
+        val retVal = write.operation(storage)
+        retVal
+
+      }
       case _ => JobResult(ErrorResult())
     }
 

@@ -23,5 +23,9 @@ object UpdateMessageFactory {
     UpdateMessage(kindOfUpdate = UpdateType.ADD, lib = uri)
   }
 
+  def getReplaceMessage(uri: String): UpdateMessage = {
+  UpdateMessage(kindOfUpdate = UpdateType.REPLACE, lib = uri)
+  }
+
 
 }

@@ -13,6 +13,7 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.reasoner.ReasonerRegistry
 import org.apache.jena.shared.Lock
 import org.apache.jena.tdb.{TDB, TDBFactory}
+import utilities.debug.DC
 
 /**
   * Author: Eike Isermann
@@ -28,10 +29,15 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
   data.getContext.set(TDB.symUnionDefaultGraph, true)
 
   override def getABox(): OntModel = {
+
     val schema = data.getNamedModel(tBoxName)
+    //val start = System.currentTimeMillis()
+
     val aBoxModel =  ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_RDFS_INF,
       data.getNamedModel(aBoxName))
     aBoxModel.addSubModel(schema)
+    //DC.log("Execution of getABox took " + (System.currentTimeMillis() - start ))
+
     aBoxModel
     //val reasoner = ReasonerRegistry.getOWLMicroReasoner.bindSchema(schema)
     //ModelFactory.createInfModel(reasoner, aBoxModel)
@@ -48,8 +54,12 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
   }
 
   override def saveABox(model: OntModel) = {
-    if(data.getLock.equals(Lock.WRITE))
-      data.addNamedModel(aBoxName, model.getBaseModel)
+    if(data.getLock.equals(Lock.WRITE)){
+    //val start = System.currentTimeMillis()
+
+    data.addNamedModel(aBoxName, model.getBaseModel)
+    //DC.log("Execution of saveABox took " + (System.currentTimeMillis() - start ))
+    }
   }
 
   //TODO even if this works - look into separating deductions, having InfModels
@@ -57,20 +67,26 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
 
   override def performRead[T](f: => T): T = {
     var retVal = None: Option[T]
+    //val startLock = System.currentTimeMillis()
     data.begin(ReadWrite.READ)
+
     try {
       retVal = Option(f)
       data.commit()
 
+
     }
      //TODO ExceptionHandling
     finally data.end()
+    //DC.log("PerformRead took " + (System.currentTimeMillis() - startLock ))
+
     retVal.get
 
   }
 
   override def performWrite[T](f: => T): T = {
     var retVal = None: Option[T]
+    //val startLock = System.currentTimeMillis()
     data.begin(ReadWrite.WRITE)
     try {
       retVal = Option(f)
@@ -78,7 +94,9 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
 
     }
     finally data.end()
+    //DC.log("PerformWrite took " + (System.currentTimeMillis() - startLock ))
     retVal.get
+
   }
 
   override def initialize() = {

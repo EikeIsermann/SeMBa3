@@ -27,7 +27,7 @@ case class JobReply(job: JobProtocol, result: ResultArray)
 case class EmptyResult(val payload: Any = None) extends ResultContent()
 
 trait JobHandling extends Actor with ActorFeatures {
-
+  var executionTime = mutable.HashMap[UUID, Long]()
   var waitingForCompletion = Set.empty[(UUID, JobProtocol)]
   var originalSender =  mutable.HashMap[UUID, ActorRef]()
   val jobResults =  mutable.HashMap[UUID, ResultArray]()
@@ -35,7 +35,7 @@ trait JobHandling extends Actor with ActorFeatures {
 
   override def receive: Receive = {
     case reply: JobReply => {
-      DC.log("JobReply received by: " + self + "  Reply: " + reply.job.toString )
+      //DC.log("JobReply received by: " + self + "  Reply: " + reply.job.toString )
       handleReply(reply)
     }
     case x => super.receive(x)
@@ -55,10 +55,10 @@ trait JobHandling extends Actor with ActorFeatures {
       if (completed) {
         val jobMaster = originalSender.apply(entry.get._2.jobID)
         val resultBuffer = jobResults.apply(originalJob.jobID)
-
         finishedJob(originalJob, jobMaster, resultBuffer)
-        jobResults.remove(entry.get._2.jobID)
-        originalSender.remove(entry.get._2.jobID)
+        jobResults.remove(originalJob.jobID)
+        originalSender.remove(originalJob.jobID)
+        executionTime.remove(originalJob.jobID)
       }
     }
     completed
@@ -70,7 +70,6 @@ trait JobHandling extends Actor with ActorFeatures {
 
 
   def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit ={
-    DC.log("Finished Job " + job)
     master ! JobReply(job, results)
   }
 
@@ -83,6 +82,7 @@ trait JobHandling extends Actor with ActorFeatures {
   def acceptJob(newJob: JobProtocol, sender: ActorRef): JobProtocol = {
     jobResults.put(newJob.jobID, new ResultArray)
     originalSender.put(newJob.jobID, sender)
+    executionTime.put(newJob.jobID, System.currentTimeMillis())
     newJob
   }
 
