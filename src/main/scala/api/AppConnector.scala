@@ -43,6 +43,9 @@ case class RequestContents(library: Library,
                            resultClass: Class[_] = classOf[LibraryContent])
   extends SembaApiCall with RequestResult
 
+case class RequestCollectionContents(resource: Resource, resultClass: Class[_] = classOf[CollectionContent])
+  extends SembaApiCall with RequestResult
+
 case class AddToLibrary(sourceFile: SourceFile) extends SembaApiCall
 
 
@@ -201,6 +204,11 @@ class AppConnector extends Actor {
         ask(lib, RequestContents(request)).mapTo[LibraryContent]
       }
 
+      override def requestCollectionContent(request: Resource): Future[CollectionContent] = {
+        val lib = app.get(request.getLib.uri)
+        ask(lib, RequestCollectionContents(request)).mapTo[CollectionContent]
+      }
+
       /** Asks corresponding [[Semba]] a Resources Metadata.
         *
         * @param request Item reference
@@ -328,6 +336,8 @@ class AppConnector extends Actor {
         observers.remove(request.sessionID)
         Future.successful(request)
       }
+
+
     }
 
   }

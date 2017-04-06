@@ -8,7 +8,7 @@ import globalConstants.SembaPaths
 import logic.core.LibInfo
 import org.apache.jena.ontology._
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory}
+import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory, SimpleSelector}
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.FileUtils
 import sembaGRPC._
@@ -263,17 +263,19 @@ object AccessMethods {
    */
 
 
-  def createRelation(origin: String, destination: String, relation: String, model: OntModel ): Unit ={
+  def createCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: LibInfo ): CollectionItem ={
       val ind = model.getIndividual(origin)
       val prop = model.getProperty(relation)
       ind.addProperty(prop, destination)
+      DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 
-  def removeRelation(origin: String, destination: String, relation: String, model: OntModel ): Unit = {
+  def removeCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: LibInfo ): CollectionItem = {
       val ind = model.getIndividual(origin)
       val prop = model.getProperty(relation)
       val destInd = model.getIndividual(destination)
       ind.removeProperty(prop, destInd)
+      DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 
   def updateMetadata(item: String, name: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = { //: ItemDescription ={
@@ -366,6 +368,17 @@ object AccessMethods {
     DC.log("Creation took " + (System.currentTimeMillis() - start))
 
     retVal
+  }
+
+  def retrieveCollectionContent(model: OntModel, uri: String, config: LibInfo): CollectionContent = {
+    val iter = model.listSubjectsWithProperty(model.getProperty(SembaPaths.containedByCollectionURI), model.getIndividual(uri))
+    val cItems = ArrayBuffer[CollectionItem]()
+    while (iter.hasNext)
+    {
+      val cItem = DatastructureMapping.wrapCollectionItem(model.getIndividual(iter.next.getURI)., model, config)
+      cItems += cItem
+    }
+    CollectionContent().withUri(uri).addAllContents(cItems)
   }
 
 

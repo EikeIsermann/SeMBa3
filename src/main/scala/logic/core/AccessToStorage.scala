@@ -2,11 +2,11 @@ package logic.core
 
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef, Props}
-import api.{GetMetadata, OpenLib, RequestContents, RequestResult}
+import api._
 import data.storage.{AccessMethods, SembaStorage, SembaStorageComponent, StorageAccess}
 import globalConstants.GlobalMessages.StorageReadRequest
-import logic.core.AccessToStorageMethods.{ConceptRequest, ConceptResult, ContentRequest, MetadataRequest}
-import sembaGRPC.{ItemDescription, LibraryConcepts, LibraryContent}
+import logic.core.AccessToStorageMethods._
+import sembaGRPC.{CollectionContent, ItemDescription, LibraryConcepts, LibraryContent}
 import utilities.SembaConstants.StorageSolution.StorageSolution
 import utilities.debug.DC
 
@@ -42,6 +42,11 @@ trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures wi
     case getMeta: GetMetadata => {
       acceptJob(getMeta, sender)
       queryExecutor ! createJob(MetadataRequest(getMeta.resource.uri), getMeta)
+    }
+
+    case collectionContents: RequestCollectionContents => {
+      acceptJob(collectionContents, sender)
+      queryExecutor ! createJob(CollectionContentRequest(collectionContents.resource.uri, libInfo), collectionContents)
     }
 
 
@@ -89,6 +94,15 @@ object AccessToStorageMethods
   def requestMetadata(uri: String, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
       JobResult((MetadataResult(AccessMethods.retrieveMetadata(uri, storage.getABox()))))
+    )
+  }
+
+  case class CollectionContentRequest(item: String, config: LibInfo) extends StorageReadRequest(requestCollectionContent(item, config, _))
+  case class CollectionContentResult(payload: CollectionContent) extends ResultContent
+  def requestCollectionContent(item: String, config: LibInfo,  storage: SembaStorageComponent): JobResult = {
+    storage.performRead(
+      JobResult(CollectionContentResult(AccessMethods.retrieveCollectionContent(storage.getABox, item, config))
+
     )
   }
 

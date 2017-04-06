@@ -10,6 +10,10 @@ service SembaAPI {
     }
     rpc RequestContents (Library) returns (LibraryContent) {
     }
+
+    rpc RequestCollectionContent(Resource) returns (CollectionContent){
+
+    }
     rpc CloseLibrary (LibraryRequest) returns (VoidResult) {
     }
 

@@ -3,7 +3,7 @@ package logic.itemModification
 import data.storage.{AccessMethods, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
 import logic.core.{JobResult, LibInfo}
-import sembaGRPC.{AnnotationValue}
+import sembaGRPC.AnnotationValue
 import utilities.UpdateMessageFactory
 
 /**
@@ -12,10 +12,12 @@ import utilities.UpdateMessageFactory
   */
 object ModificationMethods {
 
-  case class UpdateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue], delete: Boolean, config: LibInfo)
+  case class UpdateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue],
+                                 delete: Boolean, config: LibInfo)
     extends StorageWriteRequest(updateMetaInStorage(item, name, valueMap, delete, config, _))
 
-  def updateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue], delete: Boolean, config: LibInfo, storage: SembaStorageComponent): JobResult = {
+  def updateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue], delete: Boolean,
+                          config: LibInfo, storage: SembaStorageComponent): JobResult = {
 
     var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
@@ -50,7 +52,8 @@ object ModificationMethods {
 
   case class AddToCollectionInStorage(collection: String, item: String, config: LibInfo)
     extends StorageWriteRequest(addToCollectionInStorage(collection, item, config, _))
-    def addToCollectionInStorage(collection: String, item: String, config: LibInfo, storage: SembaStorageComponent ): JobResult = {
+    def addToCollectionInStorage(collection: String, item: String, config: LibInfo,
+                                 storage: SembaStorageComponent ): JobResult = {
 
       var update = UpdateMessageFactory.getAddMessage(config.libURI)
 
@@ -76,10 +79,23 @@ object ModificationMethods {
     }
 
 
-  case class ModifyCollectionRelationInStorage() extends StorageWriteRequest()
-    def modifyCollectionRelationInStorage( ): JobResult = {
+  case class ModifyCollectionRelationInStorage(origin: String, destination: String, relation: String, config: LibInfo,
+                                               delete: Boolean)
+    extends StorageWriteRequest(modifyCollectionRelationInStorage(origin, destination, relation, config, delete, _))
+    def modifyCollectionRelationInStorage( origin: String, destination: String, relation: String, config: LibInfo,
+                                           delete: Boolean, storage: SembaStorageComponent): JobResult = {
+      var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
+      val updatedCollectionItem = storage.performWrite(
+        if (delete) AccessMethods.removeCollectionRelation(origin, destination, relation, storage.getABox, config)
+        else AccessMethods.createCollectionRelation(origin, destination, relation, storage.getABox, config)
+        )
 
+      update = update.addCollectionItems(updatedCollectionItem)
+
+      JobResult(StorageWriteResult(update))
     }
+
+
 
 
 

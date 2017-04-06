@@ -31,7 +31,7 @@ object CreationStorageMethods {
         {
           val model = storage.getABox()
           val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb)
-          storage.saveABox(model)
+          //storage.saveABox(model)
           res
         }
      )
@@ -51,7 +51,7 @@ object CreationStorageMethods {
              else annotations
              }
            }
-         storage.saveTBox(model)
+         //storage.saveTBox(model)
          desc
        }
      )
@@ -64,11 +64,11 @@ object CreationStorageMethods {
      }
      itemDescription = itemDescription.withMetadata(validKeys)
 
-     val setProperties = storage.performWrite(
+     storage.performWrite(
        {
        val model = storage.getABox()
-        val props = AccessMethods.updateMetadata(itemDescription.metadata, newResource.uri, model, false)
-        storage.saveABox(model)
+        val props = AccessMethods.updateMetadata(newResource.uri, newResource.name, itemDescription.metadata, model, false)
+        //storage.saveABox(model)
         props
        }
      )
