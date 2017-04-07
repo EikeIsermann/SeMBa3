@@ -19,7 +19,7 @@ import utilities.FileFactory
 
 class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with JobHandling {
 
-  val singleItemImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleItemImport]))
+  val singleItemImport = context.actorOf(new RoundRobinPool(50).props(Props[SingleItemImport]))
   val singleCollectionImport = context.actorOf(new RoundRobinPool(10).props(Props[SingleCollectionImport]))
   val fileMover = context.actorOf(new RoundRobinPool(5).props(Props[FileMover]))
   var counter = 0
@@ -40,7 +40,7 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with Jo
   override def reactOnReply(reply: JobReply, originalJob: JobProtocol, results: ResultArray): Unit = {
     reply.job match {
       case item: ImportNewItem => {
-          counter += 1
+        /*  counter += 1
           val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
           val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
           val tempThumbnail = results.get(classOf[ThumbnailResult]).payload.toString
@@ -49,7 +49,7 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with Jo
         fileMover ! createJob(moveSourceFile, originalJob)
         if(newItem.thumbnailLocation != item.libInfo.constants.defaultCollectionIcon)
          fileMover ! createJob(MoveFile(tempThumbnail, newItem.thumbnailLocation, true), originalJob)
-
+         */
       }
       case _ =>
 

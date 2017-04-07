@@ -20,6 +20,7 @@ resolvers ++= Seq(
   "Sonatype Releases"         at "http://oss.sonatype.org/content/repositories/releases/",
   "Sonatype Scala-Tools"      at "https://oss.sonatype.org/content/groups/scala-tools/",
   "Ice Maven Release Repository" at "http://anonsvn.icesoft.org/repo/maven2/releases"
+  //"Artima Maven Repository" at "http://repo.artima.com/releases"
 )
 
 libraryDependencies ++= Seq(
@@ -37,6 +38,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.7",
   "io.grpc" % "grpc-netty" % "1.0.1",
   "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % com.trueaccord.scalapb.compiler.Version.scalapbVersion,
-  "com.typesafe.akka" %% "akka-agent" % "2.4.7"
+  "com.typesafe.akka" %% "akka-agent" % "2.4.7"        ,
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
 )

@@ -122,6 +122,7 @@ class AppConnector extends Actor {
     private[this] var server: Server = null
 
     def start(): Unit = {
+      ServerBuilder.
       val builder = ServerBuilder.forPort(SembaPresets.grpcPort.toInt)
       builder.addService(SembaAPIGrpc.bindService(new SembaApiImpl, context.dispatcher))
       server = builder.build().start()
@@ -209,7 +210,7 @@ class AppConnector extends Actor {
         ask(lib, RequestCollectionContents(request)).mapTo[CollectionContent]
       }
 
-      /** Asks corresponding [[Semba]] a Resources Metadata.
+      /** Asks corresponding [[Semba]] for a Resources Metadata.
         *
         * @param request Item reference
         * @return All OWL DatatypeProperties that are a subtype of SembaMetadata
@@ -327,8 +328,8 @@ class AppConnector extends Actor {
       }
 
       override def ping(request: TestMsg): Future[TestMsg] = {
-        println(request.test)
-        Future.successful(TestMsg("Pong"))
+        //println(request.test)
+        Future.successful(TestMsg(request.test))
       }
 
       override def closeConnection(request: SessionRequest): Future[SessionRequest] = {

@@ -25,5 +25,5 @@ abstract override def initialization(): Unit = {
 
     case x => super.receive(x)
   }
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
+  //override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
 }

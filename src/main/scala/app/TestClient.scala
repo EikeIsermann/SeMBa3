@@ -33,7 +33,16 @@ object TestClient extends App {
       "   }"
   }
 
-
+  val next = (value: UpdateMessage) => {
+    println(value)
+    println("Test")
+    value.kindOfUpdate match {
+      case UpdateType.NOTIFY =>
+      case UpdateType.DELETE =>
+      case UpdateType.REPLACE =>
+      case UpdateType.ADD => println(value)
+    }
+  }
 
 
 
@@ -44,26 +53,28 @@ object TestClient extends App {
   var testSessionID: String = ""
   var test: LibraryConcepts = LibraryConcepts()
   testSessionID = client.registerSession().sessionID
-  var testLib = Library(uri = "file:///Users/uni/Desktop/library/")
+  var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
   println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
-
-  //lient.addItem("file:/users/uni/desktop/image.jpg", testLib)
-  for(i <- 1 to 50){
-    //client.addItem("file:/users/uni/desktop/test/", testLib)
+  //client.addItem("file:/users/uni/desktop/test.pdf", testLib)
+  client.subscribeForUpdates(testSessionID, next)
+          println(client.getContent(testLib))
+  for(i <- 1 to 2500){
+    //client.addItem("file:/users/uni/desktop/test", testLib)
     val start = System.currentTimeMillis()
    client.getContent(testLib)
-    println("Content took " + (System.currentTimeMillis() - start) )
+   println("Content took " + (System.currentTimeMillis() - start) )
 
     //client.getMetadata("file:///Users/uni/Desktop/library/library.ttl#f747fae9-a4d4-49e6-8861-7549d255d6c9", testLib)
   }
   //tests()
+  Thread.sleep(1200000)
 
 
   def tests()  ={
 
 
     println(client.getContent(testLib))
-    client.subscribeForUpdates(testSessionID)
+//    client.subscribeForUpdates(testSessionID)
   //println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
 
   for(i <- 1 to 0){
@@ -90,6 +101,8 @@ object TestClient extends App {
      test.usePlaintext(true)
      val  channel =  test.build()
       */
+
+
     val channel = ManagedChannelBuilder.forAddress(host, port)
     channel.usePlaintext(true)
     val channel2 = channel.build()
@@ -114,14 +127,14 @@ class TestClient private(
     println("Added Objects: " + TestClient.counter)
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
   }
-
+  var sessionID: String = _
 
   def registerSession(): SessionRequest = {
     logger.info("Trying to register a session")
     var session = SessionRequest()
     try {
       session = blockingStub.registerSession(session)
-
+      sessionID = session.sessionID
     }
     catch {
       case e: StatusRuntimeException =>
@@ -146,7 +159,7 @@ class TestClient private(
   }
 
   def addItem(src: String, lib: Library): VoidResult = {
-    //logger.info("Trying to add item")
+    logger.info("Trying to add item")
     var retVal = VoidResult()
     val source = SourceFile().withLibrary(lib).withPath(src).withOntClass(SembaPaths.itemClassURI)
     try {
@@ -213,7 +226,7 @@ class TestClient private(
     retVal
   }
 
-  def subscribeForUpdates(session: String) = {
+  def subscribeForUpdates(session: String, next: UpdateMessage => Unit ) = {
     logger.info("Subscribing for Updates")
     try {
        val observer = new StreamObserver[UpdateMessage] {
@@ -225,13 +238,7 @@ class TestClient private(
            println("Completed")
          }
 
-         override def onNext(value: UpdateMessage): Unit = {
-           value.kindOfUpdate match {
-             case UpdateType.NOTIFY =>
-             case UpdateType.DELETE =>
-             case UpdateType.ADD => TestClient.counter += 1
-           }
-         }
+         override def onNext(value: UpdateMessage): Unit = next(value)
        }
        asyncStub.subscribeUpdates(UpdateRequest(session), observer )
     }
@@ -249,5 +256,33 @@ class TestClient private(
     }
     retVal
   }
+
+  def requestCollectionContent(item: Resource): CollectionContent = {
+    logger.info("Requesting Collection Contents")
+    var retVal = CollectionContent()
+    try{
+      retVal = blockingStub.requestCollectionContent(item)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    retVal
+  }
+
+  def ping(str: String): String = {
+    logger.info("Pinging remote Server")
+    var response = TestMsg("Empty")
+    try{
+      response  = blockingStub.ping(TestMsg(str))
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+    response.test
+  }
+
+
 
 }

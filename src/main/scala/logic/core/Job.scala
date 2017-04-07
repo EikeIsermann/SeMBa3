@@ -82,7 +82,7 @@ trait JobHandling extends Actor with ActorFeatures {
   def acceptJob(newJob: JobProtocol, sender: ActorRef): JobProtocol = {
     jobResults.put(newJob.jobID, new ResultArray)
     originalSender.put(newJob.jobID, sender)
-    executionTime.put(newJob.jobID, System.currentTimeMillis())
+    //executionTime.put(newJob.jobID, System.currentTimeMillis())
     newJob
   }
 
@@ -98,7 +98,9 @@ trait JobHandling extends Actor with ActorFeatures {
   }
 
   def createMasterJob(newJob: JobProtocol): JobProtocol = {
+
     acceptJob(newJob, self)
+    newJob
   }
 
   def sendJobReply(job: JobProtocol, master: ActorRef, result: ResultArray) = {

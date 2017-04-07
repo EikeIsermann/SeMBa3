@@ -1,5 +1,7 @@
 package logic.core
 
+import java.util.UUID
+
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef, Props}
 import api._
@@ -19,10 +21,10 @@ case class StorageInitialization(storageType: StorageSolution, storagePath: Stri
 trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures with JobHandling {
 
   var sembaStorage: ActorRef = _
-  var queryExecutor: ActorRef = system.actorOf(StorageQueryPipeline.props(), "StorageQueryPipeline")
+  var queryExecutor: ActorRef = system.actorOf(StorageQueryPipeline.props(), ("StorageQueryPipeline" + UUID.randomUUID()))
 
   abstract override def initialization(): Unit = {
-    sembaStorage = initializeFeature(SembaStorage.props(libInfo), "SembaStorage")
+    sembaStorage = initializeFeature(SembaStorage.props(libInfo), "SembaStorage" + UUID.randomUUID())
     queryExecutor ! StorageRegistration(sembaStorage)
     super.initialization()
   }
@@ -53,7 +55,7 @@ trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures wi
     case x => super.receive(x)
   }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+  abstract override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
      job match {
        case request: RequestResult => {
          master ! results.extract(request.resultClass)
@@ -93,7 +95,7 @@ object AccessToStorageMethods
     extends ResultContent
   def requestMetadata(uri: String, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
-      JobResult((MetadataResult(AccessMethods.retrieveMetadata(uri, storage.getABox()))))
+      JobResult(MetadataResult(AccessMethods.retrieveMetadata(uri, storage.getABox())))
     )
   }
 
@@ -103,6 +105,7 @@ object AccessToStorageMethods
     storage.performRead(
       JobResult(CollectionContentResult(AccessMethods.retrieveCollectionContent(storage.getABox, item, config))
 
+    )
     )
   }
 

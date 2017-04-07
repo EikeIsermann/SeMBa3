@@ -2,6 +2,7 @@ package app
 
 import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter}
 
+import globalConstants.SembaPaths
 import org.apache.jena.ontology.{OntModel, OntModelSpec}
 import org.apache.jena.query.{Dataset, ReadWrite}
 import org.apache.jena.rdf.model.{Model, ModelFactory, Statement}
@@ -13,13 +14,20 @@ import org.apache.jena.vocabulary.OWL
   * This is a SeMBa3 class
   */
 object TDBTest extends App{
-  var tdb: Dataset = TDBFactory.createDataset("/Users/uni/desktop/tdbtest")
+  var tdb: Dataset = TDBFactory.createDataset("/Users/uni/Documents/SeMBa3/src/test/resources/testLib/ontology")
   tdb.getContext.set(TDB.symUnionDefaultGraph, true)
-  addStatement("modelA", "itemA", "likes", "itemB")
-  addStatement("modelB", "itemC", "likes", "itemD")
-  addStatement("urn:x-arq:UnionGraph", "itemA", "likes", "itemC")
-  export("modelA")
-  export("modelB")
+  //addStatement("modelA", "itemA", "likes", "itemB")
+  //addStatement("modelB", "itemC", "likes", "itemD")
+  //addStatement("urn:x-arq:UnionGraph", "itemA", "likes", "itemC")
+  export("tBox")
+  export("aBox")
+  tdb.begin(ReadWrite.READ)
+  try{
+
+    println(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF,tdb.getNamedModel("tBox")).getOntClass(SembaPaths.collectionClassURI).listSubClasses().toList)
+
+  }
+  finally {tdb.commit ; tdb.end() }
 
 
 

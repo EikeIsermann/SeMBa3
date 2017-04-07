@@ -9,7 +9,7 @@ import logic.core.Semba
 import logic.resourceCreation.metadata.ThumbActor
 import org.apache.jena.util.FileManager
 import sembaGRPC.VoidResult
-import utilities.FileFactory
+import utilities.{FileFactory, TextFactory}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -49,7 +49,7 @@ object Application extends App {
     */
   def loadLibrary(path: String, session: UUID): ActorRef = {
     if (!libraries.contains(path)) {
-      val backend = system.actorOf(Props(new Semba(path)), "SembaActor")
+      val backend = system.actorOf(Props(new Semba(path)), "SembaActor" + UUID.randomUUID())
       libraries.put(path, backend)
     }
     if (!sessions.contains(path)) sessions.put(path, ArrayBuffer[UUID](session))

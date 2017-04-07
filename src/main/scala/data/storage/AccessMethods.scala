@@ -148,6 +148,24 @@ object AccessMethods {
       .addAllCollectionRelations(listSubObjectProperties(model, SembaPaths.sembaCollectionRelationURI, config))
       .addAllDescriptiveRelations(listSubObjectProperties(model, SembaPaths.sembaDescriptiveRelationURI, config))
       .addAllGeneralRelations(listSubObjectProperties(model, SembaPaths.sembaGeneralRelationURI, config))
+      .addAllCollectionClasses(listSubClasses(model, SembaPaths.collectionClassURI, config))
+      .addAllItemClasses(listSubClasses(model, SembaPaths.itemClassURI, config))
+    retVal
+  }
+
+  def listSubClasses(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String, SembaClass)] = {
+    val clsOption = Option(model.getOntClass(uri))
+    var retVal = ArrayBuffer[(String, SembaClass)]()
+    if(clsOption.isDefined){
+      val cls = clsOption.get
+      retVal.+=((cls.getLocalName, DatastructureMapping.wrapClass(cls, config)))
+      val iter = cls.listSubClasses()
+      while(iter.hasNext){
+        val subCls = iter.next
+        val sembaClass = (subCls.getLocalName, DatastructureMapping.wrapClass(subCls, config))
+        retVal += sembaClass
+      }
+    }
     retVal
   }
 
@@ -375,7 +393,7 @@ object AccessMethods {
     val cItems = ArrayBuffer[CollectionItem]()
     while (iter.hasNext)
     {
-      val cItem = DatastructureMapping.wrapCollectionItem(model.getIndividual(iter.next.getURI)., model, config)
+      val cItem = DatastructureMapping.wrapCollectionItem(model.getIndividual(iter.next.getURI), model, config)
       cItems += cItem
     }
     CollectionContent().withUri(uri).addAllContents(cItems)

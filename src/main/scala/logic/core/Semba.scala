@@ -21,7 +21,7 @@ import org.apache.jena.tdb.TDBFactory
 import sembaGRPC._
 import utilities.SembaConstants.StorageSolution
 import utilities.debug.DC
-import utilities.{Convert, XMLFactory}
+import utilities.{Convert, FileFactory, XMLFactory}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,7 +37,8 @@ import scala.concurrent.{Await, Future}
 case class LibInfo(system: ActorSystem, constants: Config, libAccess: ActorRef, libURI: String, rootFolder: String)
 abstract class SembaBaseActor(val root: String) extends Actor with Stash with Initialization with ActorFeatures with JobHandling
 {
-  val libRoot = new URI(root)
+
+  val libRoot = Paths.get(new URI(root)).getParent.toUri// new URI(root)
   val config: Config = initializeConfig()
   val system = context.system
   initializeConfig()
@@ -59,7 +60,10 @@ class Semba(root: String) extends SembaBaseActor(root) with AccessToStorage with
        Files.copy(Paths.get("/src", "resources", "config.xml"), Paths.get(libRoot))
     }
     //TODO update baseOntologyURI to current path!
-    new Config(libConfig.toUri, root)
+    val retVal = new Config(libConfig.toUri, libRoot.toString)
+    val tempFolder = Paths.get(new URI(retVal.rootFolder + retVal.temp))
+    if(!Files.exists(tempFolder)) Files.createDirectories(tempFolder)
+    retVal
   }
 
   override def wrappedReceive: Receive =
@@ -73,7 +77,7 @@ class Semba(root: String) extends SembaBaseActor(root) with AccessToStorage with
     case _ => {
     }
   }
-  def libInfo: LibInfo = LibInfo(system, config, queryExecutor, config.baseOntologyURI, root)
+  def libInfo: LibInfo = LibInfo(system, config, queryExecutor, config.baseOntologyURI, libRoot.toString)
 
   /*
   override def processUpdates(jobProtocol: JobProtocol): Option[ArrayBuffer[UpdateMessage]] = {

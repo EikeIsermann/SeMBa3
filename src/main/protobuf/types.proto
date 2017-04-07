@@ -35,10 +35,11 @@ message LibraryConcepts {
     map<string, Relation> collectionRelations = 3;
     map<string, Relation> descriptiveRelations = 5;
     map<string, Relation> generalRelations = 6;
-    map<string, CollectionClass> classes = 4;
+    map<string, SembaClass> collectionClasses = 4;
+    map<string, SembaClass> itemClasses = 7;
 }
 
-message CollectionClass {
+message SembaClass {
     string uri = 1;
     string description = 2;
     string label = 3;

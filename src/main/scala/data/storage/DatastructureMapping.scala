@@ -2,7 +2,7 @@ package data.storage
 
 import globalConstants.SembaPaths
 import logic.core.LibInfo
-import org.apache.jena.ontology.{DatatypeProperty, Individual, ObjectProperty, OntModel}
+import org.apache.jena.ontology._
 import sembaGRPC._
 
 import scala.collection.immutable.HashMap
@@ -28,6 +28,14 @@ object DatastructureMapping {
       label = Option(rel.getLabel(config.constants.language)).getOrElse(rel.getLocalName)
     )
   }
+
+  def wrapClass(cls: OntClass, config: LibInfo): SembaClass = {
+    new SembaClass(
+      uri = cls.getURI,
+      description = Option(cls.getComment(config.constants.language)).getOrElse(""),
+      label = Option(cls.getLabel(config.constants.language)).getOrElse("")
+    )
+  }
   def wrapResource(item: Individual, model: OntModel, config: LibInfo): Resource = {
     require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
     val retVal = Resource(
@@ -42,6 +50,8 @@ object DatastructureMapping {
     )
     retVal
   }
+
+
 
   def wrapCollectionItem(item: Individual, model: OntModel, config: LibInfo): CollectionItem = {
     require(item.hasOntClass(SembaPaths.collectionItemURI))
