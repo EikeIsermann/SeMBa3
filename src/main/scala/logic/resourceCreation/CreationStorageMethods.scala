@@ -2,6 +2,7 @@ package logic.resourceCreation
 
 import java.io.File
 import java.net.URI
+import java.util.UUID
 
 import data.storage.{AccessMethods, DatastructureMapping, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest, StorageWriteResult}
@@ -16,13 +17,13 @@ import scala.collection.mutable.ArrayBuffer
   * This is a SeMBa3 class
   */
 object CreationStorageMethods {
-   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: LibInfo, thumb: String)
-     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb, _ ))
+   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: LibInfo, thumb: String, id: UUID)
+     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb, id, _ ))
 
 
    //TODO performing all operations in one performWrite cycle returning the completed UpdateMessage might add performance.
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
-                       config: LibInfo, thumb: String, storage: SembaStorageComponent): JobResult =
+                       config: LibInfo, thumb: String, id: UUID, storage: SembaStorageComponent): JobResult =
    {
 
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
@@ -30,7 +31,7 @@ object CreationStorageMethods {
      val newResource = storage.performWrite(
         {
           val model = storage.getABox()
-          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb)
+          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb, id)
           //storage.saveABox(model)
           res
         }

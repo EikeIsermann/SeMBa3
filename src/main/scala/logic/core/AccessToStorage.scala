@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef, Props}
 import api._
-import data.storage.{AccessMethods, SembaStorage, SembaStorageComponent, StorageAccess}
+import data.storage.{AccessMethods, SembaStorage, SembaStorageComponent}
 import globalConstants.GlobalMessages.StorageReadRequest
 import logic.core.AccessToStorageMethods._
 import sembaGRPC.{CollectionContent, ItemDescription, LibraryConcepts, LibraryContent}

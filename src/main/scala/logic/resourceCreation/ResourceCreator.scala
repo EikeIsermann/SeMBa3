@@ -40,16 +40,12 @@ class ResourceCreator(libInfo: LibInfo) extends Actor with ActorFeatures with Jo
   override def reactOnReply(reply: JobReply, originalJob: JobProtocol, results: ResultArray): Unit = {
     reply.job match {
       case item: ImportNewItem => {
-        /*  counter += 1
+          counter += 1
           val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
           val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
-          val tempThumbnail = results.get(classOf[ThumbnailResult]).payload.toString
         println("received successful import nr " + counter + newItem.uri)
+        fileMover ! moveSourceFile
 
-        fileMover ! createJob(moveSourceFile, originalJob)
-        if(newItem.thumbnailLocation != item.libInfo.constants.defaultCollectionIcon)
-         fileMover ! createJob(MoveFile(tempThumbnail, newItem.thumbnailLocation, true), originalJob)
-         */
       }
       case _ =>
 

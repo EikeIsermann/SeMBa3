@@ -22,7 +22,8 @@ class TxtThumb extends ThumbActor {
 
   override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
     val src = IOUtils.toString(thumb.src.toURI)
-    val path = thumb.path
+    val destination = createPath(thumb)
+
     val res = thumb.config.thumbResolution.toInt - TxtThumb.padding
     val thumbnail = new BufferedImage(res, res, BufferedImage.TYPE_INT_RGB)
     val bounds = TxtThumb.font.getStringBounds(src, new FontRenderContext(null, true, true))
@@ -59,9 +60,9 @@ class TxtThumb extends ThumbActor {
 
     pic.dispose
 
-    ImageIO.write(pad(thumbnail, TxtThumb.padding / 2, TxtThumb.background), "JPEG", new File(path))
+    ImageIO.write(pad(thumbnail, TxtThumb.padding / 2, TxtThumb.background), "JPEG", destination)
     thumbnail.flush()
-    ThumbnailResult(path)
+    ThumbnailResult(thumb.path)
   }
 
 

@@ -38,7 +38,7 @@ service SembaAPI {
 
     rpc simpleSearch (SimpleQuery) returns (LibraryContent) {
     }
-    rpc sparqlFilter (SparqlQuery) returns (LibraryContent) {
+    rpc sparqlFilter (SparqlQuery) returns (FilterResult) {
     }
 
     rpc subscribeUpdates (UpdateRequest) returns (stream UpdateMessage) {
@@ -106,7 +106,8 @@ message SimpleQuery {
 
 message SparqlQuery {
     Library library = 1;
-    string key = 2;
+    string queryString = 2;
+    repeated string vars = 3;
 }
 
 enum UpdateType {
@@ -114,6 +115,14 @@ enum UpdateType {
     ADD = 1;
     NOTIFY = 2;
     REPLACE = 3;
+}
+
+message FilterResult {
+    repeated ResultEntry results = 1;
+}
+
+message ResultEntry {
+    map<string, string> results = 1;
 }
 
 message UpdateMessage {

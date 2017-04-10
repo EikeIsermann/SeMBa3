@@ -1,6 +1,8 @@
 package logic.resourceCreation.metadata
 
 import java.io.File
+import java.net.URI
+import java.nio.file.{Files, Path}
 import javax.imageio.ImageIO
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
@@ -37,8 +39,15 @@ abstract class ThumbActor extends Actor with JobExecution {
 
   def createThumbnail(thumb: ExtractThumbnail): ResultContent
 
-
+  def createPath(thumb: ExtractThumbnail): File  = {
+    val dest: Path = new File(thumb.path).toPath
+    val folder = dest.getParent
+    if(!Files.exists(folder)) Files.createDirectories(dest.getParent)
+    dest.toFile
+  }
 }
+
+
 
 /** Returns the correct ThumbnailActorRef for a given Mimetype. Stores all supported MimeTypes for available Actors.
   * ThumbnailActors have to be registered here following the given pattern

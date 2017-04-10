@@ -133,4 +133,19 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
 
   }
 
+  override def getABoxNoReasoning(): OntModel = {
+
+    //val schema = data.getNamedModel(tBoxName)
+    //val start = System.currentTimeMillis()
+
+    val aBoxModel =  ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM,
+      data.getNamedModel(aBoxName))
+    //aBoxModel.addSubModel(schema)
+    //DC.log("Execution of getABox took " + (System.currentTimeMillis() - start ))
+
+    aBoxModel
+    //val reasoner = ReasonerRegistry.getOWLMicroReasoner.bindSchema(schema)
+    //ModelFactory.createInfModel(reasoner, aBoxModel)
+  }
+
 }

@@ -36,7 +36,7 @@ libraryDependencies ++= Seq(
   "com.trueaccord.scalapb" %% "scalapb-runtime" % com.trueaccord.scalapb.compiler.Version.scalapbVersion % "protobuf",
   "org.apache.commons" % "commons-lang3" % "3.3.2",
   "com.typesafe.akka" %% "akka-actor" % "2.4.7",
-  "io.grpc" % "grpc-netty" % "1.0.1",
+  "io.grpc" % "grpc-netty" % com.trueaccord.scalapb.compiler.Version.grpcJavaVersion,
   "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % com.trueaccord.scalapb.compiler.Version.scalapbVersion,
   "com.typesafe.akka" %% "akka-agent" % "2.4.7"        ,
   "org.scalactic" %% "scalactic" % "3.0.1",

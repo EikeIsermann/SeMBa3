@@ -8,7 +8,7 @@
 	<itemName>#content</itemName>
     <thumbnailResolution>400</thumbnailResolution>
     <thumbnailIdentifier>thumbnail.jpeg</thumbnailIdentifier>
-	<dataPath>file:///Users/uni/Documents/SeMBa3/src/test/resources/testLib/data</dataPath>
+	<dataPath>file:///Users/uni/Documents/SeMBa3/src/test/resources/testLib/data/</dataPath>
     <libraryPath>ontology</libraryPath>
 	<storageType>TDB</storageType>
 	<temporaryFolder>temp/</temporaryFolder>

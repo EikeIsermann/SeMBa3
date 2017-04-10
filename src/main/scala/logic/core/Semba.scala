@@ -26,6 +26,7 @@ import utilities.{Convert, FileFactory, XMLFactory}
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import globalConstants._
+import logic.search.Search
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -49,7 +50,7 @@ abstract class SembaBaseActor(val root: String) extends Actor with Stash with In
 
 }
 
-class Semba(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation //with DataExport
+class Semba(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation with Search //with DataExport
 {
 
 

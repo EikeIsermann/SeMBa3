@@ -42,8 +42,9 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
       {
         acceptJob(importItem, context.sender())
         val cluster = createJobCluster(ExtractionJob(importItem), importItem)
+        val constants = importItem.libInfo.constants
         ThumbActor.getThumbActor(importItem.item) !
-          createJob(ExtractThumbnail(importItem.item, URI.create(importItem.libInfo.constants.rootFolder + importItem.libInfo.constants.temp + importItem.jobID + ".jpeg") ,importItem.libInfo.constants), cluster)
+          createJob(ExtractThumbnail(importItem.item, URI.create(constants.dataPath + importItem.jobID + "/" + constants.thumbnail), constants), cluster)
         tikaExtractor ! createJob(ExtractMetadata(importItem.item), cluster)
       }
   }
@@ -74,7 +75,7 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
     val ontClass = ex.importJob.ontClass
     val desc = results.get(classOf[MetadataResult]).payload
     val thumb = results.get(classOf[ThumbnailResult]).payload.toString
-    val job = CreateInStorage(itemType, ontClass, fileName, desc, ex.importJob.libInfo, thumb)
+    val job = CreateInStorage(itemType, ontClass, fileName, desc, ex.importJob.libInfo, thumb, ex.importJob.jobID)
     val cluster = createJobCluster(StorageJob(ex.importJob), ex.importJob)
     ex.importJob.libInfo.libAccess  ! createJob(job, cluster)
   }

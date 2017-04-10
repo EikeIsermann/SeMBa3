@@ -122,7 +122,6 @@ class AppConnector extends Actor {
     private[this] var server: Server = null
 
     def start(): Unit = {
-      ServerBuilder.
       val builder = ServerBuilder.forPort(SembaPresets.grpcPort.toInt)
       builder.addService(SembaAPIGrpc.bindService(new SembaApiImpl, context.dispatcher))
       server = builder.build().start()
@@ -236,9 +235,9 @@ class AppConnector extends Actor {
         * @param request Request containing the query as a [[String]]
         * @return List of all matching Resources
         */
-      override def sparqlFilter(request: SparqlQuery): Future[LibraryContent] = {
+      override def sparqlFilter(request: SparqlQuery): Future[FilterResult] = {
         val lib = app.get(request.getLibrary.uri)
-        ask(lib, SparqlFilter(request)).mapTo[LibraryContent]
+        ask(lib, SparqlFilter(request)).mapTo[FilterResult]
       }
 
       //TODO What about recursion?

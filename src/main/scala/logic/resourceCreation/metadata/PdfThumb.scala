@@ -23,12 +23,13 @@ class PdfThumb extends ThumbActor {
     * @param thumb [[ExtractThumbnail]] containing the required information
     */
   override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
+    val destination = createPath(thumb)
     val doc = PDDocument.load(thumb.src)
     val renderer = new PDFRenderer(doc)
     val imgBuff = renderer.renderImage(0)
     Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, thumb.config.thumbResolution.toInt, thumb.config.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
-    ImageIO.write(imgBuff, "jpeg", new File(thumb.path))
+    ImageIO.write(imgBuff, "jpeg", destination)
     imgBuff.flush()
     doc.close()
     ThumbnailResult(thumb.path)

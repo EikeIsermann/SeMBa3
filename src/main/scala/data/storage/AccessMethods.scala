@@ -363,10 +363,10 @@ object AccessMethods {
     itemName
   }
 
-  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo, thumb: String): Resource = {
+  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo, thumb: String, id: UUID): Resource = {
     val start = System.currentTimeMillis()
     //val itemName = createName(config.constants.resourceBaseURI, name, model)
-    val itemName = UUID.randomUUID()
+    val itemName = id
     val uri = config.constants.resourceBaseURI + itemName
     val root =  config.constants.dataPath + "/" + itemName + "/"
 

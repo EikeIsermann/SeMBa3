@@ -14,7 +14,7 @@ import org.apache.jena.vocabulary.OWL
   * This is a SeMBa3 class
   */
 object TDBTest extends App{
-  var tdb: Dataset = TDBFactory.createDataset("/Users/uni/Documents/SeMBa3/src/test/resources/testLib/ontology")
+  var tdb: Dataset = TDBFactory.createDataset("/Users/uni/desktop/library/ontology")
   tdb.getContext.set(TDB.symUnionDefaultGraph, true)
   //addStatement("modelA", "itemA", "likes", "itemB")
   //addStatement("modelB", "itemC", "likes", "itemD")
@@ -24,7 +24,7 @@ object TDBTest extends App{
   tdb.begin(ReadWrite.READ)
   try{
 
-    println(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF,tdb.getNamedModel("tBox")).getOntClass(SembaPaths.collectionClassURI).listSubClasses().toList)
+   // println(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF,tdb.getNamedModel("tBox")).getOntClass(SembaPaths.collectionClassURI).listSubClasses().toList)
 
   }
   finally {tdb.commit ; tdb.end() }
@@ -55,6 +55,8 @@ object TDBTest extends App{
     tdb.begin(ReadWrite.READ)
     try{
       var model: Model =tdb.getNamedModel(aModel)
+      println("This model has " + model.size() + " Statements.")
+
       model.write(
         new BufferedWriter(
           new OutputStreamWriter(

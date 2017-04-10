@@ -44,7 +44,7 @@ class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
     val ontClass = job.ontClass
     val thumb = job.newColl.picture
 
-    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo, thumb)
+    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo, thumb, job.jobID)
 
   }
 

@@ -78,6 +78,8 @@ abstract class SembaStorageComponent {
 
   def getTBox(): OntModel
 
+  def getABoxNoReasoning(): OntModel
+
   def saveABox(model: OntModel)
 
   def saveTBox(model: OntModel)

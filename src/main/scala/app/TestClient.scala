@@ -22,14 +22,14 @@ object TestClient extends App {
   val queryString =
   {
 
-        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Desktop/library/library.ttl#dc:creator> \"Florian Bötsch\" ." +
+        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Desktop/library/library.ttl#Content-Type> \"image/jpeg\" ." +
           "   }"
   }
 
   val queryString2 =
   {
 
-    "SELECT ?x\nWHERE\n { ?x a <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource> ." +
+    "SELECT ?x\nWHERE\n { ?x <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource> ." +
       "   }"
   }
 
@@ -57,12 +57,12 @@ object TestClient extends App {
   println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
   //client.addItem("file:/users/uni/desktop/test.pdf", testLib)
   client.subscribeForUpdates(testSessionID, next)
-          println(client.getContent(testLib))
-  for(i <- 1 to 2500){
+          //println(client.getContent(testLib))
+  for(i <- 1 to 20){
     //client.addItem("file:/users/uni/desktop/test", testLib)
     val start = System.currentTimeMillis()
-   client.getContent(testLib)
-   println("Content took " + (System.currentTimeMillis() - start) )
+   val res  = client.sparql(queryString2, Seq("x"), testLib)
+   println("Search took " + (System.currentTimeMillis() - start) + " Result size is: " + res.results.size )
 
     //client.getMetadata("file:///Users/uni/Desktop/library/library.ttl#f747fae9-a4d4-49e6-8861-7549d255d6c9", testLib)
   }
@@ -86,8 +86,8 @@ object TestClient extends App {
   //println(client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_4/definition.ttl#content", testLib))
   //println(client.getContent(testLib))
     for(i <- 1 to 1){
-     println(client.sparql(queryString2,testLib))
-      println(client.sparql(queryString,testLib))
+     //println(client.sparql(queryString2,testLib))
+      //println(client.sparql(queryString,testLib))
 
     }
   Thread.sleep(1200000)
@@ -103,7 +103,9 @@ object TestClient extends App {
       */
 
 
-    val channel = ManagedChannelBuilder.forAddress(host, port)
+
+    val channel = ManagedChannelBuilder.forAddress(host, port).asInstanceOf[ManagedChannelBuilder[_]]
+    channel.maxInboundMessageSize(1012*1014*1024)
     channel.usePlaintext(true)
     val channel2 = channel.build()
     val blockingStub = SembaAPIGrpc.blockingStub(channel2)
@@ -244,11 +246,11 @@ class TestClient private(
     }
   }
 
-  def sparql(query: String, lib: Library) = {
+  def sparql(query: String, vars: Seq[String], lib: Library) = {
     logger.info("Performing Sparqlmagic")
-    var retVal = LibraryContent()
+    var retVal = FilterResult()
     try {
-      retVal = blockingStub.sparqlFilter(SparqlQuery().withLibrary(lib).withKey(query))
+      retVal = blockingStub.sparqlFilter(SparqlQuery().withLibrary(lib).withVars(vars).withQueryString(query))
     }
     catch {
       case e: StatusRuntimeException =>

@@ -16,13 +16,13 @@ import org.imgscalr.Scalr
 class PicThumb extends ThumbActor {
 
   override def createThumbnail(job: ExtractThumbnail): ResultContent = {
-    val path = job.path
+    val destination = createPath(job)
     val imgBuff = ImageIO.read(job.src)
     val pic = Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, job.config.thumbResolution.toInt, job.config.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
-    ImageIO.write(pic, "jpeg", new File(path))
+    ImageIO.write(pic, "jpeg", destination)
     pic.flush()
-    ThumbnailResult(path)
+    ThumbnailResult(job.path)
   }
 
 }
