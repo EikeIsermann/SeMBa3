@@ -36,7 +36,7 @@ trait JobHandling extends ActorFeatures with JobExecution {
       if (completed) {
         val jobMaster = originalSender.apply(entry.get._2.jobID)
         val resultBuffer = jobResults.apply(originalJob.jobID)
-        finishOperations(originalJob, resultBuffer)
+        preFinishOperations(originalJob, resultBuffer)
         finishedJob(originalJob, jobMaster, resultBuffer)
         jobResults.remove(originalJob.jobID)
         originalSender.remove(originalJob.jobID)

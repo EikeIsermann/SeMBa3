@@ -24,12 +24,12 @@ case class BenchmarkResult(job: UUID, parentJob: UUID, description: String, atAc
        <MeasuredAt>{atActor}</MeasuredAt>
        <AcceptedAt>{start}</AcceptedAt>
        <FinishedAt>{finish}</FinishedAt>
-       <TimeInMillis>{(finish-start)*1000000}</TimeInMillis>
+       <TimeInMillis>{(finish-start)/1000000}</TimeInMillis>
      </BenchmarkResult>
   }
 }
 case class ParentJobReceived(parentJob: UUID, description: String)
-case class WriteResults()
+case class WriteResults(uri: String)
 
 class BenchmarkActor extends Actor {
   val results = new mutable.HashMap[UUID, ArrayBuffer[BenchmarkResult]]()
@@ -46,10 +46,10 @@ class BenchmarkActor extends Actor {
       {
         results.apply(b.parentJob) += b
       }
-    case s: WriteResults ⇒ sender ! writeResults()
+    case s: WriteResults ⇒ sender ! writeResults(s.uri)
   }
 
-  def writeResults(): Boolean = {
+  def writeResults(uri: String): Boolean = {
     val now = Calendar.getInstance().getTime
     val sdf = new SimpleDateFormat()
     val saveTime = sdf.format(now)
@@ -62,10 +62,14 @@ class BenchmarkActor extends Actor {
        })}
        </Benchmark>
     }
-    XMLFactory.save(xml, "")
+    XMLFactory.save(xml, uri)
      true
   }
 
+  override def postStop(): Unit = {
+    println("Poststoooop")
+    writeResults("/Users/uni/desktop/shutdownBench.xml")
+  }
 }
 
 object BenchmarkActor {

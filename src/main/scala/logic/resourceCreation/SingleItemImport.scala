@@ -30,11 +30,11 @@ case class SetDatatypeProperties(propertyMap: mutable.HashMap[String, Array[Stri
                                  item: Individual, model: OntModel) extends Job
 
 // TODO ScalaDoc, Custom Metadata Mappings
-class SingleItemImport(val config: Config) extends Actor with ActorFeatures with JobHandling {
+class SingleItemImport(val config: Config) extends LibActor {
   var tikaExtractor: ActorRef = _
 
   override def preStart(): Unit = {
-    tikaExtractor = context.actorOf(RoundRobinPool(10).props(TikaExtractor.props()))
+    tikaExtractor = context.actorOf(RoundRobinPool(10).props(TikaExtractor.props(config)))
 
     super.preStart()
   }

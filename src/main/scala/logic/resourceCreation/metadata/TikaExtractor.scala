@@ -16,7 +16,7 @@ import utilities.TextFactory
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class TikaExtractor extends Actor with SingleJobExecutor {
+class TikaExtractor(val config: Config) extends LibJobExecutor {
 
   override def performTask(job: Job): JobResult =  {
     job match {
@@ -51,5 +51,5 @@ class TikaExtractor extends Actor with SingleJobExecutor {
 
 
 object TikaExtractor {
-  def props(): Props = Props(new TikaExtractor)
+  def props(config: Config): Props = Props(new TikaExtractor(config))
 }

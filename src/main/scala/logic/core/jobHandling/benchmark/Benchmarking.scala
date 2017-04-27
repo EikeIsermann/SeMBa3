@@ -18,23 +18,21 @@ trait Benchmarking extends JobExecution {
   var executionTime = mutable.HashMap[UUID, Long]()
   var benchmarkActor: Option[ActorRef]
 
-  abstract override def handleJob(job: Job, master: ActorRef) = {
+  abstract override def preHandleOperations(job: Job, master: ActorRef) = {
     startBenchmark(job)
-    super.handleJob(job,master)
+    super.preHandleOperations(job,master)
   }
 
-  abstract override def finishOperations(job: Job, results: ResultArray) = {
+  abstract override def preFinishOperations(job: Job, results: ResultArray) = {
     sendBenchmarkResult(job)
-    super.finishOperations(job, results)
+    super.preFinishOperations(job, results)
 
   }
 
   def startBenchmark(job: Job) = {
     benchmarkActor.foreach(
       benchmarkingEnabled ⇒ {
-        job match {
-          case parent: SembaApiCall ⇒ benchmarkingEnabled ! ParentJobReceived(job.jobID, job.getClass.getSimpleName)
-        }
+        if(job.jobID.equals(job.parentCall)) benchmarkingEnabled ! ParentJobReceived(job.jobID, job.getClass.getSimpleName)
         executionTime.put(job.jobID, time)
       }
 

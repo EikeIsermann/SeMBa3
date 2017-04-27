@@ -9,7 +9,7 @@ import logic.core.jobHandling.{Job, JobHandling, JobReply, ResultArray}
   * This is a SeMBa3 class
   */
 case class StorageRegistration(storage: ActorRef)
-class StorageQueryPipeline(val config: Config) extends Actor with ActorFeatures with JobHandling {
+class StorageQueryPipeline(val config: Config) extends LibActor {
   var storage: ActorRef = _
 
   override def handleJob(job: Job, master: ActorRef): Unit = {
@@ -32,6 +32,8 @@ class StorageQueryPipeline(val config: Config) extends Actor with ActorFeatures 
    override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = {
      master ! JobReply(job, results)
    }
+
+
 }
 
 object StorageQueryPipeline {

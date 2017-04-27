@@ -17,6 +17,7 @@ import io.grpc.stub.StreamObserver
 import io.grpc.{Server, ServerBuilder}
 import logic.core.LibraryInstance
 import logic.core.jobHandling.Job
+import logic.core.jobHandling.benchmark.WriteResults
 import sembaGRPC.{CollectionItem, Library, LibraryConcepts, SimpleQuery, _}
 import utilities.FileFactory
 
@@ -336,6 +337,11 @@ class AppConnector extends Actor {
         app.closeConnection(UUID.fromString(request.sessionID))
         observers.remove(request.sessionID)
         Future.successful(request)
+      }
+
+      override def writeBenchmarkResults(request: Library): Future[VoidResult] = {
+        val lib = app.get(request.uri)
+        ask(lib, WriteResults("")).mapTo[VoidResult]
       }
 
 

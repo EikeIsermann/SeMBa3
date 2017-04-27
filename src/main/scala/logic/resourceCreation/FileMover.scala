@@ -4,7 +4,7 @@ import java.io.File
 import java.net.URI
 import java.nio.file.{CopyOption, Files, Path, StandardCopyOption}
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import logic.core._
 import logic.core.jobHandling._
 import utilities.WriterFactory
@@ -14,7 +14,7 @@ import utilities.WriterFactory
   * This is a SeMBa3 class
   */
 case class MoveFile(src: String, dest: String, deleteOriginal: Boolean = false) extends Job
-class FileMover(val config: Config) extends Actor with SingleJobExecutor {
+class FileMover(val config: Config) extends LibJobExecutor {
 
   override def performTask(job: Job): JobResult = {
     job match {
@@ -31,6 +31,7 @@ class FileMover(val config: Config) extends Actor with SingleJobExecutor {
     else Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING)
     EmptyResult()
   }
+
 }
 
 object FileMover {

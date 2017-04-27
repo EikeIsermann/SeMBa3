@@ -36,6 +36,10 @@ service SembaAPI {
     rpc updateMetadata (MetadataUpdate) returns (VoidResult) {
     }
 
+    rpc writeBenchmarkResults(Library) returns (VoidResult){
+
+    }
+
     rpc simpleSearch (SimpleQuery) returns (LibraryContent) {
     }
     rpc sparqlFilter (SparqlQuery) returns (FilterResult) {

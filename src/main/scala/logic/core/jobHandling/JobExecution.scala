@@ -1,7 +1,8 @@
 package logic.core.jobHandling
 
 import akka.actor.{Actor, ActorRef}
-import logic.core.{ActorFeatures, LibActor}
+import logic.core.{ActorFeatures, Config}
+import logic.core.jobHandling.benchmark.Benchmarking
 
 /**
   * Author: Eike Isermann
@@ -10,7 +11,10 @@ import logic.core.{ActorFeatures, LibActor}
 trait JobExecution extends Actor with ActorFeatures {
 
   override def receive: Receive = {
-    case job: Job => handleJob(job, sender())
+    case job: Job => {
+      preHandleOperations(job, sender())
+      handleJob(job, sender())
+    }
     case x => super.receive(x)
   }
 
@@ -18,12 +22,15 @@ trait JobExecution extends Actor with ActorFeatures {
 
   def finishedJob(job: Job, master: ActorRef, results: ResultArray)
 
-  def finishOperations(job: Job, results: ResultArray): Unit = {}
+  def preHandleOperations(job: Job, master: ActorRef): Unit = {}
+
+  def preFinishOperations(job: Job, results: ResultArray): Unit = {}
 }
 
-trait SingleJobExecutor extends JobExecution {
+trait SingleJobExecutor extends JobExecution with Benchmarking {
 
   override def handleJob(job: Job, master: ActorRef) = {
+    preHandleOperations(job, master)
     val result = performTask(job)
     finishedJob(job, context.sender(), new ResultArray(result))
   }
@@ -31,7 +38,8 @@ trait SingleJobExecutor extends JobExecution {
   def performTask(job:Job): JobResult
 
   override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = {
-    finishOperations(job, results)
+    preFinishOperations(job, results)
     context.sender() ! JobReply(job, results)
   }
 }
+

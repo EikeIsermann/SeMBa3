@@ -3,7 +3,7 @@ package utilities
 import java.io.{File, FileOutputStream}
 import java.net.URI
 import java.nio.channels.Channels
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import scala.xml._
 
@@ -65,10 +65,10 @@ object XMLFactory {
     val Encoding = "UTF-8"
     val pp = new PrettyPrinter(80, 2)
 
-    val src: Path = new File(URI.create(fileName)).toPath
+    val src: Path = Paths.get(URI.create(fileName))
     if(!Files.exists(src)) Files.createFile(src)
 
-    val fos = new FileOutputStream(fileName)
+    val fos = new FileOutputStream(src.toFile)
     val writer = Channels.newWriter(fos.getChannel(), Encoding)
 
     try {

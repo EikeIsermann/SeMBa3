@@ -54,9 +54,10 @@ object TestClient extends App {
   //client.addItem("file:/users/uni/desktop/test.pdf", testLib)
   client.subscribeForUpdates(testSessionID, next)
           //println(client.getContent(testLib))
-  for(i <- 1 to 20){
+  client.writeResults(testLib)
+  for(i <- 1 to 0){
     //client.addItem("file:/users/uni/desktop/test", testLib)
-    val start = System.currentTimeMillis()
+   val start = System.currentTimeMillis()
    val res  = client.sparql(queryString2, Seq("x"), testLib)
    println("Search took " + (System.currentTimeMillis() - start) + " Result size is: " + res.results.size )
 
@@ -266,6 +267,17 @@ class TestClient private(
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
     }
     retVal
+  }
+
+  def writeResults(lib: Library) = {
+    logger.info("Sending Benchmark Write Trigger")
+    try{
+      blockingStub.writeBenchmarkResults(lib)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
   }
 
   def ping(str: String): String = {

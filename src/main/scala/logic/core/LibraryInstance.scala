@@ -24,6 +24,8 @@ abstract class SembaBaseActor(val root: String) extends Stash with Initializatio
   val libRoot = Paths.get(new URI(root)).getParent.toUri// new URI(root)
   val constants: Constants = initializeConstants()
   val system = context.system
+  val benchDummy = Some(system.actorOf(BenchmarkActor.props))
+  var benchmarkActor: Option[ActorRef] = if (constants.benchmarkingEnabled) benchDummy else None
   initializeConstants()
   val libraryLocation: URI = new URI(libRoot + constants.dataPath)
   def config: Config
@@ -33,11 +35,8 @@ abstract class SembaBaseActor(val root: String) extends Stash with Initializatio
 
 class LibraryInstance(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation with Search with Benchmarking//with DataExport
 {
-  val benchDummy = Some(system.actorOf(BenchmarkActor.props))
-  var benchmarkActor: Option[ActorRef] = if (constants.benchmarkingEnabled) benchDummy else None
-
   override def wrappedReceive: Receive = {
-    case write: WriteResults ⇒ benchmarkActor.foreach( _ ! write)
+    case write: WriteResults ⇒ benchmarkActor.foreach( _ ! WriteResults(config.constants.benchmarkPath))
   }
 
   def initializeConstants(): Constants = {

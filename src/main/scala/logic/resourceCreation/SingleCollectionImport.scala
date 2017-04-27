@@ -25,7 +25,7 @@ import scala.collection.mutable
 
 case class CreateCollection(newColl: NewCollection, ontClass: String, libInfo: Config) extends Job
 
-class SingleCollectionImport(val config: Config) extends Actor with ActorFeatures with JobHandling {
+class SingleCollectionImport(val config: Config) extends LibActor {
 
   override def handleJob(job: Job, master: ActorRef): Unit = {
      job match {

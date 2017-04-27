@@ -2,7 +2,7 @@ package logic.itemModification
 
 import akka.actor.{Actor, ActorRef, Props}
 import api._
-import logic.core.Config
+import logic.core.{Config, LibActor}
 import logic.core.jobHandling.{Job, JobHandling}
 import logic.itemModification.ModificationMethods._
 
@@ -10,7 +10,7 @@ import logic.itemModification.ModificationMethods._
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class ModificationHandler(val config: Config) extends Actor with JobHandling {
+class ModificationHandler(val config: Config) extends LibActor {
    val storagePipeline = config.libAccess
 
 

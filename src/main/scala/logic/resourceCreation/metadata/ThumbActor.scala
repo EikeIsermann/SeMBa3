@@ -22,7 +22,7 @@ import scala.collection.mutable.HashMap
   *
   */
 
-abstract class ThumbActor extends Actor with SingleJobExecutor {
+abstract class ThumbActor extends GlobalJobExecutor {
 
 
   override def performTask(job: Job): JobResult = {

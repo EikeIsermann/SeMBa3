@@ -1,0 +1,523 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Benchmark date="27.04.17 19:34">
+  <Job name="OpenLib" id="40d49a9c-3c97-49da-9835-85bf863e0411">
+    <BenchmarkResult>
+      <JobID>40d49a9c-3c97-49da-9835-85bf863e0411</JobID>
+      <JobDescription>OpenLib</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19135186694854</AcceptedAt>
+      <FinishedAt>19135663846047</FinishedAt>
+      <TimeInMillis>477</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="2edbee67-5b2e-4ac3-b6f0-1965d053bdcc">
+    <BenchmarkResult>
+      <JobID>2edbee67-5b2e-4ac3-b6f0-1965d053bdcc</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19136707273417</AcceptedAt>
+      <FinishedAt>19137466699867</FinishedAt>
+      <TimeInMillis>759</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="1c1b92bc-97a7-40cd-ba1c-77a617948f6c">
+    <BenchmarkResult>
+      <JobID>1c1b92bc-97a7-40cd-ba1c-77a617948f6c</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19137494211373</AcceptedAt>
+      <FinishedAt>19137577850795</FinishedAt>
+      <TimeInMillis>83</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="d47a1da1-2047-4fab-803c-4e0a218957a9">
+    <BenchmarkResult>
+      <JobID>d47a1da1-2047-4fab-803c-4e0a218957a9</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19137590045071</AcceptedAt>
+      <FinishedAt>19137653353128</FinishedAt>
+      <TimeInMillis>63</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="7dde4cdd-5f19-4ee8-8817-b7a8da7da5fe">
+    <BenchmarkResult>
+      <JobID>7dde4cdd-5f19-4ee8-8817-b7a8da7da5fe</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19137667228098</AcceptedAt>
+      <FinishedAt>19137753033605</FinishedAt>
+      <TimeInMillis>85</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="eadc6d38-8387-4985-a2c1-c111bd414b86">
+    <BenchmarkResult>
+      <JobID>eadc6d38-8387-4985-a2c1-c111bd414b86</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19137770283699</AcceptedAt>
+      <FinishedAt>19137915427889</FinishedAt>
+      <TimeInMillis>145</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="6ea6c097-824f-4c6c-a222-dc97dbff7b1a">
+    <BenchmarkResult>
+      <JobID>6ea6c097-824f-4c6c-a222-dc97dbff7b1a</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19137930539604</AcceptedAt>
+      <FinishedAt>19137999933535</FinishedAt>
+      <TimeInMillis>69</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="756e533e-1799-47b8-b2db-6a9535b0c193">
+    <BenchmarkResult>
+      <JobID>756e533e-1799-47b8-b2db-6a9535b0c193</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138018045148</AcceptedAt>
+      <FinishedAt>19138087255573</FinishedAt>
+      <TimeInMillis>69</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="ead53308-47ab-43ce-bfc6-6b8f1816eaad">
+    <BenchmarkResult>
+      <JobID>ead53308-47ab-43ce-bfc6-6b8f1816eaad</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138105266308</AcceptedAt>
+      <FinishedAt>19138182372195</FinishedAt>
+      <TimeInMillis>77</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="10c5e6e0-f4f4-4d99-be94-f13e4be48d17">
+    <BenchmarkResult>
+      <JobID>10c5e6e0-f4f4-4d99-be94-f13e4be48d17</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138199971173</AcceptedAt>
+      <FinishedAt>19138278831486</FinishedAt>
+      <TimeInMillis>78</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="4c0ddea5-6f9e-4367-95ac-2f0e6e3bb9cb">
+    <BenchmarkResult>
+      <JobID>4c0ddea5-6f9e-4367-95ac-2f0e6e3bb9cb</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138302794009</AcceptedAt>
+      <FinishedAt>19138455051426</FinishedAt>
+      <TimeInMillis>152</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="b6e878a5-018f-4f91-a928-25b46a11c739">
+    <BenchmarkResult>
+      <JobID>b6e878a5-018f-4f91-a928-25b46a11c739</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138474870158</AcceptedAt>
+      <FinishedAt>19138540406669</FinishedAt>
+      <TimeInMillis>65</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="ac361d13-410a-4019-98a5-deb27bb6f624">
+    <BenchmarkResult>
+      <JobID>ac361d13-410a-4019-98a5-deb27bb6f624</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138556293566</AcceptedAt>
+      <FinishedAt>19138646189978</FinishedAt>
+      <TimeInMillis>89</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="b714e92e-ea39-4ac0-a489-068be2f2be6b">
+    <BenchmarkResult>
+      <JobID>b714e92e-ea39-4ac0-a489-068be2f2be6b</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138663187830</AcceptedAt>
+      <FinishedAt>19138720318141</FinishedAt>
+      <TimeInMillis>57</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="2430070c-a242-4266-bf8c-ae514645af17">
+    <BenchmarkResult>
+      <JobID>2430070c-a242-4266-bf8c-ae514645af17</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138732488186</AcceptedAt>
+      <FinishedAt>19138805980736</FinishedAt>
+      <TimeInMillis>73</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="faf76444-f938-4bd2-8599-d5b0247b02a1">
+    <BenchmarkResult>
+      <JobID>faf76444-f938-4bd2-8599-d5b0247b02a1</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138821756494</AcceptedAt>
+      <FinishedAt>19138938376639</FinishedAt>
+      <TimeInMillis>116</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="e4b48ded-ff34-46c5-82f0-38ded0f1e7c2">
+    <BenchmarkResult>
+      <JobID>e4b48ded-ff34-46c5-82f0-38ded0f1e7c2</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19138955374130</AcceptedAt>
+      <FinishedAt>19139031687737</FinishedAt>
+      <TimeInMillis>76</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="22c97da2-5127-420d-bc1d-e16d267f40db">
+    <BenchmarkResult>
+      <JobID>22c97da2-5127-420d-bc1d-e16d267f40db</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139044523109</AcceptedAt>
+      <FinishedAt>19139108050129</FinishedAt>
+      <TimeInMillis>63</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="4530aeab-a0a9-45b6-aa5f-a9bb13df3758">
+    <BenchmarkResult>
+      <JobID>4530aeab-a0a9-45b6-aa5f-a9bb13df3758</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139119595138</AcceptedAt>
+      <FinishedAt>19139213271426</FinishedAt>
+      <TimeInMillis>93</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="51b50386-896e-4098-ba3b-35fe72ed095e">
+    <BenchmarkResult>
+      <JobID>51b50386-896e-4098-ba3b-35fe72ed095e</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139228648634</AcceptedAt>
+      <FinishedAt>19139312857353</FinishedAt>
+      <TimeInMillis>84</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="030e74d5-a7c9-43b0-acd5-1ce123ce3a7b">
+    <BenchmarkResult>
+      <JobID>030e74d5-a7c9-43b0-acd5-1ce123ce3a7b</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139327070053</AcceptedAt>
+      <FinishedAt>19139650967383</FinishedAt>
+      <TimeInMillis>323</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="51d7effb-9725-4d97-8fca-47127b358ba5">
+    <BenchmarkResult>
+      <JobID>51d7effb-9725-4d97-8fca-47127b358ba5</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139660676461</AcceptedAt>
+      <FinishedAt>19139708224878</FinishedAt>
+      <TimeInMillis>47</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="cf029100-b1fa-4758-a53d-a05f1bcfcfce">
+    <BenchmarkResult>
+      <JobID>cf029100-b1fa-4758-a53d-a05f1bcfcfce</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139718814423</AcceptedAt>
+      <FinishedAt>19139755890683</FinishedAt>
+      <TimeInMillis>37</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="ca1c1586-d961-4562-8c42-02b301faf541">
+    <BenchmarkResult>
+      <JobID>ca1c1586-d961-4562-8c42-02b301faf541</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139765556287</AcceptedAt>
+      <FinishedAt>19139821889906</FinishedAt>
+      <TimeInMillis>56</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="24fc68c8-87a5-4e06-a27a-05e49572635b">
+    <BenchmarkResult>
+      <JobID>24fc68c8-87a5-4e06-a27a-05e49572635b</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139832970488</AcceptedAt>
+      <FinishedAt>19139957212726</FinishedAt>
+      <TimeInMillis>124</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="66593ce2-a4b6-453d-8c21-853e3d63bd79">
+    <BenchmarkResult>
+      <JobID>66593ce2-a4b6-453d-8c21-853e3d63bd79</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19139978667781</AcceptedAt>
+      <FinishedAt>19140040318677</FinishedAt>
+      <TimeInMillis>61</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="8c05c4fc-bcdb-4546-8cdf-96b7c2f26854">
+    <BenchmarkResult>
+      <JobID>8c05c4fc-bcdb-4546-8cdf-96b7c2f26854</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140052288172</AcceptedAt>
+      <FinishedAt>19140166806867</FinishedAt>
+      <TimeInMillis>114</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="a613a3cd-1299-45ba-95cb-ad7e00bfc277">
+    <BenchmarkResult>
+      <JobID>a613a3cd-1299-45ba-95cb-ad7e00bfc277</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140180678932</AcceptedAt>
+      <FinishedAt>19140317799155</FinishedAt>
+      <TimeInMillis>137</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="29cc3a2d-7d16-49d3-8606-715e433bf26c">
+    <BenchmarkResult>
+      <JobID>29cc3a2d-7d16-49d3-8606-715e433bf26c</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140328670364</AcceptedAt>
+      <FinishedAt>19140372262552</FinishedAt>
+      <TimeInMillis>43</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="c4b0adcf-554e-4370-a275-e99a5fcb6ef8">
+    <BenchmarkResult>
+      <JobID>c4b0adcf-554e-4370-a275-e99a5fcb6ef8</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140385901836</AcceptedAt>
+      <FinishedAt>19140471390919</FinishedAt>
+      <TimeInMillis>85</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="3bb65b5f-de1a-4d7b-8acf-610f97848f6e">
+    <BenchmarkResult>
+      <JobID>3bb65b5f-de1a-4d7b-8acf-610f97848f6e</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140489692072</AcceptedAt>
+      <FinishedAt>19140544852710</FinishedAt>
+      <TimeInMillis>55</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="dbd4f90c-1c3d-40e6-9123-3ff241b4b35a">
+    <BenchmarkResult>
+      <JobID>dbd4f90c-1c3d-40e6-9123-3ff241b4b35a</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140565626026</AcceptedAt>
+      <FinishedAt>19140628098135</FinishedAt>
+      <TimeInMillis>62</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="afdb5bb3-cb66-4bd4-b1c8-6c624657fcc2">
+    <BenchmarkResult>
+      <JobID>afdb5bb3-cb66-4bd4-b1c8-6c624657fcc2</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140657908810</AcceptedAt>
+      <FinishedAt>19140866536195</FinishedAt>
+      <TimeInMillis>208</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="e38cabed-b520-4b92-ad60-a4a563ed84b5">
+    <BenchmarkResult>
+      <JobID>e38cabed-b520-4b92-ad60-a4a563ed84b5</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19140895371073</AcceptedAt>
+      <FinishedAt>19140993863223</FinishedAt>
+      <TimeInMillis>98</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="3c544e01-4bb3-4ee5-8fa0-3d7a4c752b07">
+    <BenchmarkResult>
+      <JobID>3c544e01-4bb3-4ee5-8fa0-3d7a4c752b07</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141020779935</AcceptedAt>
+      <FinishedAt>19141227630306</FinishedAt>
+      <TimeInMillis>206</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="56afd1a1-67e9-4b6e-b868-e11f12698eaf">
+    <BenchmarkResult>
+      <JobID>56afd1a1-67e9-4b6e-b868-e11f12698eaf</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141241494720</AcceptedAt>
+      <FinishedAt>19141360880252</FinishedAt>
+      <TimeInMillis>119</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="cd2e8bdb-d319-4973-abce-33bf2b726245">
+    <BenchmarkResult>
+      <JobID>cd2e8bdb-d319-4973-abce-33bf2b726245</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141387469592</AcceptedAt>
+      <FinishedAt>19141542384240</FinishedAt>
+      <TimeInMillis>154</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="fea60099-e1f7-4878-ad0c-e1fe53c97425">
+    <BenchmarkResult>
+      <JobID>fea60099-e1f7-4878-ad0c-e1fe53c97425</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141559909889</AcceptedAt>
+      <FinishedAt>19141623235807</FinishedAt>
+      <TimeInMillis>63</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="5f3b5898-f2db-42d1-8403-705be98a7611">
+    <BenchmarkResult>
+      <JobID>5f3b5898-f2db-42d1-8403-705be98a7611</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141636131100</AcceptedAt>
+      <FinishedAt>19141718997940</FinishedAt>
+      <TimeInMillis>82</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="2e9f67fd-9cdb-409d-903c-9a4857b019f5">
+    <BenchmarkResult>
+      <JobID>2e9f67fd-9cdb-409d-903c-9a4857b019f5</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141729434620</AcceptedAt>
+      <FinishedAt>19141792938852</FinishedAt>
+      <TimeInMillis>63</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="7a940a1f-7152-4637-850f-084006d7f33d">
+    <BenchmarkResult>
+      <JobID>7a940a1f-7152-4637-850f-084006d7f33d</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141806995760</AcceptedAt>
+      <FinishedAt>19141853308755</FinishedAt>
+      <TimeInMillis>46</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="1297ea6c-c395-45a6-aedf-ecf4e1f2253e">
+    <BenchmarkResult>
+      <JobID>1297ea6c-c395-45a6-aedf-ecf4e1f2253e</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141863459984</AcceptedAt>
+      <FinishedAt>19141959452375</FinishedAt>
+      <TimeInMillis>95</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="badf74dd-d353-4209-a6e7-54ad4bb2409d">
+    <BenchmarkResult>
+      <JobID>badf74dd-d353-4209-a6e7-54ad4bb2409d</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19141971558162</AcceptedAt>
+      <FinishedAt>19142021622868</FinishedAt>
+      <TimeInMillis>50</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="a6940d70-4314-472d-a7ea-d90b4b7e5c16">
+    <BenchmarkResult>
+      <JobID>a6940d70-4314-472d-a7ea-d90b4b7e5c16</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142033448443</AcceptedAt>
+      <FinishedAt>19142088070645</FinishedAt>
+      <TimeInMillis>54</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="db051079-7f1a-4954-b3ec-8a44c1515b57">
+    <BenchmarkResult>
+      <JobID>db051079-7f1a-4954-b3ec-8a44c1515b57</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142105609837</AcceptedAt>
+      <FinishedAt>19142157197710</FinishedAt>
+      <TimeInMillis>51</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="abc77cb8-3287-41a0-b505-bff853166dc2">
+    <BenchmarkResult>
+      <JobID>abc77cb8-3287-41a0-b505-bff853166dc2</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142167699076</AcceptedAt>
+      <FinishedAt>19142212279523</FinishedAt>
+      <TimeInMillis>44</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="cdc5eab9-efad-48d8-a9a2-4fd83499add5">
+    <BenchmarkResult>
+      <JobID>cdc5eab9-efad-48d8-a9a2-4fd83499add5</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142258361340</AcceptedAt>
+      <FinishedAt>19142341094246</FinishedAt>
+      <TimeInMillis>82</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="b830d1a6-a4d7-4ceb-a9ab-09b284a139c6">
+    <BenchmarkResult>
+      <JobID>b830d1a6-a4d7-4ceb-a9ab-09b284a139c6</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142370038954</AcceptedAt>
+      <FinishedAt>19142490603688</FinishedAt>
+      <TimeInMillis>120</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="1853739a-7106-4bc3-a0de-177e7ea9aba4">
+    <BenchmarkResult>
+      <JobID>1853739a-7106-4bc3-a0de-177e7ea9aba4</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142503077802</AcceptedAt>
+      <FinishedAt>19142573436807</FinishedAt>
+      <TimeInMillis>70</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="ea0b568d-77ad-4944-ac1c-d1704aedd4cf">
+    <BenchmarkResult>
+      <JobID>ea0b568d-77ad-4944-ac1c-d1704aedd4cf</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142582501533</AcceptedAt>
+      <FinishedAt>19142649710450</FinishedAt>
+      <TimeInMillis>67</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="SparqlFilter" id="328b15cf-47a5-4f3c-9c0e-dc59eb126f6c">
+    <BenchmarkResult>
+      <JobID>328b15cf-47a5-4f3c-9c0e-dc59eb126f6c</JobID>
+      <JobDescription>SparqlFilter</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19142666897862</AcceptedAt>
+      <FinishedAt>19142731010920</FinishedAt>
+      <TimeInMillis>64</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+  <Job name="OpenLib" id="15afa450-a686-4309-8640-8d45ad52f8c4">
+    <BenchmarkResult>
+      <JobID>15afa450-a686-4309-8640-8d45ad52f8c4</JobID>
+      <JobDescription>OpenLib</JobDescription>
+      <MeasuredAt>LibraryInstance</MeasuredAt>
+      <AcceptedAt>19179820073726</AcceptedAt>
+      <FinishedAt>19180045811669</FinishedAt>
+      <TimeInMillis>225</TimeInMillis>
+    </BenchmarkResult>
+  </Job>
+</Benchmark>
