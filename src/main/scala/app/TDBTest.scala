@@ -2,10 +2,9 @@ package app
 
 import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter}
 
-import globalConstants.SembaPaths
 import org.apache.jena.ontology.{OntModel, OntModelSpec}
 import org.apache.jena.query.{Dataset, ReadWrite}
-import org.apache.jena.rdf.model.{Model, ModelFactory, Statement}
+import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.tdb.{TDB, TDBFactory}
 import org.apache.jena.vocabulary.OWL
 

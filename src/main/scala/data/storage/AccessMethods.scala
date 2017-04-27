@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.UUID
 
 import globalConstants.SembaPaths
-import logic.core.LibInfo
+import logic.core.Config
 import org.apache.jena.ontology._
 import org.apache.jena.ontology.impl.OntModelImpl
 import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory, SimpleSelector}
@@ -75,7 +75,7 @@ object AccessMethods {
     clone
   }
   */
-  def generateDatatypeProperty(rawKey: String, model: OntModel, config: LibInfo, functional: Boolean = false): Option[DatatypeProperty] = {
+  def generateDatatypeProperty(rawKey: String, model: OntModel, config: Config, functional: Boolean = false): Option[DatatypeProperty] = {
     var prop = None: Option[DatatypeProperty]
         val key = config.constants.resourceBaseURI + TextFactory.cleanString(rawKey)
         prop = Option(model.getDatatypeProperty(key))
@@ -142,7 +142,7 @@ object AccessMethods {
     * Retrieval
     */
 
-  def retrieveLibConcepts(model: OntModel, config: LibInfo): LibraryConcepts = {
+  def retrieveLibConcepts(model: OntModel, config: Config): LibraryConcepts = {
     var retVal = new LibraryConcepts()
     retVal = retVal.addAllAnnotations(listSubDatatypeProperties(model, SembaPaths.metadataPropertyURI, config))
       .addAllCollectionRelations(listSubObjectProperties(model, SembaPaths.sembaCollectionRelationURI, config))
@@ -153,7 +153,7 @@ object AccessMethods {
     retVal
   }
 
-  def listSubClasses(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String, SembaClass)] = {
+  def listSubClasses(model: OntModel, uri: String, config: Config): ArrayBuffer[(String, SembaClass)] = {
     val clsOption = Option(model.getOntClass(uri))
     var retVal = ArrayBuffer[(String, SembaClass)]()
     if(clsOption.isDefined){
@@ -169,7 +169,7 @@ object AccessMethods {
     retVal
   }
 
-  def listSubDatatypeProperties(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String , Annotation)] = {
+  def listSubDatatypeProperties(model: OntModel, uri: String, config: Config): ArrayBuffer[(String , Annotation)] = {
     val annotations = Option(model.getDatatypeProperty(uri))
     var retVal = ArrayBuffer[(String , Annotation)]()
     if (annotations.isDefined) {
@@ -183,7 +183,7 @@ object AccessMethods {
     retVal
   }
 
-  def listSubObjectProperties(model: OntModel, uri: String, config: LibInfo): ArrayBuffer[(String, Relation)] = {
+  def listSubObjectProperties(model: OntModel, uri: String, config: Config): ArrayBuffer[(String, Relation)] = {
     val relations = Option(model.getObjectProperty(uri))
     var retVal = ArrayBuffer[(String , Relation)]()
     if (relations.isDefined) {
@@ -198,15 +198,20 @@ object AccessMethods {
 
   }
 
-  def retrieveLibContent(model: OntModel, config: LibInfo): LibraryContent = {
+  def retrieveLibContent(model: OntModel, config: Config): LibraryContent = {
+    // Initialze return Value - Empty library content
     var retVal = LibraryContent().withLib(Library(config.libURI))
+
+    // Retrieve all Individuals that are Resources: Items / Collections
       val ontClass = model.getOntClass(SembaPaths.resourceDefinitionURI)
       var individuals = Option(model.listIndividuals(ontClass))
       if (individuals.isDefined) {
         var iter = individuals.get
+
+        //Convert Individuals to External Representation and add to LibraryContent
         while (iter.hasNext) {
-        val resource = iter.next()
-        retVal = retVal.addLibContent((resource.getURI, DatastructureMapping.wrapResource(resource, model, config)))
+          val resource = iter.next()
+          retVal = retVal.addLibContent((resource.getURI, DatastructureMapping.wrapResource(resource, model, config)))
         }
       }
     retVal
@@ -236,19 +241,19 @@ object AccessMethods {
     retVal
   }
 
-  def removeIndividual(item: String, model: OntModel, config: LibInfo): Resource = {
+  def removeIndividual(item: String, model: OntModel, config: Config): Resource = {
     val ind = model.getIndividual(item)
     val retVal = DatastructureMapping.wrapResource(ind, model, config)
     ind.remove()
     retVal
   }
-  def removeCollectionItem(uri: String, model: OntModel, config: LibInfo): CollectionItem = {
+  def removeCollectionItem(uri: String, model: OntModel, config: Config): CollectionItem = {
     val individual = model.getIndividual(uri)
     removeCollectionItem(individual, model, config)
   }
 
 
-  def removeCollectionItem(item: Individual, model: OntModel, config: LibInfo): CollectionItem = {
+  def removeCollectionItem(item: Individual, model: OntModel, config: Config): CollectionItem = {
 
 
     val retVal = new CollectionItem().withLib(new Library(config.libURI)).withUri(item.getURI)
@@ -281,14 +286,14 @@ object AccessMethods {
    */
 
 
-  def createCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: LibInfo ): CollectionItem ={
+  def createCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: Config ): CollectionItem ={
       val ind = model.getIndividual(origin)
       val prop = model.getProperty(relation)
       ind.addProperty(prop, destination)
       DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 
-  def removeCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: LibInfo ): CollectionItem = {
+  def removeCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: Config ): CollectionItem = {
       val ind = model.getIndividual(origin)
       val prop = model.getProperty(relation)
       val destInd = model.getIndividual(destination)
@@ -317,7 +322,7 @@ object AccessMethods {
     }
   }
 
-  def addCollectionItem(collection: String, item: String, model: OntModel, config: LibInfo): CollectionItem = {
+  def addCollectionItem(collection: String, item: String, model: OntModel, config: Config): CollectionItem = {
        val newUri = config.libURI + UUID.randomUUID()
        val collItem = model.createIndividual(newUri, model.getOntClass(SembaPaths.collectionItemURI))
        val coll = model.getIndividual(collection)
@@ -363,7 +368,7 @@ object AccessMethods {
     itemName
   }
 
-  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: LibInfo, thumb: String, id: UUID): Resource = {
+  def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: Config, thumb: String, id: UUID): Resource = {
     val start = System.currentTimeMillis()
     //val itemName = createName(config.constants.resourceBaseURI, name, model)
     val itemName = id
@@ -388,7 +393,7 @@ object AccessMethods {
     retVal
   }
 
-  def retrieveCollectionContent(model: OntModel, uri: String, config: LibInfo): CollectionContent = {
+  def retrieveCollectionContent(model: OntModel, uri: String, config: Config): CollectionContent = {
     val iter = model.listSubjectsWithProperty(model.getProperty(SembaPaths.containedByCollectionURI), model.getIndividual(uri))
     val cItems = ArrayBuffer[CollectionItem]()
     while (iter.hasNext)

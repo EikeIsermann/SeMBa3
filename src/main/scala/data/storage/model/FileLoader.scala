@@ -1,8 +1,9 @@
 package data.storage.model
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Props}
 import globalConstants.SembaPresets
-import logic.core._
+import logic.core.{ActorFeatures, Config}
+import logic.core.jobHandling.{Job, JobHandling, JobReply, ResultArray}
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import utilities.FileFactory
@@ -15,15 +16,16 @@ import utilities.FileFactory
 
 //TODO Scaladoc
 
-class FileLoader extends Actor with ActorFeatures with JobHandling{
+class FileLoader(val config: Config) extends Actor with ActorFeatures with JobHandling{
 
-   def wrappedReceive: Receive = {
-    case load: LoadFolder => {
-      acceptJob(load, sender())
-      readFolder(load)
-     // self ! JobReply(load)
+  override def handleJob(job: Job, master: ActorRef): Unit = {
+    job match {
+      case load: LoadFolder => {
+        acceptJob(load, sender())
+        readFolder(load)
+        // self ! JobReply(load)
+      }
     }
-    case reply: JobReply => handleReply(reply)
   }
 
 
@@ -42,5 +44,9 @@ class FileLoader extends Actor with ActorFeatures with JobHandling{
     }
   }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
+  override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = ???
 }
+object FileRemover {
+  def props(config: Config) = Props(new FileLoader(config))
+}
+

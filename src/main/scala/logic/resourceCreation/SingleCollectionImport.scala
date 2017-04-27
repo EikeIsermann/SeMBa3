@@ -3,10 +3,11 @@ package logic.resourceCreation
 import java.io.File
 import java.net.URI
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Props}
 import logic._
 import globalConstants.SembaPaths
 import logic.core._
+import logic.core.jobHandling.{Job, JobHandling, JobReply, ResultArray}
 import logic.resourceCreation.CreationStorageMethods.CreateInStorage
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.ModelFactory
@@ -22,21 +23,20 @@ import scala.collection.mutable
   */
 
 
-case class CreateCollection(newColl: NewCollection, ontClass: String, libInfo: LibInfo) extends JobProtocol
+case class CreateCollection(newColl: NewCollection, ontClass: String, libInfo: Config) extends Job
 
-class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
+class SingleCollectionImport(val config: Config) extends Actor with ActorFeatures with JobHandling {
 
-  def wrappedReceive: Receive = {
-    case job: CreateCollection => {
-      acceptJob(job, context.sender())
-      createCollection(job)
-    }
-
-    case jobReply: JobReply => {
-      handleReply(jobReply)
-    }
-
+  override def handleJob(job: Job, master: ActorRef): Unit = {
+     job match {
+       case cc: CreateCollection => {
+         acceptJob(cc, context.sender())
+         createCollection(cc)
+       }
+     }
   }
+
+
 
   def createCollection(job: CreateCollection): Unit = {
     val itemType = ItemType.COLLECTION
@@ -49,7 +49,7 @@ class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
   }
 
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+  override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = {
     job match {
       case createCollection: CreateCollection => {
         master ! JobReply(createCollection, results)
@@ -57,4 +57,7 @@ class SingleCollectionImport extends Actor with ActorFeatures with JobHandling {
     }
   }
 
+}
+object  SingleCollectionImport{
+  def props(config: Config) = Props(new SingleCollectionImport(config))
 }

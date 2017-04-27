@@ -15,7 +15,8 @@ import app.Application
 import globalConstants.SembaPresets
 import io.grpc.stub.StreamObserver
 import io.grpc.{Server, ServerBuilder}
-import logic.core.{JobProtocol, Semba}
+import logic.core.LibraryInstance
+import logic.core.jobHandling.Job
 import sembaGRPC.{CollectionItem, Library, LibraryConcepts, SimpleQuery, _}
 import utilities.FileFactory
 
@@ -27,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Case classes for sending gRPC calls to Semba Actors
   */
-abstract class SembaApiCall extends JobProtocol
+abstract class SembaApiCall extends Job
 
 trait RequestResult{val resultClass: Class[_]}
 trait LibModification
@@ -150,8 +151,8 @@ class AppConnector extends Actor {
 
     /** Implementation of remote procedure calls defined in SembaAPI.proto
       *
-      * [[SembaApiCall]]s are forwarded to the [[Semba]] actors referenced by the [[Library]] ID.
-      * Getter functions are supposed to be blocking, Setters return a [[VoidResult]] and completion is
+      * [[SembaApiCall]]s are forwarded to the [[LibraryInstance]] actors referenced by the [[Library]] ID.
+      * Getter functions are supposed to be synchronous, Setters return a [[VoidResult]] and completion is
       * propagated by [[UpdateMessage]].
       *
       */
@@ -169,7 +170,7 @@ class AppConnector extends Actor {
         observers.put(request.sessionID, responseObserver)
       }
 
-      /** Creates a [[Semba]] Actor and loads the library if it is not already open. Registers the clients
+      /** Creates a [[LibraryInstance]] Actor and loads the library if it is not already open. Registers the clients
         * sessionID for updates.
         *
         * @param request
@@ -184,7 +185,7 @@ class AppConnector extends Actor {
         ask(lib, OpenLib()).mapTo[LibraryConcepts]
       }
 
-      /** Asks corresponding [[Semba]] to import the [[SourceFile]].
+      /** Asks corresponding [[LibraryInstance]] to import the [[SourceFile]].
         *
         * @param request Either a URI or Byte representation of the Import
         * @return Result is true if SourceFile can be read and Import has been started.
@@ -194,7 +195,7 @@ class AppConnector extends Actor {
         ask(lib, AddToLibrary(request)).mapTo[VoidResult]
       }
 
-      /**  Asks corresponding [[Semba]] for the contents of the Library.
+      /**  Asks corresponding [[LibraryInstance]] for the contents of the Library.
         *
         * @param request Library reference
         * @return Map of all Resources (Items and Collections) present in the given Library
@@ -209,7 +210,7 @@ class AppConnector extends Actor {
         ask(lib, RequestCollectionContents(request)).mapTo[CollectionContent]
       }
 
-      /** Asks corresponding [[Semba]] for a Resources Metadata.
+      /** Asks corresponding [[LibraryInstance]] for a Resources Metadata.
         *
         * @param request Item reference
         * @return All OWL DatatypeProperties that are a subtype of SembaMetadata
@@ -219,7 +220,7 @@ class AppConnector extends Actor {
         ask(lib, GetMetadata(request)).mapTo[ItemDescription]
       }
 
-      /** Asks corresponding [[Semba]] to remove a Collectionitem from it's collection.
+      /** Asks corresponding [[LibraryInstance]] to remove a Collectionitem from it's collection.
         * Removes the Individual and all of its statements from the OWL Model.
         *
         * @param request
@@ -241,7 +242,7 @@ class AppConnector extends Actor {
       }
 
       //TODO What about recursion?
-      /** Asks corresponding [[Semba]] to add a Resource to a collection.
+      /** Asks corresponding [[LibraryInstance]] to add a Resource to a collection.
         * Creates a referencing CollectionItem inside the OWL model and adds it to the Collection ontology
         *
         * @param request The resource to be added.
@@ -264,7 +265,7 @@ class AppConnector extends Actor {
         Future.successful(app.closeLibrary(uri, UUID.fromString(request.sessionID)))
       }
 
-      /** Asks corresponding [[Semba]] to remove a relation between two [[CollectionItem]]s.
+      /** Asks corresponding [[LibraryInstance]] to remove a relation between two [[CollectionItem]]s.
         *
         * @param request
         * @return True if all required fields of the [[RelationModification]] are available.
@@ -274,7 +275,7 @@ class AppConnector extends Actor {
         ask(lib, RemoveRelation(request)).mapTo[VoidResult]
       }
 
-      /** Asks corresponding [[Semba]] to remove the Resource from its Library.
+      /** Asks corresponding [[LibraryInstance]] to remove the Resource from its Library.
         * All definitions and the source file are removed from the file system.
         *
         * @param request
@@ -285,7 +286,7 @@ class AppConnector extends Actor {
         ask(lib, RemoveFromLibrary(request)).mapTo[VoidResult]
       }
 
-      /** Asks corresponding [[Semba]] to add the given metadata keys/values to the OWL description of the Item.
+      /** Asks corresponding [[LibraryInstance]] to add the given metadata keys/values to the OWL description of the Item.
         *
         * @param request
         * @return True if all required fields of the [[MetadataUpdate]] are available.
@@ -306,7 +307,7 @@ class AppConnector extends Actor {
         ask(lib, SimpleSearch(request)).mapTo[LibraryContent]
       }
 
-      /** Asks corresponding [[Semba]] add the given relation as an ObjectProperty to the underlying OWL model.
+      /** Asks corresponding [[LibraryInstance]] add the given relation as an ObjectProperty to the underlying OWL model.
         *
         * @param request
         * @return True if all required fields of the [[RelationModification]] are available.

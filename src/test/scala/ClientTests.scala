@@ -1,6 +1,5 @@
 
-import app.TestClient
-import app.Application
+import app.{Application, TestClient}
 import globalConstants.SembaPaths
 import org.scalatest._
 import org.scalatest.concurrent.{TimeLimits, Timeouts}

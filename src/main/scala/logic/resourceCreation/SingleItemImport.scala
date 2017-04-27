@@ -3,11 +3,12 @@ package logic.resourceCreation
 import java.io.File
 import java.net.URI
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import data.storage.SembaStorageComponent
 import logic._
 import logic.core._
+import logic.core.jobHandling.{Job, JobHandling, JobReply, ResultArray}
 import logic.resourceCreation.CreationStorageMethods.CreateInStorage
 import logic.resourceCreation.metadata.MetadataMessages._
 import logic.resourceCreation.metadata.{ThumbActor, TikaExtractor}
@@ -23,13 +24,13 @@ import scala.collection.mutable.ArrayBuffer
   * This is a SeMBa3 class
   */
 
-case class ImportNewItem(item: File, ontClass: String, libInfo: LibInfo, copyToLib: Boolean) extends JobProtocol
-case class GenerateDatatypeProperties(keys: scala.collection.Set[String], model: OntModel) extends JobProtocol
+case class ImportNewItem(item: File, ontClass: String, libInfo: Config, copyToLib: Boolean) extends Job
+case class GenerateDatatypeProperties(keys: scala.collection.Set[String], model: OntModel) extends Job
 case class SetDatatypeProperties(propertyMap: mutable.HashMap[String, Array[String]],
-                                 item: Individual, model: OntModel) extends JobProtocol
+                                 item: Individual, model: OntModel) extends Job
 
 // TODO ScalaDoc, Custom Metadata Mappings
-class SingleItemImport extends Actor with ActorFeatures with JobHandling {
+class SingleItemImport(val config: Config) extends Actor with ActorFeatures with JobHandling {
   var tikaExtractor: ActorRef = _
 
   override def preStart(): Unit = {
@@ -37,8 +38,10 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
 
     super.preStart()
   }
-  def wrappedReceive: Receive = {
-    case importItem: ImportNewItem =>
+
+  override def handleJob(job: Job, master: ActorRef): Unit = {
+    job match {
+      case importItem: ImportNewItem =>
       {
         acceptJob(importItem, context.sender())
         val cluster = createJobCluster(ExtractionJob(importItem), importItem)
@@ -47,10 +50,10 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
           createJob(ExtractThumbnail(importItem.item, URI.create(constants.dataPath + importItem.jobID + "/" + constants.thumbnail), constants), cluster)
         tikaExtractor ! createJob(ExtractMetadata(importItem.item), cluster)
       }
+    }
   }
 
-
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+  override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = {
 
     job match {
       case ex: ExtractionJob => {
@@ -79,4 +82,8 @@ class SingleItemImport extends Actor with ActorFeatures with JobHandling {
     val cluster = createJobCluster(StorageJob(ex.importJob), ex.importJob)
     ex.importJob.libInfo.libAccess  ! createJob(job, cluster)
   }
+}
+
+object SingleItemImport {
+  def props(config: Config) = Props(new SingleItemImport(config))
 }

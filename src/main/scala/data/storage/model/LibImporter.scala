@@ -8,6 +8,7 @@ import akka.agent.Agent
 import akka.routing.RoundRobinPool
 import logic._
 import logic.core._
+import logic.core.jobHandling.{Job, JobHandling, JobReply, ResultArray}
 import org.apache.jena.ontology.OntModel
 
 import scala.collection.mutable.ArrayBuffer
@@ -19,25 +20,28 @@ import scala.collection.mutable.ArrayBuffer
 
 //TODO ScalaDoc, JobHandler
 
-case class ImportLib(path: URI, libInfo: LibInfo) extends JobProtocol
+case class ImportLib(path: URI, libInfo: Config) extends Job
 
-case class LoadFolder(folder: File, libInfo: LibInfo) extends JobProtocol
+case class LoadFolder(folder: File, libInfo: Config) extends Job
 
 
-class LibImporter(library: Agent[OntModel]) extends Actor with ActorFeatures with JobHandling {
+class LibImporter(library: Agent[OntModel], val config: Config) extends Actor with ActorFeatures with JobHandling {
 
 
   val workers = context.actorOf(new RoundRobinPool(10).props(Props[FileLoader]))
   var availableImports: ArrayBuffer[OntModel] = ArrayBuffer[OntModel]()
 
-   def wrappedReceive: Receive = {
-    case importLib: ImportLib => {
-      acceptJob(importLib, sender())
-      importLibrary(importLib)
-//      self ! JobReply(importLib)
+  override def handleJob(job: Job, master: ActorRef): Unit = {
+    job match {
+      case importLib: ImportLib => {
+        acceptJob(importLib, sender())
+        importLibrary(importLib)
+        //      self ! JobReply(importLib)
+      }
     }
-    case reply: JobReply => handleReply(reply)
+
   }
+
 
   //TODO add basemodel to see if imported by item
   def importLibrary(importLib: ImportLib): Unit = {
@@ -56,5 +60,9 @@ class LibImporter(library: Agent[OntModel]) extends Actor with ActorFeatures wit
 
   }
 
-  override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = ???
+  override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = ???
+}
+
+object LibImporter  {
+  def props(library: Agent[OntModel], config: Config) = Props(new LibImporter(library, config))
 }

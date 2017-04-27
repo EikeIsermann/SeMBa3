@@ -49,6 +49,7 @@ service SembaAPI {
     rpc closeConnection(SessionRequest) returns (SessionRequest){
 
     }
+    
 
     rpc ping (TestMsg) returns (TestMsg) {
     }
@@ -141,8 +142,6 @@ message Notification{
     string msg = 1;
     string uri = 2;
 }
-
-
 
 message UpdateRequest {
     string sessionID = 1;

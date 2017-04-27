@@ -1,7 +1,7 @@
 package data.storage
 
 import globalConstants.SembaPaths
-import logic.core.LibInfo
+import logic.core.Config
 import org.apache.jena.ontology._
 import sembaGRPC._
 
@@ -14,14 +14,14 @@ import scala.collection.mutable.ArrayBuffer
   */
 object DatastructureMapping {
 
-  def wrapAnnotation(prop:DatatypeProperty, config: LibInfo): Annotation = {
+  def wrapAnnotation(prop:DatatypeProperty, config: Config): Annotation = {
       new Annotation(
         uri = prop.getURI,
         description = Option(prop.getComment(config.constants.language)).getOrElse(""),
         label = Option(prop.getLabel(config.constants.language)).getOrElse(prop.getLocalName)
       )
   }
-  def wrapRelation(rel: ObjectProperty, config: LibInfo): Relation = {
+  def wrapRelation(rel: ObjectProperty, config: Config): Relation = {
     new Relation(
       uri = rel.getURI,
       description = Option(rel.getComment(config.constants.language)).getOrElse(""),
@@ -29,14 +29,14 @@ object DatastructureMapping {
     )
   }
 
-  def wrapClass(cls: OntClass, config: LibInfo): SembaClass = {
+  def wrapClass(cls: OntClass, config: Config): SembaClass = {
     new SembaClass(
       uri = cls.getURI,
       description = Option(cls.getComment(config.constants.language)).getOrElse(""),
       label = Option(cls.getLabel(config.constants.language)).getOrElse("")
     )
   }
-  def wrapResource(item: Individual, model: OntModel, config: LibInfo): Resource = {
+  def wrapResource(item: Individual, model: OntModel, config: Config): Resource = {
     require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
     val retVal = Resource(
       Some(Library(config.libURI)), {
@@ -53,7 +53,7 @@ object DatastructureMapping {
 
 
 
-  def wrapCollectionItem(item: Individual, model: OntModel, config: LibInfo): CollectionItem = {
+  def wrapCollectionItem(item: Individual, model: OntModel, config: Config): CollectionItem = {
     require(item.hasOntClass(SembaPaths.collectionItemURI))
     var retVal = CollectionItem()
       .withLib(Library(config.libURI))

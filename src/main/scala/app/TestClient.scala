@@ -1,15 +1,11 @@
 package app
 
-import java.io.File
-import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
 
 import globalConstants.SembaPaths
 import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
-import org.apache.jena.graph.Node
-import org.apache.jena.util.FileUtils
 import sembaGRPC.SembaAPIGrpc.{SembaAPIBlockingStub, SembaAPIStub}
 import sembaGRPC._
 

@@ -6,7 +6,8 @@ import java.nio.file.{Files, Paths}
 
 import data.storage.{AccessMethods, SembaStorage, SembaStorageComponent}
 import globalConstants.SembaPaths
-import logic.core.{JobHandling, JobProtocol, JobReply, LibInfo}
+import logic.core._
+import logic.core.jobHandling.ErrorResult
 import org.apache.jena.ontology.{OntModel, OntModelSpec}
 import org.apache.jena.query.ReadWrite
 import org.apache.jena.rdf.model.{Model, ModelFactory}
@@ -19,7 +20,7 @@ import utilities.debug.DC
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
+class DatasetStorage(config: Config) extends SembaStorageComponent {
   val tBoxName = "tBox"
   val aBoxName = "aBox"
   val deductionsName = "deductions"
@@ -84,6 +85,7 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
 
   }
 
+
   override def performWrite[T](f: => T): T = {
     var retVal = None: Option[T]
     //val startLock = System.currentTimeMillis()
@@ -129,6 +131,7 @@ class DatasetStorage(config: LibInfo) extends SembaStorageComponent {
       }
       data.commit()
     }
+      catch{case e: Exception ⇒ ErrorResult(e.getMessage)}
     finally data.end()
 
   }

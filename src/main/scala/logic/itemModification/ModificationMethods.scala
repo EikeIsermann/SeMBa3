@@ -2,7 +2,8 @@ package logic.itemModification
 
 import data.storage.{AccessMethods, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
-import logic.core.{JobResult, LibInfo}
+import logic.core.Config
+import logic.core.jobHandling.JobResult
 import sembaGRPC.AnnotationValue
 import utilities.UpdateMessageFactory
 
@@ -13,11 +14,11 @@ import utilities.UpdateMessageFactory
 object ModificationMethods {
 
   case class UpdateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue],
-                                 delete: Boolean, config: LibInfo)
+                                 delete: Boolean, config: Config)
     extends StorageWriteRequest(updateMetaInStorage(item, name, valueMap, delete, config, _))
 
   def updateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue], delete: Boolean,
-                          config: LibInfo, storage: SembaStorageComponent): JobResult = {
+                          config: Config, storage: SembaStorageComponent): JobResult = {
 
     var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
@@ -28,9 +29,10 @@ object ModificationMethods {
     JobResult(StorageWriteResult(update))
   }
 
-  case class RemoveItemFromStorage(item: String, config: LibInfo)
+
+  case class RemoveItemFromStorage(item: String, config: Config)
     extends StorageWriteRequest(removeItemFromStorage(item, config, _))
-    def removeItemFromStorage(item: String, config: LibInfo, storage: SembaStorageComponent): JobResult = {
+    def removeItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): JobResult = {
       var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
 
       update = storage.performWrite(
@@ -50,9 +52,9 @@ object ModificationMethods {
 
     }
 
-  case class AddToCollectionInStorage(collection: String, item: String, config: LibInfo)
+  case class AddToCollectionInStorage(collection: String, item: String, config: Config)
     extends StorageWriteRequest(addToCollectionInStorage(collection, item, config, _))
-    def addToCollectionInStorage(collection: String, item: String, config: LibInfo,
+    def addToCollectionInStorage(collection: String, item: String, config: Config,
                                  storage: SembaStorageComponent ): JobResult = {
 
       var update = UpdateMessageFactory.getAddMessage(config.libURI)
@@ -65,9 +67,9 @@ object ModificationMethods {
        JobResult(StorageWriteResult(update))
     }
 
-  case class RemoveCollectionItemFromStorage(item: String, config: LibInfo)
+  case class RemoveCollectionItemFromStorage(item: String, config: Config)
     extends StorageWriteRequest(removeCollectionItemFromStorage(item, config, _))
-    def removeCollectionItemFromStorage(item: String, config: LibInfo, storage: SembaStorageComponent): JobResult = {
+    def removeCollectionItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): JobResult = {
 
       var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
 
@@ -79,11 +81,11 @@ object ModificationMethods {
     }
 
 
-  case class ModifyCollectionRelationInStorage(origin: String, destination: String, relation: String, config: LibInfo,
+  case class ModifyCollectionRelationInStorage(origin: String, destination: String, relation: String, config: Config,
                                                delete: Boolean)
     extends StorageWriteRequest(modifyCollectionRelationInStorage(origin, destination, relation, config, delete, _))
-    def modifyCollectionRelationInStorage( origin: String, destination: String, relation: String, config: LibInfo,
-                                           delete: Boolean, storage: SembaStorageComponent): JobResult = {
+    def modifyCollectionRelationInStorage(origin: String, destination: String, relation: String, config: Config,
+                                          delete: Boolean, storage: SembaStorageComponent): JobResult = {
       var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
       val updatedCollectionItem = storage.performWrite(
         if (delete) AccessMethods.removeCollectionRelation(origin, destination, relation, storage.getABox, config)

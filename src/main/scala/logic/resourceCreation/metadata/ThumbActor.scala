@@ -10,6 +10,7 @@ import akka.routing.RoundRobinPool
 import data.storage.model.FileLoader
 import logic._
 import logic.core._
+import logic.core.jobHandling._
 import logic.resourceCreation.metadata.MetadataMessages.ExtractThumbnail
 import org.apache.tika.Tika
 import utilities.FileFactory
@@ -21,16 +22,17 @@ import scala.collection.mutable.HashMap
   *
   */
 
-abstract class ThumbActor extends Actor with JobExecution {
+abstract class ThumbActor extends Actor with SingleJobExecutor {
 
 
-  override def handleJob(job: JobProtocol): JobResult = {
+  override def performTask(job: Job): JobResult = {
     job match {
-      case thumb: ExtractThumbnail =>  JobResult(createThumbnail(thumb))
-      case _ => JobResult(ErrorResult())
+      case thumb: ExtractThumbnail ⇒ JobResult(createThumbnail(thumb))
+      case _ ⇒ JobResult(ErrorResult())
     }
-
   }
+
+
 
   /** ThumbnailActors only need to implement createThumbnail providing logic to render and write the image.
     *
@@ -78,8 +80,7 @@ object ThumbActor {
       "application/x-tex"))
    val MIMETYPES_GENERIC = (Props[GenericThumbActor], Set("GenericThumbActor"))
   /** All available ThumbnailActor definitions */
-  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_GENERIC, MIMETYPES_IMAGE,  MIMETYPES_TXT, MIMETYPES_PDF) //MIMETYPES_PDF,)
-
+  val ALL_GENERATORS = Set[(Props, Set[String])](MIMETYPES_GENERIC, MIMETYPES_IMAGE,  MIMETYPES_TXT, MIMETYPES_PDF)
 
   private val supportedContentTypes: scala.collection.mutable.HashMap[String, ActorRef] = HashMap[String, ActorRef]()
   /** Returns the correct actor constructor registered for a given MimeType

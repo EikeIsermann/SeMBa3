@@ -3,6 +3,7 @@ package logic.search
 import akka.actor.{Actor, ActorRef, Props}
 import api.SparqlFilter
 import logic.core._
+import logic.core.jobHandling.{Job, JobHandling, JobReply}
 import logic.search.SearchMethods.ApplySparqlFilter
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
@@ -16,19 +17,19 @@ import org.apache.jena.shared.Lock
 
 
 //TODO SimpleSearch, Sparql Request, JobHandler
-class SparqlSearch(config: LibInfo) extends Actor with ActorFeatures with JobHandling {
-val storagePipeline = config.libAccess
+class SparqlSearch(val config: Config) extends Actor with ActorFeatures with JobHandling {
 
-
-  def wrappedReceive: Receive = {
-    case filter: SparqlFilter => {
-      acceptJob(filter, sender())
-      val newJob =  ApplySparqlFilter(filter.sparqlQuery.queryString, filter.sparqlQuery.vars)
-      storagePipeline ! createJob(newJob, filter)
+  override def handleJob(job: Job, master: ActorRef): Unit = {
+    job match {
+      case filter: SparqlFilter => {
+        acceptJob(filter, sender())
+        val newJob =  ApplySparqlFilter(filter.sparqlQuery.queryString, filter.sparqlQuery.vars)
+        config.libAccess ! createJob(newJob, filter)
+      }
     }
 
-    case reply: JobReply => handleReply(reply)
   }
+
       /*
   override def handleJob(jobProtocol: JobProtocol): JobReply = {
     jobProtocol match {
@@ -43,7 +44,7 @@ val storagePipeline = config.libAccess
 
 
 object SparqlSearch {
-  def props(config: LibInfo) = Props(new SparqlSearch(config))
+  def props(config: Config) = Props(new SparqlSearch(config))
 
 
 }

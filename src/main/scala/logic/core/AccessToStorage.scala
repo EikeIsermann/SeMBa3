@@ -8,6 +8,7 @@ import api._
 import data.storage.{AccessMethods, SembaStorage, SembaStorageComponent}
 import globalConstants.GlobalMessages.StorageReadRequest
 import logic.core.AccessToStorageMethods._
+import logic.core.jobHandling.{Job, JobResult, ResultArray, ResultContent}
 import sembaGRPC.{CollectionContent, ItemDescription, LibraryConcepts, LibraryContent}
 import utilities.SembaConstants.StorageSolution.StorageSolution
 import utilities.debug.DC
@@ -21,41 +22,41 @@ case class StorageInitialization(storageType: StorageSolution, storagePath: Stri
 trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures with JobHandling {
 
   var sembaStorage: ActorRef = _
-  var queryExecutor: ActorRef = system.actorOf(StorageQueryPipeline.props(), ("StorageQueryPipeline" + UUID.randomUUID()))
+  var queryExecutor: ActorRef = system.actorOf(StorageQueryPipeline.props(config), ("StorageQueryPipeline" + UUID.randomUUID()))
 
   abstract override def initialization(): Unit = {
-    sembaStorage = initializeFeature(SembaStorage.props(libInfo), "SembaStorage" + UUID.randomUUID())
+    sembaStorage = initializeFeature(SembaStorage.props(config), "SembaStorage" + UUID.randomUUID())
     queryExecutor ! StorageRegistration(sembaStorage)
     super.initialization()
   }
-  override def receive: Receive = {
-    case openLib: OpenLib => {
-      acceptJob(openLib, sender)
-      queryExecutor ! createJob(ConceptRequest(libInfo), openLib)
+   override def handleJob(job: Job, master: ActorRef): Unit = {
+    job match {
+      case openLib: OpenLib => {
+        acceptJob(openLib, sender)
+        queryExecutor ! createJob(ConceptRequest(config), openLib)
+      }
+
+
+      case contents: RequestContents => {
+        acceptJob(contents, sender)
+        queryExecutor ! createJob(ContentRequest(config), contents)
+      }
+
+
+      case getMeta: GetMetadata => {
+        acceptJob(getMeta, sender)
+        queryExecutor ! createJob(MetadataRequest(getMeta.resource.uri), getMeta)
+      }
+
+      case collectionContents: RequestCollectionContents => {
+        acceptJob(collectionContents, sender)
+        queryExecutor ! createJob(CollectionContentRequest(collectionContents.resource.uri, config), collectionContents)
+      }
     }
 
-
-    case contents: RequestContents => {
-      acceptJob(contents, sender)
-      queryExecutor ! createJob(ContentRequest(libInfo), contents)
-    }
-
-
-    case getMeta: GetMetadata => {
-      acceptJob(getMeta, sender)
-      queryExecutor ! createJob(MetadataRequest(getMeta.resource.uri), getMeta)
-    }
-
-    case collectionContents: RequestCollectionContents => {
-      acceptJob(collectionContents, sender)
-      queryExecutor ! createJob(CollectionContentRequest(collectionContents.resource.uri, libInfo), collectionContents)
-    }
-
-
-    case x => super.receive(x)
   }
 
-  abstract override def finishedJob(job: JobProtocol, master: ActorRef, results: ResultArray): Unit = {
+  abstract override def finishedJob(job: Job, master: ActorRef, results: ResultArray): Unit = {
      job match {
        case request: RequestResult => {
          master ! results.extract(request.resultClass)
@@ -70,10 +71,10 @@ object AccessToStorageMethods
 
   case class ConceptResult(payload: LibraryConcepts)
     extends ResultContent
-  case class ConceptRequest(config:LibInfo) extends StorageReadRequest(requestConcepts(config, _))
+  case class ConceptRequest(config:Config) extends StorageReadRequest(requestConcepts(config, _))
 
 
-  def requestConcepts(config: LibInfo, storage: SembaStorageComponent): JobResult = {
+  def requestConcepts(config: Config, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
          JobResult(ConceptResult(AccessMethods.retrieveLibConcepts(storage.getTBox(),config)))
     )
@@ -81,10 +82,10 @@ object AccessToStorageMethods
 
   case class ContentResult(payload: LibraryContent)
     extends ResultContent
-  case class ContentRequest(config: LibInfo) extends StorageReadRequest(requestContent(config, _ ))
+  case class ContentRequest(config: Config) extends StorageReadRequest(requestContent(config, _ ))
 
 
-  def requestContent(config: LibInfo, storage: SembaStorageComponent): JobResult = {
+  def requestContent(config: Config, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
     JobResult(ContentResult(AccessMethods.retrieveLibContent(storage.getABox, config)))
     )
@@ -99,9 +100,9 @@ object AccessToStorageMethods
     )
   }
 
-  case class CollectionContentRequest(item: String, config: LibInfo) extends StorageReadRequest(requestCollectionContent(item, config, _))
+  case class CollectionContentRequest(item: String, config: Config) extends StorageReadRequest(requestCollectionContent(item, config, _))
   case class CollectionContentResult(payload: CollectionContent) extends ResultContent
-  def requestCollectionContent(item: String, config: LibInfo,  storage: SembaStorageComponent): JobResult = {
+  def requestCollectionContent(item: String, config: Config, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
       JobResult(CollectionContentResult(AccessMethods.retrieveCollectionContent(storage.getABox, item, config))
 

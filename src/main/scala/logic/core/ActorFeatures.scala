@@ -1,6 +1,7 @@
 package logic.core
 
 import akka.actor.{Actor, ActorRef, Props, Stash}
+import akka.agent.Agent
 
 /**
   * Author: Eike Isermann
@@ -10,8 +11,7 @@ import akka.actor.{Actor, ActorRef, Props, Stash}
 
 trait ActorFeatures extends Actor {
 
-
-  def wrappedReceive: Receive
+  def wrappedReceive: Receive = PartialFunction.empty
   /*
   def wrappedBecome(r: Receive) = {
     wrappedReceive = r

@@ -5,7 +5,7 @@ import java.net.URI
 import akka.actor.{Actor, ActorRef}
 import akka.actor.Actor.Receive
 import data.storage.{SembaStorage, SembaStorageComponent}
-import logic.core.{JobHandling, JobProtocol, JobReply, JobResult}
+import logic.core.jobHandling.JobHandling
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.Model
 

@@ -2,7 +2,7 @@ package logic.search
 
 import data.storage.SembaStorageComponent
 import globalConstants.GlobalMessages.StorageReadRequest
-import logic.core.{JobResult, ResultContent}
+import logic.core.jobHandling.{JobResult, ResultContent}
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.shared.Lock
 import sembaGRPC.{FilterResult, ResultEntry}

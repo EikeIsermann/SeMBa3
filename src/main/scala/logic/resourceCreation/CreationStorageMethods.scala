@@ -7,6 +7,7 @@ import java.util.UUID
 import data.storage.{AccessMethods, DatastructureMapping, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageReadRequest, StorageWriteRequest, StorageWriteResult}
 import logic.core._
+import logic.core.jobHandling.JobResult
 import sembaGRPC._
 import utilities.{TextFactory, UpdateMessageFactory}
 
@@ -17,13 +18,13 @@ import scala.collection.mutable.ArrayBuffer
   * This is a SeMBa3 class
   */
 object CreationStorageMethods {
-   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: LibInfo, thumb: String, id: UUID)
-     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb, id, _ ))
+   case class CreateInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription, config: Config, thumb_path: String, id: UUID)
+     extends StorageWriteRequest(createInStorage(itemType, ontClass, fileName, desc, config, thumb_path, id, _ ))
 
 
    //TODO performing all operations in one performWrite cycle returning the completed UpdateMessage might add performance.
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
-                       config: LibInfo, thumb: String, id: UUID, storage: SembaStorageComponent): JobResult =
+                       config: Config, thumb_path: String, id: UUID, storage: SembaStorageComponent): JobResult =
    {
 
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
@@ -31,8 +32,7 @@ object CreationStorageMethods {
      val newResource = storage.performWrite(
         {
           val model = storage.getABox()
-          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb, id)
-          //storage.saveABox(model)
+          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb_path, id)
           res
         }
      )
@@ -47,12 +47,10 @@ object CreationStorageMethods {
            .foldLeft(Map.empty[String, Annotation])
            {
              case (annotations, property) =>
-             {
-             if (property.isDefined) annotations.updated(property.get.getLocalName, DatastructureMapping.wrapAnnotation(property.get, config))
+             if (property.isDefined) annotations.updated(property.get.getLocalName,
+               DatastructureMapping.wrapAnnotation(property.get, config))
              else annotations
-             }
            }
-         //storage.saveTBox(model)
          desc
        }
      )
@@ -69,7 +67,6 @@ object CreationStorageMethods {
        {
        val model = storage.getABox()
         val props = AccessMethods.updateMetadata(newResource.uri, newResource.name, itemDescription.metadata, model, false)
-        //storage.saveABox(model)
         props
        }
      )
@@ -77,7 +74,4 @@ object CreationStorageMethods {
 
      JobResult(StorageWriteResult(update))
    }
-
-
-
 }

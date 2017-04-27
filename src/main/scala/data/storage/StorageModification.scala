@@ -2,9 +2,9 @@ package data.storage
 
 import akka.actor.Actor
 import api._
-import logic.core.{JobHandling, JobProtocol}
 import logic.resourceCreation.{GenerateDatatypeProperties, SetDatatypeProperties}
 import logic.SaveOntology
+import logic.core.jobHandling.JobHandling
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.Lock

@@ -4,11 +4,7 @@ package app
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-  import akka.actor.ActorSystem
-  import akka.actor.Actor
-  import akka.actor.ActorRef
-  import akka.actor.ActorSystem
-  import akka.actor.Props
+  import akka.actor.{Actor, ActorSystem, Props}
 
   object Test extends App {
 

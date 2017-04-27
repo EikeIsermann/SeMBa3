@@ -4,23 +4,24 @@ import java.io.File
 import java.net.URI
 import java.nio.file.{CopyOption, Files, Path, StandardCopyOption}
 
-import akka.actor.Actor
+import akka.actor.{Actor, Props}
 import logic.core._
+import logic.core.jobHandling._
 import utilities.WriterFactory
 
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-case class MoveFile(src: String, dest: String, deleteOriginal: Boolean = false) extends JobProtocol
-class FileMover extends Actor with JobExecution {
-  override def handleJob(job: JobProtocol): JobResult = {
+case class MoveFile(src: String, dest: String, deleteOriginal: Boolean = false) extends Job
+class FileMover(val config: Config) extends Actor with SingleJobExecutor {
+
+  override def performTask(job: Job): JobResult = {
     job match {
       case move: MoveFile => JobResult(moveFile(move))
       case _ => JobResult(ErrorResult())
     }
   }
-
   def moveFile(move: MoveFile): ResultContent = {
     val src: Path = new File(URI.create(move.src)).toPath
     val dest: Path = new File(URI.create(move.dest)).toPath
@@ -30,4 +31,8 @@ class FileMover extends Actor with JobExecution {
     else Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING)
     EmptyResult()
   }
+}
+
+object FileMover {
+  def props(config: Config) = Props(new FileMover(config))
 }

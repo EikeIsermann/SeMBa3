@@ -9,7 +9,7 @@ import java.util
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import logic.core.{JobResult, ResultContent}
+import logic.core.jobHandling.ResultContent
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.apache.commons.io.IOUtils
 import org.imgscalr.Scalr.pad

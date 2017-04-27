@@ -1,5 +1,8 @@
 package globalConstants
 
+import akka.actor.ActorRef
+import app.Application
+import logic.core.jobHandling.benchmark.{BenchmarkActor, Benchmarking}
 import utilities.XMLFactory
 
 /**

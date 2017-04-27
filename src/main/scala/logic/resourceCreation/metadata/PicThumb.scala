@@ -5,7 +5,7 @@ import java.net.URI
 import java.util.UUID
 import javax.imageio.ImageIO
 
-import logic.core.{JobResult, ResultContent}
+import logic.core.jobHandling.ResultContent
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 import org.imgscalr.Scalr
 

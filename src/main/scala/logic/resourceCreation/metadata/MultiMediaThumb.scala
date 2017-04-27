@@ -2,7 +2,7 @@ package logic.resourceCreation.metadata
 
 import java.net.URI
 
-import logic.core.{JobResult, ResultContent}
+import logic.core.jobHandling.ResultContent
 import logic.resourceCreation.metadata.MetadataMessages.{ExtractThumbnail, ThumbnailResult}
 
 /**

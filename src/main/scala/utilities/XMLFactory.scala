@@ -1,7 +1,9 @@
 package utilities
 
-import java.io.File
+import java.io.{File, FileOutputStream}
 import java.net.URI
+import java.nio.channels.Channels
+import java.nio.file.{Files, Path}
 
 import scala.xml._
 
@@ -59,6 +61,25 @@ object XMLFactory {
     }
   }
 
+  def save(node: Node, fileName: String) = {
+    val Encoding = "UTF-8"
+    val pp = new PrettyPrinter(80, 2)
+
+    val src: Path = new File(URI.create(fileName)).toPath
+    if(!Files.exists(src)) Files.createFile(src)
+
+    val fos = new FileOutputStream(fileName)
+    val writer = Channels.newWriter(fos.getChannel(), Encoding)
+
+    try {
+      writer.write("<?xml version='1.0' encoding='" + Encoding + "'?>\n")
+      writer.write(pp.format(node))
+    } finally {
+      writer.close()
+    }
+
+    fileName
+  }
 
 }
 
@@ -75,5 +96,24 @@ class ElemAdv(elem: Elem) {
 
 
 trait XMLExportable {
-  def toXML: Any
+  def toXML: Elem
 }
+
+/*
+  def save() = saveAs(name)
+  def saveAs(fileName: String) = {
+    DC.logT('savingLevel,"Saving Level",name,3)
+    val xml = GameEngine.entities.values.map(_.toXML)
+    val pp = new PrettyPrinter(80,2)
+    val fos = new FileOutputStream(GameEngine.levelsDir+"/"+fileName+".lvl")
+    val writer = Channels.newWriter(fos.getChannel, LevelLoader.encoding)
+    val now = Calendar.getInstance().getTime
+    val sdf = new SimpleDateFormat()
+    val saveTime = sdf.format(now)
+    val lvl = <level name={name} saveTime={saveTime.toString}>{xml}</level>
+    writer.write(pp.format(lvl))
+    writer.close()
+    DC.logT('savingLevel,"Level saved",name,3)
+    fileName
+  }ewq  
+ */

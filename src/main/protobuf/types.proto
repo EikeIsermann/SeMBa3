@@ -20,9 +20,6 @@ message AnnotationValue {
     repeated string value = 1;
 }
 
-message RelationValue {
-    repeated string destination = 1;
-}
 
 message Library {
     string uri = 1;
@@ -63,10 +60,14 @@ message Resource {
 
 message CollectionItem {
     string uri = 1;
-    string LibraryResource = 2;
+    string libraryResource = 2;
     map<string, RelationValue> relations = 3;
     string parentCollection = 4;
     Library lib = 5;
+}
+
+message RelationValue {
+    repeated string destination = 1;
 }
 
 message CollectionContent {

@@ -5,7 +5,8 @@ import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem, PoisonPill, Props}
 import api.AppConnector
-import logic.core.Semba
+import logic.core.jobHandling.benchmark.Benchmarking
+import logic.core.LibraryInstance
 import logic.resourceCreation.metadata.ThumbActor
 import org.apache.jena.util.FileManager
 import sembaGRPC.VoidResult
@@ -41,15 +42,15 @@ object Application extends App {
     * Methods
     **/
 
-  /** Initializes a new [[Semba]] Actor if a library is not loaded yet or returns the its [[ActorRef]]
+  /** Initializes a new [[LibraryInstance]] Actor if a library is not loaded yet or returns the its [[ActorRef]]
     *
     * @param path URI to the library ontology
     * @param session Client session that requests the library
-    * @return Reference to the [[Semba]] representing the lib ontology
+    * @return Reference to the [[LibraryInstance]] representing the lib ontology
     */
   def loadLibrary(path: String, session: UUID): ActorRef = {
     if (!libraries.contains(path)) {
-      val backend = system.actorOf(Props(new Semba(path)), "SembaActor" + UUID.randomUUID())
+      val backend = system.actorOf(Props(new LibraryInstance(path)), "SembaActor" + UUID.randomUUID())
       libraries.put(path, backend)
     }
     if (!sessions.contains(path)) sessions.put(path, ArrayBuffer[UUID](session))
@@ -57,7 +58,7 @@ object Application extends App {
     libraries.apply(path)
   }
 
-  /** Removes the sessionID from [[Application.sessions]] and terminates the [[Semba]] if no other sessions are
+  /** Removes the sessionID from [[Application.sessions]] and terminates the [[LibraryInstance]] if no other sessions are
     * registered.
     *
     * @param path URI to the library ontology

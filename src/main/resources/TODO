@@ -1,14 +1,16 @@
 - Build ScalaTest and thorughly test collection handling
 
-- Switch to TDB or single file library. Might enhance performance but increases effort for item removal and single item
-operations.
 
-- Add functionality for file versioning
 
 - Look into simple text search. Should have very low performance at the moment?
 
 - Improve metadata. Add XML Configuration for extracted metadata. Add labels to metadata. Put analysis in jobactor.
 
-- Look into additional Thumbnail generators.
+- Test ItemModification
 
-- Add singleton actor for checking path availability (even with concurrent list there are duplicate files at the moment)
+- Put parent ontology definition in config.xml, create new TTL if library is empty
+
+- Metadata type definition in Ontology and automatic value mapping for API classes
+
+-
+
