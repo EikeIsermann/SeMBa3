@@ -10,10 +10,15 @@ import utilities.debug.DC
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class WriteExecutor(val config: Config) extends Actor with SingleJobExecutor {
+class WriteExecutor(val config: Config) extends LibJobExecutor {
   val storage = SembaStorageComponent.getStorage(config)
-  storage.initialize()
-  context.parent ! InitializedStorage()
+
+  override def wrappedReceive: Receive = {
+    case i: InitializedStorage => {
+      storage.initialize()
+      context.sender ! InitializedStorage()
+    }
+  }
 
   override def performTask(job: Job): JobResult = {
     job match{
@@ -23,6 +28,7 @@ class WriteExecutor(val config: Config) extends Actor with SingleJobExecutor {
         retVal
 
       }
+
       case _ => JobResult(ErrorResult())
     }
 

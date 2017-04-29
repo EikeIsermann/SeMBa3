@@ -1,4 +1,4 @@
-package app
+package app.testing
 
 /**
   * Author: Eike Isermann

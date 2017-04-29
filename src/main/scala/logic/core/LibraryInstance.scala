@@ -9,7 +9,8 @@ import logic.resourceCreation.ResourceCreation
 import utilities.SembaConstants.StorageSolution
 import utilities.XMLFactory
 import globalConstants._
-import logic.core.jobHandling.{JobHandling, JobReply}
+import logic.core.jobHandling.{Job, JobHandling, JobReply}
+import logic.itemModification.ItemModification
 import logic.search.Search
 
 
@@ -31,9 +32,10 @@ abstract class SembaBaseActor(val root: String) extends Stash with Initializatio
   def config: Config
   def initializeConstants(): Constants
 
+  override def handleJob(job: Job, master: ActorRef): Unit = {}
 }
 
-class LibraryInstance(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation with Search with Benchmarking//with DataExport
+class LibraryInstance(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation with Search with ItemModification with Benchmarking//with DataExport
 {
   override def wrappedReceive: Receive = {
     case write: WriteResults ⇒ benchmarkActor.foreach( _ ! WriteResults(config.constants.benchmarkPath))
@@ -48,7 +50,7 @@ class LibraryInstance(root: String) extends SembaBaseActor(root) with AccessToSt
     //TODO update baseOntologyURI to current path!
     val retVal = new Constants(libConfig.toUri, libRoot.toString)
     val tempFolder = Paths.get(new URI(retVal.rootFolder + retVal.temp))
-    if(!Files.exists(tempFolder)) Files.createDirectories(tempFolder)
+    //if(!Files.exists(tempFolder)) Files.createDirectories(tempFolder)
     retVal
   }
    def config: Config = Config(system, constants, queryExecutor, constants.baseOntologyURI, libRoot.toString, benchmarkActor)

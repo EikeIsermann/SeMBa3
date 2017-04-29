@@ -45,12 +45,13 @@ class ResourceCreator(val config: Config) extends LibActor {
     reply.job match {
       case item: ImportNewItem => {
           counter += 1
-          val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
-          val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
-        println("received successful import nr " + counter + newItem.uri)
-        fileMover ! moveSourceFile
+        println("received successful import nr " + counter)
 
-      }
+        /* val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
+         val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
+       fileMover ! moveSourceFile*/
+
+     }
       case _ =>
 
         //TODO CollectionImage

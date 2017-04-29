@@ -29,7 +29,7 @@ trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures wi
     queryExecutor ! StorageRegistration(sembaStorage)
     super.initialization()
   }
-   override def handleJob(job: Job, master: ActorRef): Unit = {
+  abstract override def handleJob(job: Job, master: ActorRef): Unit = {
     job match {
       case openLib: OpenLib => {
         acceptJob(openLib, sender)
@@ -52,6 +52,8 @@ trait AccessToStorage extends SembaBaseActor {//with Actor with ActorFeatures wi
         acceptJob(collectionContents, sender)
         queryExecutor ! createJob(CollectionContentRequest(collectionContents.resource.uri, config), collectionContents)
       }
+      case x => super.handleJob(job, master)
+
     }
 
   }

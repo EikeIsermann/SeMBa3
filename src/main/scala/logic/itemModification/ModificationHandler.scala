@@ -27,11 +27,11 @@ class ModificationHandler(val config: Config) extends LibActor {
       }
       case updateMeta: UpdateMetadata => {
         acceptJob(updateMeta, context.sender())
-        val delete = updateMeta.metadataUpdate.kindOfUpdate.isDelete
         val resource = updateMeta.metadataUpdate.item.get
-        val metadata = updateMeta.metadataUpdate.desc.get
-        val name = if (metadata.name != "") metadata.name else resource.name
-        val newJob = UpdateMetaInStorage(resource.uri, name, metadata.metadata, delete, config)
+        val addedProps = updateMeta.metadataUpdate.add
+        val deletedProps = updateMeta.metadataUpdate.delete
+        val name = if (addedProps.isDefined && addedProps.get.name != "") addedProps.get.name else resource.name
+        val newJob = UpdateMetaInStorage(resource.uri, name, addedProps, deletedProps, config)
         storagePipeline ! createJob(newJob, updateMeta)
       }
 
@@ -39,6 +39,14 @@ class ModificationHandler(val config: Config) extends LibActor {
         acceptJob(removeCollItem, context.sender())
         val newJob = RemoveCollectionItemFromStorage(removeCollItem.collectionItem.uri, config)
         storagePipeline ! createJob(newJob, removeCollItem)
+      }
+
+      case addCollItem: AddToCollectionMsg => {
+        acceptJob(addCollItem, context.sender())
+        val collection = addCollItem.addToCollection.collection.get
+        val item = addCollItem.addToCollection.newItem.get
+        val newJob = AddToCollectionInStorage(collection.uri, item.uri, config)
+        storagePipeline ! createJob(newJob, addCollItem)
       }
 
       case createRel: CreateRelation => {

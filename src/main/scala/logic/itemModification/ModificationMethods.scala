@@ -4,7 +4,7 @@ import data.storage.{AccessMethods, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
 import logic.core.Config
 import logic.core.jobHandling.JobResult
-import sembaGRPC.AnnotationValue
+import sembaGRPC.{AnnotationValue, ItemDescription}
 import utilities.UpdateMessageFactory
 
 /**
@@ -13,16 +13,22 @@ import utilities.UpdateMessageFactory
   */
 object ModificationMethods {
 
-  case class UpdateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue],
-                                 delete: Boolean, config: Config)
-    extends StorageWriteRequest(updateMetaInStorage(item, name, valueMap, delete, config, _))
+  case class UpdateMetaInStorage(item: String, name: String, added: Option[ItemDescription], deleted: Option[ItemDescription]
+                                 ,config: Config)
+    extends StorageWriteRequest(updateMetaInStorage(item, name, added, deleted, config, _))
 
-  def updateMetaInStorage(item: String, name: String, valueMap: Map[String, AnnotationValue], delete: Boolean,
+  def updateMetaInStorage(item: String, name: String, addDesc: Option[ItemDescription], deleteDesc: Option[ItemDescription],
                           config: Config, storage: SembaStorageComponent): JobResult = {
 
     var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
-    val desc = storage.performWrite(AccessMethods.updateMetadata(item, name, valueMap, storage.getABox(), delete))
+    val desc = storage.performWrite(
+  {
+    val model = storage.getABox()
+      AccessMethods.setName(item, name, model)
+      addDesc.foreach( add => AccessMethods.updateMetadata(item, add.metadata, model, false))
+      deleteDesc.foreach( del => AccessMethods.updateMetadata(item, del.metadata, model, false))
+  })
 
     update = update.addDescriptions(AccessMethods.retrieveMetadata(item, storage.getABox()))
 

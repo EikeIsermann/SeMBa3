@@ -17,14 +17,14 @@ object DatastructureMapping {
   def wrapAnnotation(prop:DatatypeProperty, config: Config): Annotation = {
       new Annotation(
         uri = prop.getURI,
-        description = Option(prop.getComment(config.constants.language)).getOrElse(""),
+        description = Option(prop.getComment(config.constants.language)).getOrElse("A Semba Property"),
         label = Option(prop.getLabel(config.constants.language)).getOrElse(prop.getLocalName)
       )
   }
   def wrapRelation(rel: ObjectProperty, config: Config): Relation = {
     new Relation(
       uri = rel.getURI,
-      description = Option(rel.getComment(config.constants.language)).getOrElse(""),
+      description = Option(rel.getComment(config.constants.language)).getOrElse("A SembaClass"),
       label = Option(rel.getLabel(config.constants.language)).getOrElse(rel.getLocalName)
     )
   }
@@ -32,21 +32,22 @@ object DatastructureMapping {
   def wrapClass(cls: OntClass, config: Config): SembaClass = {
     new SembaClass(
       uri = cls.getURI,
-      description = Option(cls.getComment(config.constants.language)).getOrElse(""),
-      label = Option(cls.getLabel(config.constants.language)).getOrElse("")
+      description = Option(cls.getComment(config.constants.language)).getOrElse("A SembaClass"),
+      label = Option(cls.getLabel(config.constants.language)).getOrElse(cls.getLocalName)
     )
   }
   def wrapResource(item: Individual, model: OntModel, config: Config): Resource = {
     require(item.hasOntClass(SembaPaths.resourceDefinitionURI))
+    val isItem = item.hasOntClass(SembaPaths.itemClassURI)
     val retVal = Resource(
       Some(Library(config.libURI)), {
-        if (item.hasOntClass(SembaPaths.itemClassURI)) ItemType.ITEM
+        if (isItem) ItemType.ITEM
         else ItemType.COLLECTION
         },
       item.getURI,
       item.getPropertyValue(model.getDatatypeProperty(SembaPaths.sembaTitle)).asLiteral().toString,
       item.getPropertyValue(model.getDatatypeProperty(SembaPaths.thumbnailLocationURI)).asLiteral().toString,
-      item.getPropertyValue(model.getDatatypeProperty(SembaPaths.sourceLocationURI)).asLiteral().toString
+      if(isItem) item.getPropertyValue(model.getDatatypeProperty(SembaPaths.sourceLocationURI)).asLiteral().toString else ""
     )
     retVal
   }
@@ -57,8 +58,8 @@ object DatastructureMapping {
     require(item.hasOntClass(SembaPaths.collectionItemURI))
     var retVal = CollectionItem()
       .withLib(Library(config.libURI))
-      .withLibraryResource(item.getPropertyValue(model.getProperty(SembaPaths.linksToSource)).asLiteral().toString)
-      .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asLiteral().toString)
+      .withLibraryResource(item.getPropertyValue(model.getProperty(SembaPaths.linksToSource)).asResource().getURI)
+      .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asResource().getURI)
       .withUri(item.getURI)
 
     // TODO does this work or do we need to iterate over all subproperties of CollectionRelation?

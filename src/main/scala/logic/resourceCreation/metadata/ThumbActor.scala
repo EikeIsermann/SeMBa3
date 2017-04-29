@@ -23,7 +23,12 @@ import scala.collection.mutable.HashMap
   */
 
 abstract class ThumbActor extends GlobalJobExecutor {
-
+  override def receive: Receive = {
+    case thumb: ExtractThumbnail => {
+      benchmarkActor = thumb.config.benchmarkActor
+      super.receive(thumb)
+    }
+  }
 
   override def performTask(job: Job): JobResult = {
     job match {
@@ -90,8 +95,8 @@ object ThumbActor {
     */
   def getThumbActor(file: File): ActorRef = {
     val mimeType = FileFactory.getMimeTypeOf(file)
-
-    supportedContentTypes.get(mimeType).getOrElse(supportedContentTypes.apply("GenericThumbActor"))
+    supportedContentTypes.getOrElse(mimeType , supportedContentTypes.apply("GenericThumbActor"))
+//    supportedContentTypes.apply("GenericThumbActor")
   }
 
   def initialize(system: ActorSystem) = {

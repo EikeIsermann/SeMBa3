@@ -99,8 +99,8 @@ message RelationModification {
 
 message MetadataUpdate {
     Resource item = 1;
-    ItemDescription desc = 2;
-    UpdateType kindOfUpdate = 3;
+    ItemDescription delete = 2;
+    ItemDescription add = 3;
 }
 
 message SimpleQuery {
@@ -133,15 +133,21 @@ message ResultEntry {
 message UpdateMessage {
     UpdateType kindOfUpdate = 1;
     repeated  Resource items = 2;
-    LibraryConcepts concepts = 3;
     repeated  CollectionItem collectionItems = 4;
     repeated  ItemDescription descriptions = 5;
-    repeated  RelationModification relations = 6;
+    repeated  RelationModification collectionRelations = 6;
     repeated  Notification notes = 7;
-
     string lib = 8;
+    repeated  RelationModification generalRelations = 9;
+    repeated  RelationModification descriptiveRelations = 10;
+    repeated AnnotationUpdate annotations = 11;
 
 }
+
+message AnnotationUpdate {
+    map<string,Annotation> map = 1;
+}
+
 message Notification{
     string msg = 1;
     string uri = 2;

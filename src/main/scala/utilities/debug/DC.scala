@@ -1,6 +1,10 @@
 package utilities.debug
 
+import java.util.UUID
+
 import utilities.Convert
+
+import scala.collection.mutable
 
 /**
   * Copyright © 2012 PacMan Team
@@ -14,6 +18,7 @@ import utilities.Convert
 object DC {
 
   private val debug = true
+  private val timestamps = mutable.HashMap[UUID, Timestamp]()
   /**
     * set true/false for main.scala.utilities.debug messages on/off
     */
@@ -71,6 +76,20 @@ object DC {
     }
   }
 
+  def measure(label: String): Timestamp = {
+    val stamp = Timestamp(label)
+    timestamps.put(stamp.id,stamp)
+    stamp
+  }
+  def stop(stamp: Timestamp) = {
+    timestamps.remove(stamp.id).foreach(x =>
+      DC.log("Code Segment: " + x.label + " took " + (System.currentTimeMillis() - stamp.time) + "ms" )
+    )
+  }
+
+
+
+
   /*
     def logEnvironment() {
       if(debug) {
@@ -84,3 +103,4 @@ object DC {
     }
   */
 }
+case class Timestamp(label: String, id: UUID = UUID.randomUUID(), time: Long = System.currentTimeMillis())

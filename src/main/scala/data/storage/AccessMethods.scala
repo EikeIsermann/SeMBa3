@@ -15,6 +15,7 @@ import sembaGRPC._
 import utilities.debug.DC
 import utilities.{Convert, FileFactory, TextFactory, UpdateMessageFactory}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -158,11 +159,11 @@ object AccessMethods {
     var retVal = ArrayBuffer[(String, SembaClass)]()
     if(clsOption.isDefined){
       val cls = clsOption.get
-      retVal.+=((cls.getLocalName, DatastructureMapping.wrapClass(cls, config)))
+      retVal.+=((cls.getURI, DatastructureMapping.wrapClass(cls, config)))
       val iter = cls.listSubClasses()
       while(iter.hasNext){
         val subCls = iter.next
-        val sembaClass = (subCls.getLocalName, DatastructureMapping.wrapClass(subCls, config))
+        val sembaClass = (subCls.getURI, DatastructureMapping.wrapClass(subCls, config))
         retVal += sembaClass
       }
     }
@@ -176,7 +177,7 @@ object AccessMethods {
        val iter = annotations.get.listSubProperties()
         while (iter.hasNext) {
         val prop = iter.next
-        val annotation = (prop.getLocalName, DatastructureMapping.wrapAnnotation(prop.asDatatypeProperty(), config))
+        val annotation = (prop.getURI, DatastructureMapping.wrapAnnotation(prop.asDatatypeProperty(), config))
         retVal += annotation
       }
     }
@@ -190,7 +191,7 @@ object AccessMethods {
       val iter = relations.get.listSubProperties()
       while (iter.hasNext) {
         val prop = iter.next
-        val relation = (prop.getLocalName, DatastructureMapping.wrapRelation(prop.asObjectProperty(), config))
+        val relation = (prop.getURI, DatastructureMapping.wrapRelation(prop.asObjectProperty(), config))
         retVal += relation
       }
     }
@@ -301,26 +302,26 @@ object AccessMethods {
       DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 
-  def updateMetadata(item: String, name: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = { //: ItemDescription ={
-    var ind : Option[Individual] = None
-    ind = Option(model.getIndividual(item))
-    //var retVal = ItemDescription().withItemURI(item)
-
-
+  def setName(item: String, name: String, model: OntModel) = {
+    var ind = Option(model.getIndividual(item))
     if (ind.isDefined){
       val item = ind.get
       item.setPropertyValue(model.getProperty(SembaPaths.sembaTitle),
         model.createLiteral(name))
+   }
+  }
+
+  def updateMetadata(item: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = {
+    var ind : Option[Individual] = None
+    ind = Option(model.getIndividual(item))
+
     for((prop, values) <- dataSet)
       {
-      //  val entry = {
         if (!delete) setDatatypeProperty(prop, item, model, values.value.toArray)
         else removeDatatypeProperty(prop, item, model, values.value.toArray)
-    //    }
-    //    retVal = retVal.addAllMetadata(entry.map(x => (prop,x)))
       }
     }
-  }
+
 
   def addCollectionItem(collection: String, item: String, model: OntModel, config: Config): CollectionItem = {
        val newUri = config.libURI + UUID.randomUUID()
@@ -369,15 +370,13 @@ object AccessMethods {
   }
 
   def createItem(model: OntModel, name: String, ontClass: String, fileName: String, config: Config, thumb: String, id: UUID): Resource = {
-    val start = System.currentTimeMillis()
     //val itemName = createName(config.constants.resourceBaseURI, name, model)
     val itemName = id
     val uri = config.constants.resourceBaseURI + itemName
     val root =  config.constants.dataPath + "/" + itemName + "/"
 
     val item = model.createIndividual(uri, model.getOntClass(ontClass))
-
-    item.addProperty(model.getProperty(SembaPaths.sourceLocationURI),
+    if(item.hasOntClass(SembaPaths.itemClassURI)) item.addProperty(model.getProperty(SembaPaths.sourceLocationURI),
        root + fileName)
     item.addProperty(model.getProperty(SembaPaths.thumbnailLocationURI),
       {
@@ -387,19 +386,18 @@ object AccessMethods {
     )
     item.addProperty(model.getProperty(SembaPaths.sembaTitle),
       name)
-   val retVal =  DatastructureMapping.wrapResource(item, model, config)
-    DC.log("Creation took " + (System.currentTimeMillis() - start))
+    val retVal =  DatastructureMapping.wrapResource(item, model, config)
 
     retVal
   }
 
   def retrieveCollectionContent(model: OntModel, uri: String, config: Config): CollectionContent = {
     val iter = model.listSubjectsWithProperty(model.getProperty(SembaPaths.containedByCollectionURI), model.getIndividual(uri))
-    val cItems = ArrayBuffer[CollectionItem]()
+    val cItems = ArrayBuffer.empty[(String, CollectionItem)]
     while (iter.hasNext)
     {
       val cItem = DatastructureMapping.wrapCollectionItem(model.getIndividual(iter.next.getURI), model, config)
-      cItems += cItem
+      cItems.+=((cItem.uri , cItem))
     }
     CollectionContent().withUri(uri).addAllContents(cItems)
   }

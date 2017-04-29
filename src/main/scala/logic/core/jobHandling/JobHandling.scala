@@ -36,8 +36,8 @@ trait JobHandling extends ActorFeatures with JobExecution {
       if (completed) {
         val jobMaster = originalSender.apply(entry.get._2.jobID)
         val resultBuffer = jobResults.apply(originalJob.jobID)
-        preFinishOperations(originalJob, resultBuffer)
         finishedJob(originalJob, jobMaster, resultBuffer)
+        postFinishHook(originalJob, resultBuffer)
         jobResults.remove(originalJob.jobID)
         originalSender.remove(originalJob.jobID)
       }
@@ -64,6 +64,7 @@ trait JobHandling extends ActorFeatures with JobExecution {
   def acceptJob(newJob: Job, sender: ActorRef): Job = {
     jobResults.put(newJob.jobID, new ResultArray)
     originalSender.put(newJob.jobID, sender)
+    postAcceptHook(newJob,sender)
     //executionTime.put(newJob.jobID, System.currentTimeMillis())
     newJob
   }
@@ -76,12 +77,11 @@ trait JobHandling extends ActorFeatures with JobExecution {
   }
 
   def createJobCluster(cluster: Job, originalJob: Job): Job = {
-     createJob(cluster, originalJob)
-     createMasterJob(cluster)
+    val createdCluster = createJob(cluster, originalJob)
+     acceptJob(createdCluster, self)
   }
 
   def createMasterJob(newJob: Job): Job = {
-
     acceptJob(newJob, self)
     newJob
   }

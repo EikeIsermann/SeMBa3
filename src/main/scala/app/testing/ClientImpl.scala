@@ -1,4 +1,4 @@
-package app
+package app.testing
 
 import java.util.concurrent.TimeUnit
 import java.util.logging.{Level, Logger}
@@ -8,92 +8,20 @@ import io.grpc.stub.StreamObserver
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import sembaGRPC.SembaAPIGrpc.{SembaAPIBlockingStub, SembaAPIStub}
 import sembaGRPC._
+import utilities.debug.DC
+
+import scala.collection.immutable.HashMap
+import scala.collection.mutable
+import scala.collection.parallel.immutable
 
 /**
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-object TestClient extends App {
-  var counter = 0
-  val queryString =
-  {
+object ClientImpl {
 
-        "SELECT ?x\nWHERE\n { ?x <file:///Users/uni/Desktop/library/library.ttl#Content-Type> \"image/jpeg\" ." +
-          "   }"
-  }
-
-  val queryString2 =
-  {
-
-    "SELECT ?x\nWHERE\n { ?x <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#Resource> ." +
-      "   }"
-  }
-
-  val next = (value: UpdateMessage) => {
-    println(value)
-    println("Test")
-    value.kindOfUpdate match {
-      case UpdateType.NOTIFY =>
-      case UpdateType.DELETE =>
-      case UpdateType.REPLACE =>
-      case UpdateType.ADD => println(value)
-    }
-  }
-
-
-
-
-
-
-  val client = TestClient("localhost", 50051)
-  var testSessionID: String = ""
-  var test: LibraryConcepts = LibraryConcepts()
-  testSessionID = client.registerSession().sessionID
-  var testLib = Library(uri = "file:///Users/uni/Desktop/library/library.ttl")
-  println(client.openLib(LibraryRequest().withLib(testLib).withSessionID(testSessionID)))
-  //client.addItem("file:/users/uni/desktop/test.pdf", testLib)
-  client.subscribeForUpdates(testSessionID, next)
-          //println(client.getContent(testLib))
-  client.writeResults(testLib)
-  for(i <- 1 to 0){
-    //client.addItem("file:/users/uni/desktop/test", testLib)
-   val start = System.currentTimeMillis()
-   val res  = client.sparql(queryString2, Seq("x"), testLib)
-   println("Search took " + (System.currentTimeMillis() - start) + " Result size is: " + res.results.size )
-
-    //client.getMetadata("file:///Users/uni/Desktop/library/library.ttl#f747fae9-a4d4-49e6-8861-7549d255d6c9", testLib)
-  }
-  //tests()
-  Thread.sleep(1200000)
-
-
-  def tests()  ={
-
-
-    println(client.getContent(testLib))
-//    client.subscribeForUpdates(testSessionID)
-  //println(client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/Test.jpeg", testLib))
-
-  for(i <- 1 to 0){
-     client.addItem("file:/users/uni/documents/semba3/appdata/libraries/test/", testLib)
-  }
-    //println(client.addColl("Test", "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Course", testLib ))
-      //println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test/definition.ttl#content", testLib))
-   //   println(client.getMetadata("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_2/definition.ttl#content", testLib))
-  //println(client.removeItem("file:///Users/uni/Documents/SeMBa3/appdata/libraries/data/Test_4/definition.ttl#content", testLib))
-  //println(client.getContent(testLib))
-    for(i <- 1 to 1){
-     //println(client.sparql(queryString2,testLib))
-      //println(client.sparql(queryString,testLib))
-
-    }
-  Thread.sleep(1200000)
-  }
-
-
-
-
-  def apply(host: String, port: Int): TestClient = {
+  def apply(): ClientImpl = apply("localhost", 50051)
+  def apply(host: String, port: Int): ClientImpl = {
     /* val test = ManagedChannelBuilder.forAddress(host, port)Ja
      test.usePlaintext(true)
      val  channel =  test.build()
@@ -107,54 +35,116 @@ object TestClient extends App {
     val channel2 = channel.build()
     val blockingStub = SembaAPIGrpc.blockingStub(channel2)
     val asyncStub = SembaAPIGrpc.stub(channel2)
-    new TestClient(channel2, blockingStub, asyncStub)
+    new ClientImpl(channel2, blockingStub, asyncStub)
 
   }
 
 }
 
 
-class TestClient private(
+class ClientImpl private(
                           private val channel: ManagedChannel,
                           private val blockingStub: SembaAPIBlockingStub,
                           private val asyncStub: SembaAPIStub
                         ) {
-  private[this] val logger = Logger.getLogger(classOf[TestClient].getName)
+  private[this] val logger = Logger.getLogger(classOf[ClientImpl].getName)
+
+  val session: String = registerSession
+  var connectedLibs = HashMap.empty[String, List[ClientLib]]
+
+
+  val updateFunction = (upd: UpdateMessage) => {
+    val subs = getSubscribers(upd.lib)
+    upd.kindOfUpdate match {
+      case UpdateType.NOTIFY => {
+        upd.notes.foreach(note => DC.log(note.msg))
+      }
+      case UpdateType.DELETE => {
+        updateValueOperation(subs, upd.items, (s: ClientLib, v: Resource) => s.removedFromLibrary(v))
+        updateValueOperation( subs,upd.collectionItems, (s: ClientLib, v: CollectionItem) => s.removedFromCollection(v))
+        }
+      case UpdateType.REPLACE => {
+        updateValueOperation(subs, upd.descriptions, (s: ClientLib, v: ItemDescription) => s.updatedDescription(v))
+        updateValueOperation(subs, upd.items, (s: ClientLib, v: Resource) => s.updatedItem(v))
+        updateValueOperation(subs, upd.collectionItems, (s: ClientLib, v: CollectionItem) => s.updatedCollectionItem(v))
+      }
+
+      case UpdateType.ADD => {
+        updateValueOperation(subs, upd.items, (s: ClientLib, v: Resource) => s.addedItem(v))
+        updateValueOperation(subs, upd.annotations, (s: ClientLib, v: AnnotationUpdate) => s.addedAnnotations(v))
+        updateValueOperation( subs,upd.collectionItems, (s: ClientLib, v: CollectionItem) => s.addedCollectionItem(v))
+        updateValueOperation(subs, upd.descriptions,  (s: ClientLib, v: ItemDescription) => s.addedDescription(v))
+    }
+      case _ => DC.log("Unrecognized Update")
+    }
+  }
+
+    subscribeForUpdates(session, updateFunction)
+
+  def updateValueOperation[ T, A <: ClientLib](subscribers: List[A], values: Seq[T], f: ((A,T) => Unit)) = {
+    values.foreach( value => {
+      subscribers.foreach(subscriber => f(subscriber, value))
+    })
+  }
+
+  def getSubscribers(lib: String): List[ClientLib] = {
+    connectedLibs.getOrElse(lib, List.empty[ClientLib])
+  }
 
   def shutdown(session: SessionRequest): Unit = {
     blockingStub.closeConnection(session)
-    println("Added Objects: " + TestClient.counter)
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
   }
-  var sessionID: String = _
 
-  def registerSession(): SessionRequest = {
+  def registerSession(): String = {
     logger.info("Trying to register a session")
     var session = SessionRequest()
     try {
       session = blockingStub.registerSession(session)
-      sessionID = session.sessionID
     }
     catch {
       case e: StatusRuntimeException =>
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
 
     }
-    session
+    session.sessionID
 
   }
 
-  def openLib(libraryRequest: LibraryRequest): LibraryConcepts = {
+  def openLib(lib: Library, instance: ClientLib): LibraryConcepts = {
     logger.info("Trying to open library")
+    connectedLibs = connectedLibs.updated(lib.uri, connectedLibs.getOrElse(
+      lib.uri, List(instance)).::(instance)
+    )
+    val request = LibraryRequest(Some(lib), session)
     var concepts = LibraryConcepts()
     try {
-      concepts = blockingStub.openLibrary(libraryRequest)
+      concepts = blockingStub.openLibrary(request)
     }
     catch {
       case e: StatusRuntimeException =>
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
     }
     concepts
+  }
+
+  def closeLib(lib: Library, instance: ClientLib) = {
+    logger.info("Closing Library")
+    var opened = connectedLibs.apply(lib.uri)
+    opened = opened.filterNot(_.equals(instance))
+    opened.isEmpty match {
+      case true => {
+       connectedLibs = connectedLibs.-(lib.uri)
+        try {
+          blockingStub.closeLibrary(LibraryRequest(Some(lib), session))
+        }
+        catch {
+          case e: StatusRuntimeException =>
+            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+        }
+      }
+      case false => connectedLibs = connectedLibs.updated(lib.uri, opened)
+    }
   }
 
   def addItem(src: String, lib: Library): VoidResult = {
@@ -225,7 +215,7 @@ class TestClient private(
     retVal
   }
 
-  def subscribeForUpdates(session: String, next: UpdateMessage => Unit ) = {
+  def subscribeForUpdates(session: String, next: UpdateMessage => Any ) = {
     logger.info("Subscribing for Updates")
     try {
        val observer = new StreamObserver[UpdateMessage] {
@@ -267,6 +257,59 @@ class TestClient private(
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
     }
     retVal
+  }
+  def updateMetadata(upd: MetadataUpdate) = {
+    logger.info("Performing Metadata Update")
+    try{
+      blockingStub.updateMetadata(upd)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+  }
+
+  def addToCollection(addToColl: AddToCollection) = {
+    logger.info("Adding Item to Collection")
+    try{
+      blockingStub.addToCollection(addToColl)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+  }
+  def removeFromCollection(removeFromColl: CollectionItem) = {
+    logger.info("Removing Item From Collection")
+    try{
+      blockingStub.removeFromCollection(removeFromColl)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+  }
+
+  def createRelation(mod: RelationModification) = {
+    logger.info("Creating Object to Object Relation")
+    try{
+      blockingStub.createRelation(mod)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
+  }
+
+  def removeRelation(mod: RelationModification) = {
+    logger.info("Removing Object to Object Relation")
+    try{
+      blockingStub.removeRelation(mod)
+    }
+    catch {
+      case e: StatusRuntimeException =>
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
+    }
   }
 
   def writeResults(lib: Library) = {

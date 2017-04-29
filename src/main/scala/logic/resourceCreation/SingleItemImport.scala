@@ -45,9 +45,8 @@ class SingleItemImport(val config: Config) extends LibActor {
       {
         acceptJob(importItem, context.sender())
         val cluster = createJobCluster(ExtractionJob(importItem), importItem)
-        val constants = importItem.libInfo.constants
         ThumbActor.getThumbActor(importItem.item) !
-          createJob(ExtractThumbnail(importItem.item, URI.create(constants.dataPath + importItem.jobID + "/" + constants.thumbnail), constants), cluster)
+          createJob(ExtractThumbnail(importItem.item, URI.create(config.constants.dataPath + importItem.jobID + "/" + config.constants.thumbnail), config), cluster)
         tikaExtractor ! createJob(ExtractMetadata(importItem.item), cluster)
       }
     }

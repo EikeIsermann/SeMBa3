@@ -22,7 +22,6 @@ import scala.collection.mutable
   * This is a SeMBa3 class
   */
 
-
 case class CreateCollection(newColl: NewCollection, ontClass: String, libInfo: Config) extends Job
 
 class SingleCollectionImport(val config: Config) extends LibActor {
@@ -42,9 +41,9 @@ class SingleCollectionImport(val config: Config) extends LibActor {
     val itemType = ItemType.COLLECTION
     val name = job.newColl.name
     val ontClass = job.ontClass
-    val thumb = job.newColl.picture
+    val thumb = config.constants.defaultCollectionIcon
 
-    job.libInfo.libAccess ! CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo, thumb, job.jobID)
+    job.libInfo.libAccess ! createJob(CreateInStorage(itemType,ontClass,"", ItemDescription().withName(name), job.libInfo, thumb, job.jobID), job)
 
   }
 

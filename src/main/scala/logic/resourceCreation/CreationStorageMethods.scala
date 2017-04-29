@@ -10,6 +10,7 @@ import logic.core._
 import logic.core.jobHandling.JobResult
 import sembaGRPC._
 import utilities.{TextFactory, UpdateMessageFactory}
+import System.{currentTimeMillis => time}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -29,49 +30,49 @@ object CreationStorageMethods {
 
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
 
-     val newResource = storage.performWrite(
-        {
-          val model = storage.getABox()
-          val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb_path, id)
-          res
-        }
-     )
+          val newResource = storage.performWrite(
+             {
+               val model = storage.getABox()
+               val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb_path, id)
+               res
+             }
+          )
 
-     update = update.addItems(newResource)
+          update = update.addItems(newResource)
 
-     var itemDescription = desc
-     val generatedProperties = storage.performWrite(
-       {
-         val model = storage.getTBox()
-         val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, model, config))
-           .foldLeft(Map.empty[String, Annotation])
-           {
-             case (annotations, property) =>
-             if (property.isDefined) annotations.updated(property.get.getLocalName,
-               DatastructureMapping.wrapAnnotation(property.get, config))
-             else annotations
-           }
-         desc
-       }
-     )
-     update = update.withConcepts(LibraryConcepts().withAnnotations(generatedProperties))
+          var itemDescription = desc
+          val generatedProperties = storage.performWrite(
+            {
+              val model = storage.getTBox()
+              val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, model, config))
+                .foldLeft(Map.empty[String, Annotation])
+                {
+                  case (annotations, property) =>
+                  if (property.isDefined) annotations.updated(property.get.getURI,
+                    DatastructureMapping.wrapAnnotation(property.get, config))
+                  else annotations
+                }
+              desc
+            }
+          )
 
+     update = update.addAnnotations(AnnotationUpdate(generatedProperties))
 
-     val validKeys = itemDescription.metadata.foldLeft(Map.empty[String, AnnotationValue])
-     {
-       case (acc, (key, value)) => acc.updated(config.constants.resourceBaseURI + TextFactory.cleanString(key), value)
-     }
-     itemDescription = itemDescription.withMetadata(validKeys)
+          val validKeys = itemDescription.metadata.foldLeft(Map.empty[String, AnnotationValue])
+          {
+            case (acc, (key, value)) => acc.updated(config.constants.resourceBaseURI + TextFactory.cleanString(key), value)
+          }
+          itemDescription = itemDescription.withMetadata(validKeys)
 
-     storage.performWrite(
-       {
-       val model = storage.getABox()
-        val props = AccessMethods.updateMetadata(newResource.uri, newResource.name, itemDescription.metadata, model, false)
-        props
-       }
-     )
-     update = update.addDescriptions(itemDescription)
+          storage.performWrite(
+            {
+            val model = storage.getABox()
+             val props = AccessMethods.updateMetadata(newResource.uri, itemDescription.metadata, model, false)
+             props
+            }
+          )
+          update = update.addDescriptions(itemDescription)
 
-     JobResult(StorageWriteResult(update))
+          JobResult(StorageWriteResult(update))
    }
 }

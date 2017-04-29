@@ -27,7 +27,7 @@ class PdfThumb extends ThumbActor {
     val doc = PDDocument.load(thumb.src)
     val renderer = new PDFRenderer(doc)
     val imgBuff = renderer.renderImage(0)
-    Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, thumb.config.thumbResolution.toInt, thumb.config.thumbResolution.toInt,
+    Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, thumb.config.constants.thumbResolution.toInt, thumb.config.constants.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
     ImageIO.write(imgBuff, "jpeg", destination)
     imgBuff.flush()

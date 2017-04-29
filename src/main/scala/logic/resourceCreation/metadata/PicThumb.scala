@@ -18,7 +18,7 @@ class PicThumb extends ThumbActor {
   override def createThumbnail(job: ExtractThumbnail): ResultContent = {
     val destination = createPath(job)
     val imgBuff = ImageIO.read(job.src)
-    val pic = Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, job.config.thumbResolution.toInt, job.config.thumbResolution.toInt,
+    val pic = Scalr.resize(imgBuff, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, job.config.constants.thumbResolution.toInt, job.config.constants.thumbResolution.toInt,
       Scalr.OP_ANTIALIAS)
     ImageIO.write(pic, "jpeg", destination)
     pic.flush()

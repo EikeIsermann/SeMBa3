@@ -21,16 +21,17 @@ import utilities.SembaConstants.StorageSolution
 
 case class InitializedStorage()
 class SembaStorage(val config: Config) extends ActorFeatures with JobHandling {
-
   val readExecutors = context.actorOf(new RoundRobinPool(20).props(ReadExecutor.props(config)))
-  val writeExecutor = context.actorOf(WriteExecutor.props(config))
-
+  val writeExecutor = context.actorOf(new RoundRobinPool(1).props(WriteExecutor.props(config)))
+  writeExecutor ! InitializedStorage()
   override def preStart(): Unit = {
     super.preStart()
   }
 
   override def wrappedReceive: Receive = {
-    case init: InitializedStorage => context.parent ! InitializationComplete(self)
+    case init: InitializedStorage => {
+      context.parent ! InitializationComplete(self)
+    }
   }
 
   override def handleJob(job: Job, master: ActorRef): Unit = {

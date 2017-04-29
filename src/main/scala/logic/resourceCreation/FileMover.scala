@@ -15,10 +15,10 @@ import utilities.WriterFactory
   */
 case class MoveFile(src: String, dest: String, deleteOriginal: Boolean = false) extends Job
 class FileMover(val config: Config) extends LibJobExecutor {
-
+  benchmarkActor = None
   override def performTask(job: Job): JobResult = {
     job match {
-      case move: MoveFile => JobResult(moveFile(move))
+      case move: MoveFile => JobResult(EmptyResult())//moveFile(move))
       case _ => JobResult(ErrorResult())
     }
   }

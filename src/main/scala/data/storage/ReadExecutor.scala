@@ -10,7 +10,7 @@ import logic.core.jobHandling._
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-class ReadExecutor(val config: Config) extends Actor with SingleJobExecutor {
+class ReadExecutor(val config: Config) extends LibJobExecutor {
   val storage = SembaStorageComponent.getStorage(config)
   override def performTask(job: Job): JobResult = {
     job match {

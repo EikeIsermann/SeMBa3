@@ -1,5 +1,6 @@
 
-import app.{Application, TestClient}
+import app.Application
+import app.testing.ClientImpl
 import globalConstants.SembaPaths
 import org.scalatest._
 import org.scalatest.concurrent.{TimeLimits, Timeouts}
@@ -14,7 +15,7 @@ import scala.concurrent.Future
   */
 
 class ClientSpec extends FeatureSpec with GivenWhenThen with TimeLimits {
-  val client = TestClient.apply("localhost", 50051)
+  val client = ClientImpl.apply("localhost", 50051)
   val testLib = Library("file:///Users/uni/Documents/SeMBa3/src/test/resources/testLib/library.ttl")
   val testFile = "file:/Users/uni/Documents/SeMBa3/src/test/resources/testLib/image.jpg"
   val testFileName = "image"

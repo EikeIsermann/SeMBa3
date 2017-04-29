@@ -14,6 +14,6 @@ import utilities.WriterFactory
 //TODO copies the default thumbnail. Just a reference would be smarter.
 class GenericThumbActor extends ThumbActor {
   override def createThumbnail(thumb: ExtractThumbnail): ResultContent = {
-    ThumbnailResult(URI.create(thumb.config.defaultCollectionIcon))
+    ThumbnailResult(URI.create(thumb.config.constants.defaultCollectionIcon))
   }
 }

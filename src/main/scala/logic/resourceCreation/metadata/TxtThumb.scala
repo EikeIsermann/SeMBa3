@@ -24,7 +24,7 @@ class TxtThumb extends ThumbActor {
     val src = IOUtils.toString(thumb.src.toURI)
     val destination = createPath(thumb)
 
-    val res = thumb.config.thumbResolution.toInt - TxtThumb.padding
+    val res = thumb.config.constants.thumbResolution.toInt - TxtThumb.padding
     val thumbnail = new BufferedImage(res, res, BufferedImage.TYPE_INT_RGB)
     val bounds = TxtThumb.font.getStringBounds(src, new FontRenderContext(null, true, true))
     val pic = thumbnail.createGraphics()

@@ -1,4 +1,4 @@
-package app
+package app.testing
 
 import java.io.{BufferedWriter, File, FileOutputStream, OutputStreamWriter}
 

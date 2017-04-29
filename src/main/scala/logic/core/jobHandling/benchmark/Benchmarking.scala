@@ -18,14 +18,14 @@ trait Benchmarking extends JobExecution {
   var executionTime = mutable.HashMap[UUID, Long]()
   var benchmarkActor: Option[ActorRef]
 
-  abstract override def preHandleOperations(job: Job, master: ActorRef) = {
+  abstract override def postAcceptHook(job: Job, master: ActorRef) = {
     startBenchmark(job)
-    super.preHandleOperations(job,master)
+    super.postAcceptHook(job,master)
   }
 
-  abstract override def preFinishOperations(job: Job, results: ResultArray) = {
+  abstract override def postFinishHook(job: Job, results: ResultArray) = {
     sendBenchmarkResult(job)
-    super.preFinishOperations(job, results)
+    super.postFinishHook(job, results)
 
   }
 
