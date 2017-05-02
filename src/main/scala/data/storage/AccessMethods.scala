@@ -248,6 +248,7 @@ object AccessMethods {
     ind.remove()
     retVal
   }
+
   def removeCollectionItem(uri: String, model: OntModel, config: Config): CollectionItem = {
     val individual = model.getIndividual(uri)
     removeCollectionItem(individual, model, config)
@@ -255,9 +256,9 @@ object AccessMethods {
 
 
   def removeCollectionItem(item: Individual, model: OntModel, config: Config): CollectionItem = {
-
-
-    val retVal = new CollectionItem().withLib(new Library(config.libURI)).withUri(item.getURI)
+    val itemUri = item.getURI
+    val itemParent = item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asResource.getURI
+    val retVal = new CollectionItem( uri = itemUri, parentCollection = itemParent).withLib(new Library(config.libURI))
     item.remove()
     retVal
   }
@@ -289,8 +290,9 @@ object AccessMethods {
 
   def createCollectionRelation(origin: String, destination: String, relation: String, model: OntModel, config: Config ): CollectionItem ={
       val ind = model.getIndividual(origin)
-      val prop = model.getProperty(relation)
-      ind.addProperty(prop, destination)
+      val prop = model.getObjectProperty(relation)
+      val dest = model.getIndividual(destination)
+      ind.addProperty(prop, dest)
       DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 

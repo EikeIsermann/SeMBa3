@@ -315,7 +315,7 @@ class AppConnector extends Actor {
         */
       override def createRelation(request: RelationModification): Future[VoidResult] = {
         val lib = app.get(request.getLibrary.uri)
-        ask(lib, createRelation(request)).mapTo[VoidResult]
+        ask(lib, CreateRelation(request)).mapTo[VoidResult]
       }
 
       /** Provides an unique identifier to the client for identification and subscription. Token authentication may be

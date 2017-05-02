@@ -143,6 +143,7 @@ message UpdateMessage {
     repeated  RelationModification descriptiveRelations = 10;
     repeated AnnotationUpdate annotations = 11;
     string jobID = 12;
+    repeated CollectionContent collectionContent = 13;
 
 }
 

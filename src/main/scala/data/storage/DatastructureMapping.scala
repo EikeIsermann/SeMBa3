@@ -24,7 +24,7 @@ object DatastructureMapping {
   def wrapRelation(rel: ObjectProperty, config: Config): Relation = {
     new Relation(
       uri = rel.getURI,
-      description = Option(rel.getComment(config.constants.language)).getOrElse("A SembaClass"),
+      description = Option(rel.getComment(config.constants.language)).getOrElse("A Semba Relation"),
       label = Option(rel.getLabel(config.constants.language)).getOrElse(rel.getLocalName)
     )
   }
@@ -62,13 +62,15 @@ object DatastructureMapping {
       .withParentCollection(item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asResource().getURI)
       .withUri(item.getURI)
 
-    // TODO does this work or do we need to iterate over all subproperties of CollectionRelation?
-    val iter = item.listProperties(model.getProperty(SembaPaths.sembaCollectionRelationURI))
+    val iter = item.listProperties()
     val values = ArrayBuffer[(String, String)]()
-
+    val superProperty = model.getObjectProperty(SembaPaths.sembaCollectionRelationURI)
     while (iter.hasNext){
       val stmt = iter.next()
-      values.+=((stmt.getPredicate.getURI, stmt.getObject.asResource.getURI))
+      val propUri = stmt.getPredicate.getURI
+      val objectProperty = Option(model.getObjectProperty(propUri))
+      if(objectProperty.isDefined && objectProperty.get.hasSuperProperty(superProperty, false) && objectProperty.get.getURI != superProperty.getURI)
+        values.+=((stmt.getPredicate.getURI, stmt.getObject.asResource.getURI))
     }
     val valuesMap = values.foldLeft(Map.empty[String, RelationValue]) { case (acc, (k, v)) =>
       acc.updated(k, acc.getOrElse(k, RelationValue()).addDestination(v))

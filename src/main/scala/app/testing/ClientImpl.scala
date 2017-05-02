@@ -58,8 +58,6 @@ class ClientImpl(
 
   val updateFunction: PartialFunction[UpdateMessage, Any] = {
     case update: UpdateMessage => {
-      lastUpdates.append(update)
-      DC.log("Update Received")
       val subs = getSubscribers(update.lib)
       update.kindOfUpdate match {
         case UpdateType.NOTIFY => {
@@ -72,6 +70,7 @@ class ClientImpl(
         case UpdateType.REPLACE => {
           updateValueOperation(subs, update.descriptions, (s: ClientLib, v: ItemDescription) => s.updatedDescription(v))
           updateValueOperation(subs, update.items, (s: ClientLib, v: Resource) => s.updatedItem(v))
+          updateValueOperation(subs, update.collectionContent, (s: ClientLib, v:CollectionContent) ⇒ s.updatedCollectionContent(v) )
           updateValueOperation(subs, update.collectionItems, (s: ClientLib, v: CollectionItem) => s.updatedCollectionItem(v))
         }
 
@@ -83,6 +82,7 @@ class ClientImpl(
         }
         case _ => DC.log("Unrecognized Update")
       }
+      lastUpdates.append(update)
     }
   }
 

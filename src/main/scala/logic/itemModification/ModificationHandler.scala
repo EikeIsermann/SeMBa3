@@ -37,7 +37,7 @@ class ModificationHandler(val config: Config) extends LibActor {
 
       case removeCollItem: RemoveCollectionItem => {
         acceptJob(removeCollItem, context.sender())
-        val newJob = RemoveCollectionItemFromStorage(removeCollItem.collectionItem.uri, config)
+        val newJob = RemoveCollectionItemFromStorage(removeCollItem.collectionItem.uri, removeCollItem.collectionItem.parentCollection, config)
         storagePipeline ! createJob(newJob, removeCollItem)
       }
 

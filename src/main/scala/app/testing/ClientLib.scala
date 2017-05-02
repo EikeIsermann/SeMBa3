@@ -119,10 +119,20 @@ class ClientLib(path: String, api: ClientImpl) {
     content.update(resource.uri, resource)
   }
 
+  def updatedCollectionContent(collectionContent: CollectionContent) = {
+    val key = collectionContent.uri
+    if(openCollections.contains(key))
+      {
+        openCollections.update(key, collectionContent)
+      }
+  }
+
   def updatedCollectionItem(collectionItem: CollectionItem) = {
     val key = collectionItem.parentCollection
-    val collection = openCollections(key)
-    openCollections.update(key, collection.withContents(collection.contents.updated(key, collectionItem)))
+    if(openCollections.contains(key)) {
+      val collection = openCollections(key)
+      openCollections.update(key, collection.withContents(collection.contents.updated(collectionItem.uri, collectionItem)))
+    }
   }
 
 
@@ -136,9 +146,10 @@ class ClientLib(path: String, api: ClientImpl) {
 
   def addedCollectionItem(collectionItem: CollectionItem) = {
     val key = collectionItem.parentCollection
-    val collection = openCollections(key)
-    openCollections.update(key ,collection.withContents(collection.contents.updated(collectionItem.uri, collectionItem)))
-
+    if(openCollections.contains(key)) {
+      val collection = openCollections(key)
+      openCollections.update(key, collection.withContents(collection.contents.updated(collectionItem.uri, collectionItem)))
+    }
   }
 
   def addedDescription(desc: ItemDescription) = {

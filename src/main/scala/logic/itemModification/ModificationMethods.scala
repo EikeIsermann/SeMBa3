@@ -1,5 +1,6 @@
 package logic.itemModification
 
+import app.Application
 import data.storage.{AccessMethods, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
 import logic.core.Config
@@ -40,17 +41,22 @@ object ModificationMethods {
     extends StorageWriteRequest(removeItemFromStorage(item, config, _))
     def removeItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): UpdateMessage = {
       var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
+      var updateCollections = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
       update = storage.performWrite(
         {
           val model = storage.getABox()
+          val allCollectionItems = AccessMethods.getCollectionItems(item, model)
 
-          val collectionItems = for(cItem <- AccessMethods.getCollectionItems(item, model))
+          val collectionItems = for(cItem <- allCollectionItems)
             yield AccessMethods.removeCollectionItem(item,model,config)
+
+          collectionItems.foreach(citem ⇒ update.addCollectionContent(AccessMethods.retrieveCollectionContent(model, citem.parentCollection, config)))
+          Application.api ! updateCollections
 
           val deletedResource = AccessMethods.removeIndividual(item, model, config)
 
-          update.addAllCollectionItems(collectionItems).addItems(deletedResource)
+          update.addItems(deletedResource)
         }
       )
 
@@ -73,14 +79,18 @@ object ModificationMethods {
        update
     }
 
-  case class RemoveCollectionItemFromStorage(item: String, config: Config)
-    extends StorageWriteRequest(removeCollectionItemFromStorage(item, config, _))
-    def removeCollectionItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): UpdateMessage = {
+  case class RemoveCollectionItemFromStorage(item: String, parentCollection: String, config: Config)
+    extends StorageWriteRequest(removeCollectionItemFromStorage(item, parentCollection, config, _))
+    def removeCollectionItemFromStorage(item: String, parentCollection: String, config: Config, storage: SembaStorageComponent): UpdateMessage = {
 
-      var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
+      var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
       update = storage.performWrite(
-        update.addCollectionItems(AccessMethods.removeCollectionItem(item, storage.getABox(), config))
+        {
+        val model = storage.getABox()
+        AccessMethods.removeCollectionItem(item, model, config)
+        update.addCollectionContent(AccessMethods.retrieveCollectionContent(model, parentCollection,config))
+        }
       )
 
       update
