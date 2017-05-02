@@ -1,7 +1,7 @@
 package data.storage
 
 import akka.actor.{Actor, Props}
-import globalConstants.GlobalMessages.StorageWriteRequest
+import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
 import logic.core._
 import logic.core.jobHandling._
 import utilities.debug.DC
@@ -25,13 +25,10 @@ class WriteExecutor(val config: Config) extends LibJobExecutor {
 
       case write: StorageWriteRequest => {
         val retVal = write.operation(storage)
-        retVal
-
+        JobResult(StorageWriteResult(retVal.withJobID(job.parentCall.toString)))
       }
-
       case _ => JobResult(ErrorResult())
     }
-
   }
 }
 object WriteExecutor {

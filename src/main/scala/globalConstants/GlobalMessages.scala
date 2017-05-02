@@ -19,7 +19,7 @@ object GlobalMessages {
 
   abstract class StorageReadRequest(val operation: (SembaStorageComponent => JobResult)) extends StorageOperation
 
-  abstract  class StorageWriteRequest(val operation: (SembaStorageComponent => JobResult)) extends StorageOperation
+  abstract  class StorageWriteRequest(val operation: (SembaStorageComponent => UpdateMessage)) extends StorageOperation
 
 
   }

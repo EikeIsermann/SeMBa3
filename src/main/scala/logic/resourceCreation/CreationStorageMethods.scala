@@ -25,7 +25,7 @@ object CreationStorageMethods {
 
    //TODO performing all operations in one performWrite cycle returning the completed UpdateMessage might add performance.
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
-                       config: Config, thumb_path: String, id: UUID, storage: SembaStorageComponent): JobResult =
+                       config: Config, thumb_path: String, id: UUID, storage: SembaStorageComponent): UpdateMessage =
    {
 
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
@@ -62,7 +62,7 @@ object CreationStorageMethods {
           {
             case (acc, (key, value)) => acc.updated(config.constants.resourceBaseURI + TextFactory.cleanString(key), value)
           }
-          itemDescription = itemDescription.withMetadata(validKeys)
+          itemDescription = itemDescription.withMetadata(validKeys).withItemURI(newResource.uri)
 
           storage.performWrite(
             {
@@ -73,6 +73,6 @@ object CreationStorageMethods {
           )
           update = update.addDescriptions(itemDescription)
 
-          JobResult(StorageWriteResult(update))
+          update
    }
 }

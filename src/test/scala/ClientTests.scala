@@ -1,6 +1,6 @@
 
 import app.Application
-import app.testing.ClientImpl
+import app.testing.{ClientImpl, ClientLib}
 import globalConstants.SembaPaths
 import org.scalatest._
 import org.scalatest.concurrent.{TimeLimits, Timeouts}
@@ -15,24 +15,14 @@ import scala.concurrent.Future
   */
 
 class ClientSpec extends FeatureSpec with GivenWhenThen with TimeLimits {
-  val client = ClientImpl.apply("localhost", 50051)
-  val testLib = Library("file:///Users/uni/Documents/SeMBa3/src/test/resources/testLib/library.ttl")
-  val testFile = "file:/Users/uni/Documents/SeMBa3/src/test/resources/testLib/image.jpg"
-  val testFileName = "image"
-  var concepts: LibraryConcepts = _
-  var session: String = _
-  var contents: LibraryContent = _
-  var addMessage: Option[(Long, UpdateMessage)] = None
-
-  val next = (value: UpdateMessage) => {
-    value.kindOfUpdate match {
-      case UpdateType.NOTIFY =>
-      case UpdateType.DELETE =>
-      case UpdateType.REPLACE =>
-      case UpdateType.ADD => addMessage = Some(System.currentTimeMillis(), value)
-    }
-  }
-
+  var clientApi: ClientImpl = _
+  var testLib: ClientLib = _
+  val testFile = "file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf"
+  val libSource = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl"
+  val collectionClass =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program"
+  val testingClient = RawClient.apply()
+  var mediaItem: Resource = _
+  var mediaCollection: Resource = _
 
 
   info("As a SeMBa client")
@@ -41,59 +31,76 @@ class ClientSpec extends FeatureSpec with GivenWhenThen with TimeLimits {
   feature("SeMBa Initialization"){
     scenario("The client registers a Session on the remote server")
     {
-      Given("a working connection to the remote SeMBa Application")
-      assert(client.ping("test") === "test")
-      When("registering a session")
-      session = client.registerSession().sessionID
+      When("registering new client session")
+      clientApi = ClientImpl.apply()
       Then("the ID is correctly stored at the client")
-      assert(client.sessionID == session)
-      And("the client can subscribe for updates")
-      client.subscribeForUpdates(session, next)
+      assert(clientApi.session != null)
     }
 
     scenario("The client requests to open a remote library")
     {
-      Given("a working connection to the remote SeMBa Application")
-      assert(client.ping("test") === "test")
       When("opening a library")
-      Then("the concepts should be transmitted to the client in <5 seconds.")
-       concepts = failAfter(10 seconds){
-        client.openLib(LibraryRequest().withLib(testLib).withSessionID( client.sessionID))
+      Then("the concepts and contents should be transmitted to the client in <15 seconds.")
+       failAfter(15 seconds){
+        testLib = new ClientLib(libSource, clientApi)
       }
       And("they should contain at least the SeMBa base concepts.")
-      assert(concepts.itemClasses.contains("MediaItem"))
+      assert(testLib.concepts.itemClasses.contains("http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MediaItem"))
     }
 
-    scenario("The client requests the contents of a library")
-    {
-      Given("a working connection to the remote SeMBa Application")
-      assert(client.ping("test") === "test")
-      When("requesting the contents of a library")
-      Then("the contents should be transmitted to the client in <5 seconds.")
-      contents = failAfter(5 seconds) {
-        client.getContent(testLib)
-      }
-    }
+
   }
-
-  feature("Modification"){
-    scenario("Item Import"){
-      Given("a working connection to the remote SeMBa Application")
-      assert(client.ping("test") === "test")
+  feature("Modification") {
+    scenario("Item Import") {
       When("Importing a file to SeMBa")
-      val contentSize = contents.libContent.size
-      addMessage = None
-      val time = System.currentTimeMillis()
-      client.addItem(testFile, testLib)
+      val jobID = testLib.addItem(testFile).id
       Then(" an Update Message should be received")
-      Thread.sleep(15000)
-      assert(addMessage.get._2.items.head.name === testFileName)
-      And("the message should be received within 5 seconds, actual: " + (addMessage.get._1 - time))
-      And("the librarycontent should have increased by one")
-      assert((client.getContent(testLib).libContent.size - contentSize) === 1)
+      Thread.sleep(5000)
+      assert(!clientApi.lastUpdates.isEmpty)
+      val update = clientApi.lastUpdates.filter(x => x.jobID == jobID)
+      assert(!update.isEmpty)
+      And("the Item should be part of the library content.")
+      mediaItem = update.head.items.head
+      assert(testLib.content.contains(mediaItem.uri))
+    }
+    scenario("Collection Creation") {
+      When("Adding a Collection to SeMBa")
+      val jobID = testLib.addColl("TestCollection", collectionClass).id
+      Then(" an Update Message should be received")
+      Thread.sleep(2000)
+      assert(!clientApi.lastUpdates.isEmpty)
+      val update = clientApi.lastUpdates.filter(x => x.jobID == jobID)
+      assert(!update.isEmpty)
+      And("the Collection should be part of the library content.")
+      mediaCollection = update.head.items.head
+      assert(testLib.content.contains(mediaCollection.uri))
+      And("the Collection should be empty.")
+      assert(testLib.requestCollectionContent(mediaCollection.uri).contents.isEmpty)
+
+    }
+    scenario("Adding Collection Items") {
+      When("Adding an Item to a Collection")
+      val jobID = testLib.addToCollection(mediaItem.uri, mediaCollection.uri).id
+      Then(" an Update Message should be received")
+      Thread.sleep(2000)
+      assert(!clientApi.lastUpdates.isEmpty)
+      val update = clientApi.lastUpdates.filter(x => x.jobID == jobID)
+      assert(!update.isEmpty)
+      And(" a new CollectionItem should be created.")
+      assert(!update.head.collectionItems.isEmpty)
+      And(" the CollectionItem should be part of the CollectionContent")
+      assert(testLib.openCollections(mediaCollection.uri).contents.contains(update.head.collectionItems.head.uri))
     }
 
+    /*TODO
+      * Add mediaItem a second time
+      * Connect CollectionItems
+      * Add second Connection
+      * Remove a Connection
+      * Remove destination media item
+      * Update Item Description
+      * Perform Sparql
+     */
   }
-
 
 }

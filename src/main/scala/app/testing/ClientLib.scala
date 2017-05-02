@@ -23,7 +23,7 @@ class ClientLib(path: String, api: ClientImpl) {
 
   def addItem(src: String) = api.addItem(src, lib)
 
-  def addColl(name: String, clazz: String) = {
+  def addColl(name: String, clazz: String): VoidResult = {
     assert(concepts.collectionClasses.contains(clazz))
     api.addColl(name,clazz,lib)
   }
@@ -38,12 +38,12 @@ class ClientLib(path: String, api: ClientImpl) {
     })
   }
 
-  def saveMetadata(update: MetadataUpdate) = {
+  def saveMetadata(update: MetadataUpdate): VoidResult = {
     assert(content.contains(update.item.get.uri))
-    api
+    api.updateMetadata(update)
   }
 
-  def removeItem(src: String) = {
+  def removeItem(src: String): VoidResult = {
     assert(content.contains(src))
     api.removeItem(src,lib)
   }
@@ -70,13 +70,13 @@ class ClientLib(path: String, api: ClientImpl) {
 
   def writeResults = api.writeResults(lib)
 
-  def addToCollection(src: String, coll: String) = {
+  def addToCollection(src: String, coll: String): VoidResult = {
     assert(content.contains(src) && content(coll).itemType.isCollection)
     val msg = AddToCollection().withNewItem(content(src)).withCollection(content(coll))
     api.addToCollection(msg)
   }
 
-  def removeFromCollection(src: CollectionItem, coll: String) = {
+  def removeFromCollection(src: CollectionItem, coll: String): VoidResult = {
     assert(openCollections.contains(coll) && openCollections(coll).contents.contains(src.uri))
     api.removeFromCollection(src)
   }
@@ -90,11 +90,11 @@ class ClientLib(path: String, api: ClientImpl) {
       .withRel(concepts.collectionRelations(rel))
   }
 
-  def connectItems(src: CollectionItem, dest: CollectionItem, rel: String) = {
+  def connectItems(src: CollectionItem, dest: CollectionItem, rel: String): VoidResult = {
     api.createRelation(getConnectionMod(src,dest,rel))
   }
 
-  def disconnectItems(src: CollectionItem, dest: CollectionItem, rel: String) = {
+  def disconnectItems(src: CollectionItem, dest: CollectionItem, rel: String): VoidResult = {
     api.removeRelation(getConnectionMod(src,dest,rel))
   }
 
@@ -137,7 +137,7 @@ class ClientLib(path: String, api: ClientImpl) {
   def addedCollectionItem(collectionItem: CollectionItem) = {
     val key = collectionItem.parentCollection
     val collection = openCollections(key)
-    openCollections.update(key ,collection.withContents(collection.contents.updated(key, collectionItem)))
+    openCollections.update(key ,collection.withContents(collection.contents.updated(collectionItem.uri, collectionItem)))
 
   }
 

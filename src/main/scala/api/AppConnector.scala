@@ -330,8 +330,9 @@ class AppConnector extends Actor {
 
       override def ping(request: TestMsg): Future[TestMsg] = {
         //println(request.test)
-        val retVal = "Server running. " + app.libraries.size +
-          " opened libraries are accessed by " + app.sessions.values.flatten.toList.distinct + " clients."
+        val retVal = "Server running. " +
+          app.libraries.size + " opened libraries are accessed by " +
+          app.sessions.values.flatten.toList.distinct + " clients."
         Future.successful(TestMsg(request.test))
       }
 

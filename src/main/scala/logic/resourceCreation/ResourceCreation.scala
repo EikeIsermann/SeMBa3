@@ -25,7 +25,7 @@ abstract override def initialization(): Unit = {
  override def receive: Receive = {
     case addItem: AddToLibrary => {
       val notEmpty = addItem.sourceFile.source.isDefined
-      sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.")
+      sender() ! VoidResult(notEmpty, if (notEmpty) "Trying to import Item." else "No source file set.", addItem.parentCall.toString)
       //acceptJob(addItem, sender)
       resourceCreator ! forwardJob(addItem, sender)
     }

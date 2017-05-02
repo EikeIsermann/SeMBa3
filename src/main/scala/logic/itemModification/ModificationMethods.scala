@@ -4,7 +4,7 @@ import data.storage.{AccessMethods, SembaStorageComponent}
 import globalConstants.GlobalMessages.{StorageWriteRequest, StorageWriteResult}
 import logic.core.Config
 import logic.core.jobHandling.JobResult
-import sembaGRPC.{AnnotationValue, ItemDescription}
+import sembaGRPC.{AnnotationValue, ItemDescription, UpdateMessage}
 import utilities.UpdateMessageFactory
 
 /**
@@ -18,7 +18,7 @@ object ModificationMethods {
     extends StorageWriteRequest(updateMetaInStorage(item, name, added, deleted, config, _))
 
   def updateMetaInStorage(item: String, name: String, addDesc: Option[ItemDescription], deleteDesc: Option[ItemDescription],
-                          config: Config, storage: SembaStorageComponent): JobResult = {
+                          config: Config, storage: SembaStorageComponent): UpdateMessage = {
 
     var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
@@ -32,13 +32,13 @@ object ModificationMethods {
 
     update = update.addDescriptions(AccessMethods.retrieveMetadata(item, storage.getABox()))
 
-    JobResult(StorageWriteResult(update))
+    update
   }
 
 
   case class RemoveItemFromStorage(item: String, config: Config)
     extends StorageWriteRequest(removeItemFromStorage(item, config, _))
-    def removeItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): JobResult = {
+    def removeItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): UpdateMessage = {
       var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
 
       update = storage.performWrite(
@@ -54,14 +54,14 @@ object ModificationMethods {
         }
       )
 
-      JobResult(StorageWriteResult(update))
+      update
 
     }
 
   case class AddToCollectionInStorage(collection: String, item: String, config: Config)
     extends StorageWriteRequest(addToCollectionInStorage(collection, item, config, _))
     def addToCollectionInStorage(collection: String, item: String, config: Config,
-                                 storage: SembaStorageComponent ): JobResult = {
+                                 storage: SembaStorageComponent ): UpdateMessage = {
 
       var update = UpdateMessageFactory.getAddMessage(config.libURI)
 
@@ -70,12 +70,12 @@ object ModificationMethods {
          update.addCollectionItems(AccessMethods.addCollectionItem(collection,  item, storage.getABox(),config))
        )
 
-       JobResult(StorageWriteResult(update))
+       update
     }
 
   case class RemoveCollectionItemFromStorage(item: String, config: Config)
     extends StorageWriteRequest(removeCollectionItemFromStorage(item, config, _))
-    def removeCollectionItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): JobResult = {
+    def removeCollectionItemFromStorage(item: String, config: Config, storage: SembaStorageComponent): UpdateMessage = {
 
       var update = UpdateMessageFactory.getDeletionMessage(config.libURI)
 
@@ -83,7 +83,7 @@ object ModificationMethods {
         update.addCollectionItems(AccessMethods.removeCollectionItem(item, storage.getABox(), config))
       )
 
-      JobResult(StorageWriteResult(update))
+      update
     }
 
 
@@ -91,7 +91,7 @@ object ModificationMethods {
                                                delete: Boolean)
     extends StorageWriteRequest(modifyCollectionRelationInStorage(origin, destination, relation, config, delete, _))
     def modifyCollectionRelationInStorage(origin: String, destination: String, relation: String, config: Config,
-                                          delete: Boolean, storage: SembaStorageComponent): JobResult = {
+                                          delete: Boolean, storage: SembaStorageComponent): UpdateMessage = {
       var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
       val updatedCollectionItem = storage.performWrite(
         if (delete) AccessMethods.removeCollectionRelation(origin, destination, relation, storage.getABox, config)
@@ -100,7 +100,7 @@ object ModificationMethods {
 
       update = update.addCollectionItems(updatedCollectionItem)
 
-      JobResult(StorageWriteResult(update))
+      update
     }
 
 

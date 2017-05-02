@@ -72,6 +72,7 @@ message AddToCollection {
 message VoidResult {
     bool accepted = 1;
     string message = 2;
+    string id = 3;
 }
 
 message SourceFile {
@@ -141,6 +142,7 @@ message UpdateMessage {
     repeated  RelationModification generalRelations = 9;
     repeated  RelationModification descriptiveRelations = 10;
     repeated AnnotationUpdate annotations = 11;
+    string jobID = 12;
 
 }
 
