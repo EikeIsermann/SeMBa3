@@ -31,10 +31,11 @@
     <hasMetadataURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasMetadata</hasMetadataURI>
     <isMetadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#isMetadataType</isMetadataTypeURI>
     <metadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MetadataType</metadataTypeURI>
-
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>
     <grpcPort>50051</grpcPort>
+    <generatedMetadataPrefix>generatedMetadata_</generatedMetadataPrefix>
+
 </presets>
 </application>

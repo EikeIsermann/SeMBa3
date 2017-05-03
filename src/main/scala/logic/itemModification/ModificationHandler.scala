@@ -30,7 +30,7 @@ class ModificationHandler(val config: Config) extends LibActor {
         val resource = updateMeta.metadataUpdate.item.get
         val addedProps = updateMeta.metadataUpdate.add
         val deletedProps = updateMeta.metadataUpdate.delete
-        val name: Option[String] = if (addedProps.isDefined && addedProps.get.name != "" && addedProps.get.name != resource.name) Some(addedProps.get.name) else None
+        val name: Option[String] = if (addedProps.isDefined && addedProps.get.name != "") Some(addedProps.get.name) else None
         val newJob = UpdateMetaInStorage(resource.uri, name, addedProps, deletedProps, config)
         storagePipeline ! createJob(newJob, updateMeta)
       }

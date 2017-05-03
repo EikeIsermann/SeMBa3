@@ -2,6 +2,7 @@ package globalConstants
 
 import akka.actor.ActorRef
 import app.Application
+import globalConstants.SembaPaths.getString
 import logic.core.jobHandling.benchmark.{BenchmarkActor, Benchmarking}
 import utilities.XMLFactory
 
@@ -76,6 +77,24 @@ object SembaPaths {
   val mainUri = getString("sembaMainURI")
 
   val sourceLocationURI = getString("sourceLocationURI")
+
+  val metadataValue = getString("metadataValueURI")
+
+  val customMetadata = getString("customMetadataURI")
+
+  val generatedMetadata = getString("generatedMetadataURI")
+
+  val metadataFormat = getString("metadataFormatURI")
+
+  val hasMetadata = getString("hasMetadataURI")
+
+  val isMetadataType = getString("isMetadataTypeURI")
+
+  val metadataType = getString("metadataTypeURI")
+
+  val hasValue = getString("hasValueURI")
+
+
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
 }
@@ -91,6 +110,8 @@ object SembaPresets {
 
   /** Valid file extensions for ontology files */
   val validOntologyExtensions = getString("validOntologyExtensions").toLowerCase.replaceAll(" ", "").split(",")
+
+  val generatedPrefix = getString("generatedMetadataPrefix")
 
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("presets", s)

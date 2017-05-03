@@ -6,6 +6,13 @@ import sembaGRPC._
   * Created by Eike on 28.04.2017.
   */
 object ClientTestApp extends App {
+  val testApi = ClientImpl()
+  val testLib = new ClientLib("file:///C:/Users/eikei_000/Desktop/library/library.ttl", testApi)
+
+  for(i <- 1 to 300){
+    testLib.addItem("file:///C:/Users/eikei_000/Desktop/testdata")
+  }
+  Thread.sleep(100000000)
 
   //val testLib = new ClientTestLib("file:///C:/Users/eikei_000/Desktop/library/library.ttl", ClientImpl("localhost", 50051))
   /*

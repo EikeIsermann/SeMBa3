@@ -79,7 +79,6 @@ class Constants(path: URI, root: String) {
   val benchmarkingEnabled = getString("benchmarkingEnabled").toBoolean
 
 
-
   def getString(s: String): String = configFile.getValueAt("config", s)
 
 

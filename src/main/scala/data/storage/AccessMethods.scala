@@ -4,11 +4,11 @@ import java.io.{File, FileOutputStream}
 import java.net.URI
 import java.util.UUID
 
-import globalConstants.SembaPaths
+import globalConstants.{SembaPaths, SembaPresets}
 import logic.core.Config
 import org.apache.jena.ontology._
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode, ResourceFactory, SimpleSelector}
+import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode, ResourceFactory, SimpleSelector, Statement}
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.FileUtils
 import sembaGRPC._
@@ -77,50 +77,75 @@ object AccessMethods {
   }
   */
 
-  def generateDatatypeProperty(rawKey: String, model: OntModel, config: Config, functional: Boolean = false): Option[DatatypeProperty] = {
-    var prop = None: Option[DatatypeProperty]
-        val key = config.constants.resourceBaseURI + TextFactory.cleanString(rawKey)
-        prop = Option(model.getDatatypeProperty(key))
+  def generateMetadataType(rawKey: String, model: OntModel, config: Config, functional: Boolean = false): Option[OntClass] = {
+        var prop = None: Option[OntClass]
+        val key = config.constants.resourceBaseURI + SembaPresets.generatedPrefix + TextFactory.cleanString(rawKey)
+        prop = Option(model.getOntClass(key))
         if( prop.isEmpty ) {
-        val property = model.createDatatypeProperty(key, functional)
-        property.addSuperProperty(model.getDatatypeProperty(SembaPaths.generatedDatatypePropertyURI))
-        property.addDomain(model.getResource(SembaPaths.resourceDefinitionURI))
-        property.addLabel(ResourceFactory.createLangLiteral(rawKey, config.constants.language))
-        prop = Some(property)
+        val newType = model.createClass(key)
+          newType.addSuperClass(model.getOntClass(SembaPaths.generatedMetadata))
+          newType.addLabel(ResourceFactory.createLangLiteral(rawKey, config.constants.language))
+        prop = Some(newType)
         //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
          }
         else prop = None
     prop
   }
 
-  def setDatatypeProperty(uri: String, itemURI: String, model: OntModel, values: Array[String]): ArrayBuffer[AnnotationValue] = {
+  def setMetadataValue(uri: String, itemURI: String, model: OntModel, values: AnnotationValue): ArrayBuffer[AnnotationValue] = {
     val item = model.getIndividual(itemURI)
-    setDatatypeProperty(uri, item, model, values)
+    setMetadataValue(uri, item, model, values)
   }
 
-  def setDatatypeProperty(uri: String, item: Individual, model: OntModel, values:Array[String]): ArrayBuffer[AnnotationValue] = {
-    var propertyOption: Option[DatatypeProperty] = None
-    var retVal = AnnotationValue()
-    propertyOption = Some(model.getDatatypeProperty(uri))
-    require(propertyOption.isDefined)
-    val prop = propertyOption.get
-    if (prop.isFunctionalProperty) {
-      require(values.length == 1)
-      item.removeAll(prop)
-      item.addProperty(prop, values.head)
-      retVal = retVal.addValue(values.head)
-    }
-    else
-    {
-      {
-        values.foreach(x => {
-          item.addProperty(prop, model.createLiteral(x))
-          retVal = retVal.addValue(x)
-        })
-      }
-    }
+  def setMetadataValue(uri: String, item: Individual, model: OntModel, values: AnnotationValue): ArrayBuffer[AnnotationValue] = {
+    var metadataInstance: Option[Individual] = getIndividualMetadataValue(uri, item, values, model)
 
+    var retVal = AnnotationValue()
+
+    metadataInstance.foreach(
+      { metadata =>
+        /*if (metadata.isFunctionalProperty) {
+          require(values.length == 1)
+          item.removeAll(metadata)
+          item.addProperty(metadata, values.head)
+          retVal = retVal.addValue(values.head)
+        }
+        else */{
+          {
+            val hasValue = model.getDatatypeProperty(SembaPaths.hasValue)
+            values.value.foreach(x => {
+              metadata.addProperty(hasValue, model.createLiteral(x))
+              retVal = retVal.addValue(x)
+            })
+          }
+        }
+      }
+    )
     ArrayBuffer[AnnotationValue](retVal)
+  }
+
+  def getIndividualMetadataValue(metadataType: String, item: Individual, annotation: AnnotationValue, model: OntModel): Option[Individual] = {
+    var retVal: Option[Individual] = None
+  /*
+    if(Option(model.getOntClass(metadataType)).isDefined) {
+        val iter = model.listStatements(
+          new SimpleSelector(item, model.getProperty(SembaPaths.hasMetadata), null.asInstanceOf[RDFNode]) {
+            override def selects(s: Statement): Boolean = {
+              model.getIndividual(s.getObject.asResource.getURI).hasOntClass(metadataType)
+            }
+          }
+        )
+      retVal = if (iter.hasNext) Some(model.getIndividual(iter.next().getObject.asResource().getURI))
+      else {*/
+        retVal = Option(model.getIndividual(annotation.uri))
+
+        if(retVal.isEmpty){
+          var individual = model.createIndividual(UUID.randomUUID().toString, model.getOntClass(metadataType))
+        individual.addProperty(model.getDatatypeProperty(SembaPaths.isMetadataType), metadataType)
+        item.addProperty(model.getProperty(SembaPaths.hasMetadata), individual)
+        retVal = Some(individual)
+        }
+    retVal
   }
 
   def updateMetadata(item: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = {
@@ -129,25 +154,40 @@ object AccessMethods {
 
     for((prop, values) <- dataSet)
     {
-      if (!delete) setDatatypeProperty(prop, item, model, values.value.toArray)
-      else removeDatatypeProperty(prop, item, model, values.value.toArray)
+      if (!delete) setMetadataValue(prop, item, model, values)
+      else removeMetadataValue(prop, item, model, values)
     }
   }
 
-  def removeDatatypeProperty(uri: String, itemURI: String, model: OntModel,  values: Array[String]): ArrayBuffer[AnnotationValue] =
+  def removeMetadataValue(uri: String, itemURI: String, model: OntModel, values: AnnotationValue): ArrayBuffer[AnnotationValue] =
   {
       val item = model.getIndividual(itemURI)
-      removeDatatypeProperty(uri, item, model, values)
+      removeMetadataValue(uri, item, model, values)
   }
-  def removeDatatypeProperty(uri: String, item: Individual, model: OntModel, values: Array[String]): ArrayBuffer[AnnotationValue] = {
-    val p =  model.getProperty(uri)
-    values.foreach( v =>
-    {
-      model.remove(item, p, model.createLiteral(v))
-    }
+  def removeMetadataValue(uri: String, item: Individual, model: OntModel, values: AnnotationValue): ArrayBuffer[AnnotationValue] = {
+    var metadataInstance: Option[Individual] = getIndividualMetadataValue(uri, item, values, model)
+    var retVal = AnnotationValue()
+
+    metadataInstance.foreach(
+      { metadata =>
+        /*if (metadata.isFunctionalProperty) {
+          require(values.length == 1)
+          item.removeAll(metadata)
+          item.addProperty(metadata, values.head)
+          retVal = retVal.addValue(values.head)
+        }
+        else */{
+        {
+          val hasValue = model.getDatatypeProperty(SembaPaths.hasValue)
+          values.value.foreach(x => {
+            model.remove(metadata, hasValue, model.createLiteral(x))
+            retVal = retVal.addValue(x)
+          })
+        }
+      }
+      }
     )
-    //TODO!
-    ArrayBuffer[AnnotationValue](AnnotationValue().addAllValue(values))
+    ArrayBuffer[AnnotationValue](retVal)
   }
 
 
@@ -157,7 +197,7 @@ object AccessMethods {
 
   def retrieveLibConcepts(model: OntModel, config: Config): LibraryConcepts = {
     var retVal = new LibraryConcepts()
-    retVal = retVal.addAllAnnotations(listSubDatatypeProperties(model, SembaPaths.metadataPropertyURI, config))
+    retVal = retVal.addAllAnnotations(listAnnotations(model, SembaPaths.metadataType, config))
       .addAllCollectionRelations(listSubObjectProperties(model, SembaPaths.sembaCollectionRelationURI, config))
       .addAllDescriptiveRelations(listSubObjectProperties(model, SembaPaths.sembaDescriptiveRelationURI, config))
       .addAllGeneralRelations(listSubObjectProperties(model, SembaPaths.sembaGeneralRelationURI, config))
@@ -182,14 +222,14 @@ object AccessMethods {
     retVal
   }
 
-  def listSubDatatypeProperties(model: OntModel, uri: String, config: Config): ArrayBuffer[(String , Annotation)] = {
-    val annotations = Option(model.getDatatypeProperty(uri))
+  def listAnnotations(model: OntModel, uri: String, config: Config): ArrayBuffer[(String , Annotation)] = {
+    val annotations = Option(model.getOntClass(uri))
     var retVal = ArrayBuffer[(String , Annotation)]()
     if (annotations.isDefined) {
-       val iter = annotations.get.listSubProperties()
+       val iter = annotations.get.listSubClasses()
         while (iter.hasNext) {
         val prop = iter.next
-        val annotation = (prop.getURI, DatastructureMapping.wrapAnnotation(prop.asDatatypeProperty(), config))
+        val annotation = (prop.getURI, DatastructureMapping.wrapAnnotation(prop.asClass(), config))
         retVal += annotation
       }
     }
@@ -234,25 +274,30 @@ object AccessMethods {
   def retrieveMetadata(item: String, model: OntModel): ItemDescription = {
     var retVal = ItemDescription().withItemURI(item)
       val indOption = Option(model.getIndividual(item))
-      val superPropOption = Option(model.getDatatypeProperty(SembaPaths.metadataPropertyURI))
-      if(superPropOption.isDefined && indOption.isDefined){
+      val hasMetadataOption = Option(model.getObjectProperty(SembaPaths.hasMetadata))
+      if(hasMetadataOption.isDefined && indOption.isDefined){
         val ind = indOption.get
-        val superProp = superPropOption.get
-        val iter = ind.listProperties()
+        retVal = retVal.withName(ind.getPropertyValue(model.getDatatypeProperty(SembaPaths.sembaTitle)).asLiteral().toString)
+        val hasMetadata = hasMetadataOption.get
+        val iter = ind.listPropertyValues(hasMetadata)
         while (iter.hasNext){
           val stmt = iter.next()
-          val uri =  stmt.getPredicate.getURI
-          val dataProp = Option(model.getDatatypeProperty(uri))
-          if( dataProp.isDefined && dataProp.get.hasSuperProperty(superProp, false))
-          {
-          val valueList = AnnotationValue().addValue(stmt.getObject.asLiteral().getString)
-          retVal = retVal.addMetadata((stmt.getPredicate.getURI, valueList))
+          val metadataValue =  stmt.asResource()
+          val propertyIter = metadataValue.listProperties(model.getDatatypeProperty(SembaPaths.hasValue))
+          val values = ArrayBuffer.empty[String]
+          while(propertyIter.hasNext) {
+            values += propertyIter.next.getObject.asLiteral().getString
+
+          }
+          val key = metadataValue.getProperty(model.getDatatypeProperty(SembaPaths.isMetadataType)).getObject.asLiteral().toString
+          val valueList = AnnotationValue().addAllValue(values).withUri(metadataValue.getURI)
+          retVal = retVal.addMetadata((key, valueList))
         }
 
         }
-      }
     retVal
-  }
+      }
+
 
   def removeIndividual(item: String, model: OntModel, config: Config): Resource = {
     val ind = model.getIndividual(item)

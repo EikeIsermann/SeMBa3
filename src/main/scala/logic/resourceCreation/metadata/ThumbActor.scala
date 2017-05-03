@@ -94,9 +94,9 @@ object ThumbActor {
     * @return Props for the required ThumbActor
     */
   def getThumbActor(file: File): ActorRef = {
-    val mimeType = FileFactory.getMimeTypeOf(file)
-    supportedContentTypes.getOrElse(mimeType , supportedContentTypes.apply("GenericThumbActor"))
-//    supportedContentTypes.apply("GenericThumbActor")
+    //val mimeType = FileFactory.getMimeTypeOf(file)
+    //supportedContentTypes.getOrElse(mimeType , supportedContentTypes.apply("GenericThumbActor"))
+    supportedContentTypes.apply("GenericThumbActor")
   }
 
   def initialize(system: ActorSystem) = {

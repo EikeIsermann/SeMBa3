@@ -26,15 +26,27 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
   val precedes =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#preceeds"
     val isExample =   "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#isExampleFor"
   val testingClient = RawClient.apply()
-  val sembaMetadata = "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaMetadata"
+  val sembaMetadata = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl#generatedMetadata_Creation-Date"
   val changedItemName = "ClientTest"
   val newAnnotationValue = AnnotationValue().withValue(Seq("This", "Is", "A", "Test"))
+  val collectionName = "TestCollection"
   var mediaItem: Resource = _
   var mediaCollection: Resource = _
   var firstCollectionItem: CollectionItem = _
   var secondCollectionItem: CollectionItem = _
   var metadata: ItemDescription = _
+  val sparqlName = {
 
+    "SELECT ?x\nWHERE\n { ?x <http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaTitle> \""+collectionName+"\" ." +
+      "   }"
+  }
+
+  val sparqlCollection = {
+    "SELECT ?mediaItem \nWHERE\n { ?collectionItem a <"+ SembaPaths.collectionItemURI +">;" +
+      "<"+precedes+"> ?y ;" +
+    "<" + SembaPaths.linksToSource +"> ?mediaItem ." +
+      "   }"
+  }
 
 
   feature("SeMBa Initialization"){
@@ -77,7 +89,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     }
     scenario("Collection Creation") {
       When("Adding a Collection to SeMBa")
-      val jobID = testLib.addColl("TestCollection", collectionClass).id
+      val jobID = testLib.addColl(collectionName, collectionClass).id
       Then(" an Update Message should be received")
       var update = Traversable.empty[UpdateMessage]
       Then(" an Update Message should be received")
@@ -187,8 +199,8 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
       assert(metadata.name === mediaItem.name)
       }
 
-      scenario("Metadata Update") {
-        When("Adding a Metadata Tag")
+      scenario("Adding Metadata to an Item") {
+        When("Adding a Metadata Tag and updating the name")
         val add = ItemDescription(name = changedItemName).addMetadata((sembaMetadata, newAnnotationValue))
         val msg = MetadataUpdate().withItem(mediaItem).withAdd(add)
         var update = Traversable.empty[UpdateMessage]
@@ -202,20 +214,48 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
         assert(!update.isEmpty)
         And("an updated ItemDescription should part of the UpdateMessage.")
         assert(!update.head.descriptions.isEmpty)
-
+        And(" the updated description should contain the added metadata values as well as the new name")
+        val description = update.head.descriptions.head
+        assert(description.name === changedItemName)
+        newAnnotationValue.value.foreach(x => assert(description.metadata(sembaMetadata).value.contains(x)))
+      }
+    scenario("Removing Metadata from an Item") {
+      When("Removing a Metadata Tag")
+      val del = ItemDescription().addMetadata((sembaMetadata, newAnnotationValue))
+      val add = ItemDescription(name = mediaItem.name)
+      val msg = MetadataUpdate().withItem(mediaItem).withDelete(del).withAdd(add)
+      var update = Traversable.empty[UpdateMessage]
+      val jobID = testLib.saveMetadata(msg).id
+      Then(" an Update Message should be received")
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+      }
+      update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+      assert(!update.isEmpty)
+      And("an updated ItemDescription should part of the UpdateMessage.")
+      assert(!update.head.descriptions.isEmpty)
+      And(" the updated description should not contain the removed metadata values")
+      val description = update.head.descriptions.head
+      assert(description.name != changedItemName)
+      newAnnotationValue.value.foreach(x => assert(!description.metadata(sembaMetadata).value.contains(x)))
       }
     }
 
     feature ("Sparql Search"){
-      scenario("Simple Search for Metadata Entries"){
-        assert(1 === 1)
+      scenario("Simple Search for name"){
+        When("Performing a SparqlSearch for a MediaItem with a certain name")
+        val result = testLib.sparql(sparqlName, Seq("?x"))
+        Then("The result should only contain items with this name.")
+        assert(!result.exists(x => x._2.name != collectionName))
       }
-
-
     scenario("Filter Library Contents for MediaItems that are part of a Collection with a certain Relation") {
-      assert(1 === 1)
+      When("Performing a SparqlSearch for all MediaItems with a precedes collection in their collectionItem")
+      val result = testLib.sparql(sparqlCollection, Seq("?mediaItem"))
+      Then("The result should contain the current MediaItem.")
+      assert(result.exists(x => x._2.name == mediaItem.name))
+      }
     }
-  }
+
 
 
   feature("Collection Handling 2: Removal"){
@@ -271,9 +311,24 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
 
   feature("Concurrency Check")
   {
-    scenario("Adding an Item using a second Client Connection to the same library"){assert(1 === 1)}
+    scenario("Adding an Item using a second Client Connection to the same library") {
+      var update = Traversable.empty[UpdateMessage]
+      When("Creating a Second Client Connection")
+      val secApi = ClientImpl.apply()
+      val secLib = new ClientLib(libSource, secApi)
+      And("Creating importing a new Item using this Connection")
+
+      val jobID = secLib.addItem(testFile).id
+      Then(" an Update Message should be received by the original client")
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+      }
+      update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+      assert(update.nonEmpty)
+      And("the resource should be part of the Update message.")
+      assert(update.head.items.nonEmpty)
+      And(" the resource should be part of the original librarycontent")
+      assert(testLib.content.contains(update.head.items.head.uri))
+    }
   }
-
-
-
 }

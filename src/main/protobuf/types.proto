@@ -18,7 +18,9 @@ message Relation {
 
 message AnnotationValue {
     repeated string value = 1;
+    string uri = 2;
 }
+
 
 
 message Library {

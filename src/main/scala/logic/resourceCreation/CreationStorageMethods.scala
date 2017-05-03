@@ -12,6 +12,9 @@ import sembaGRPC._
 import utilities.{TextFactory, UpdateMessageFactory}
 import System.{currentTimeMillis => time}
 
+import globalConstants.SembaPresets
+import utilities.debug.DC
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -27,7 +30,7 @@ object CreationStorageMethods {
    def createInStorage(itemType: ItemType, ontClass: String, fileName: String, desc: ItemDescription,
                        config: Config, thumb_path: String, id: UUID, storage: SembaStorageComponent): UpdateMessage =
    {
-
+     //var test = DC.measure("Create Item")
      var update = UpdateMessageFactory.getAddMessage(config.libURI)
 
           val newResource = storage.performWrite(
@@ -37,14 +40,15 @@ object CreationStorageMethods {
                res
              }
           )
+     update = update.addItems(newResource)
+    // DC.stop(test)
 
-          update = update.addItems(newResource)
-
-          var itemDescription = desc
+   //  test = DC.measure("Generate Annotations")
+     var itemDescription = desc
           val generatedProperties = storage.performWrite(
             {
               val model = storage.getTBox
-              val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, model, config))
+              val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateMetadataType(key, model, config))
                 .foldLeft(Map.empty[String, Annotation])
                 {
                   case (annotations, property) =>
@@ -55,24 +59,26 @@ object CreationStorageMethods {
               desc
             }
           )
+   //  DC.stop(test)
+
+    // test = DC.measure("Add Metadata")
 
      update = update.addAnnotations(AnnotationUpdate(generatedProperties))
 
-          val validKeys = itemDescription.metadata.foldLeft(Map.empty[String, AnnotationValue])
-          {
-            case (acc, (key, value)) => acc.updated(config.constants.resourceBaseURI + TextFactory.cleanString(key), value)
-          }
-          itemDescription = itemDescription.withMetadata(validKeys).withItemURI(newResource.uri)
 
           storage.performWrite(
             {
             val model = storage.getABox
              val props = AccessMethods.updateMetadata(newResource.uri, itemDescription.metadata, model, false)
-             props
+             itemDescription = AccessMethods.retrieveMetadata(newResource.uri, model)
+              props
             }
           )
           update = update.addDescriptions(itemDescription)
+    // DC.stop(test)
 
-          update
+     update
+
    }
+
 }

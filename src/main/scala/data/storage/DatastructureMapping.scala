@@ -14,11 +14,11 @@ import scala.collection.mutable.ArrayBuffer
   */
 object DatastructureMapping {
 
-  def wrapAnnotation(prop:DatatypeProperty, config: Config): Annotation = {
+  def wrapAnnotation(cls:OntClass, config: Config): Annotation = {
       new Annotation(
-        uri = prop.getURI,
-        description = Option(prop.getComment(config.constants.language)).getOrElse("A Semba Property"),
-        label = Option(prop.getLabel(config.constants.language)).getOrElse(prop.getLocalName)
+        uri = cls.getURI,
+        description = Option(cls.getComment(config.constants.language)).getOrElse("A Semba Property"),
+        label = Option(cls.getLabel(config.constants.language)).getOrElse(cls.getLocalName)
       )
   }
   def wrapRelation(rel: ObjectProperty, config: Config): Relation = {
