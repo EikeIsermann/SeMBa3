@@ -32,7 +32,7 @@ object CreationStorageMethods {
 
           val newResource = storage.performWrite(
              {
-               val model = storage.getABox()
+               val model = storage.getABox
                val res = AccessMethods.createItem(model, desc.name, ontClass, fileName, config, thumb_path, id)
                res
              }
@@ -43,7 +43,7 @@ object CreationStorageMethods {
           var itemDescription = desc
           val generatedProperties = storage.performWrite(
             {
-              val model = storage.getTBox()
+              val model = storage.getTBox
               val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateDatatypeProperty(key, model, config))
                 .foldLeft(Map.empty[String, Annotation])
                 {
@@ -66,7 +66,7 @@ object CreationStorageMethods {
 
           storage.performWrite(
             {
-            val model = storage.getABox()
+            val model = storage.getABox
              val props = AccessMethods.updateMetadata(newResource.uri, itemDescription.metadata, model, false)
              props
             }

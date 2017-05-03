@@ -83,14 +83,14 @@ object SembaStorageComponent {
 abstract class SembaStorageComponent {
 
   /** @return an OntModel containing all asserted and deducted statements about the library content. */
-  def getABox(): OntModel
+  def getABox: OntModel
 
   /** @return an OntModel containing all asserted and deducted statements about the library content. */
-  def getTBox(): OntModel
+  def getTBox: OntModel
   /** Should only be used for read access, increased query performance.
     * @return an OntModel containing only the asserted statements
     */
-  def getABoxNoReasoning(): OntModel
+  def getABoxNoReasoning: OntModel
   def saveABox(model: OntModel)
   def saveTBox(model: OntModel)
 

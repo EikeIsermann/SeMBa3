@@ -26,7 +26,7 @@ object SearchMethods {
       {
         DC.log("Searching.")
 
-        val model = storage.getABox()
+        val model = storage.getABox
         val query = QueryFactory.create(strQuery)
         val qe = QueryExecutionFactory.create(query, model)
         val res = qe.execSelect()

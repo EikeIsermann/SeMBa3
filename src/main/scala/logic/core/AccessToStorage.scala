@@ -78,7 +78,7 @@ object AccessToStorageMethods
 
   def requestConcepts(config: Config, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
-         JobResult(ConceptResult(AccessMethods.retrieveLibConcepts(storage.getTBox(),config)))
+         JobResult(ConceptResult(AccessMethods.retrieveLibConcepts(storage.getTBox,config)))
     )
   }
 
@@ -98,7 +98,7 @@ object AccessToStorageMethods
     extends ResultContent
   def requestMetadata(uri: String, storage: SembaStorageComponent): JobResult = {
     storage.performRead(
-      JobResult(MetadataResult(AccessMethods.retrieveMetadata(uri, storage.getABox())))
+      JobResult(MetadataResult(AccessMethods.retrieveMetadata(uri, storage.getABox)))
     )
   }
 

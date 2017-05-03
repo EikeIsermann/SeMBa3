@@ -20,20 +20,22 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     PatienceConfig(timeout = scaled(Span(60, Seconds)), interval = scaled(Span(15, Millis)))
   var clientApi: ClientImpl = _
   var testLib: ClientLib = _
-  val testFile = "file:///Users/uni/Desktop/TestLib/Test.pdf"//"file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf"
-  val libSource = "file:///Users/uni/Desktop/TestLib/library.ttl"//"file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl"
+  val testFile = "file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf" //"file:///Users/uni/Desktop/TestLib/Test.pdf"//
+  val libSource = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl" //"file:///Users/uni/Desktop/TestLib/library.ttl"//
   val collectionClass =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program"
   val precedes =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#preceeds"
     val isExample =   "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#isExampleFor"
   val testingClient = RawClient.apply()
+  val sembaMetadata = "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sembaMetadata"
+  val changedItemName = "ClientTest"
+  val newAnnotationValue = AnnotationValue().withValue(Seq("This", "Is", "A", "Test"))
   var mediaItem: Resource = _
   var mediaCollection: Resource = _
   var firstCollectionItem: CollectionItem = _
   var secondCollectionItem: CollectionItem = _
+  var metadata: ItemDescription = _
 
 
-  info("As a SeMBa client")
-  info("I want to remotely connect to a SeMBa application")
 
   feature("SeMBa Initialization"){
     scenario("The client registers a Session on the remote server")
@@ -93,14 +95,16 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     }
   }
 
-    feature("Collection Handling") {
+   feature("Collection Handling 1: Setup") {
 
-      scenario("Adding an Item to a Collection") {
+    scenario("Adding an Item to a Collection") {
       When("Adding an Item to a Collection")
       val jobID = testLib.addToCollection(mediaItem.uri, mediaCollection.uri).id
       var update = Traversable.empty[UpdateMessage]
       Then(" an Update Message should be received")
-      eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+      }
       update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
       And(" a new CollectionItem should be created.")
       assert(update.head.collectionItems.nonEmpty)
@@ -116,7 +120,9 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
       Then(" an Update Message should be received")
       var update = Traversable.empty[UpdateMessage]
       Then(" an Update Message should be received")
-      eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+      }
       update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
       assert(update.nonEmpty)
       And(" a new CollectionItem should be created.")
@@ -136,94 +142,138 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
       When("Adding a connection from Item #1 to Item #2")
       val jobID = testLib.connectItems(firstCollectionItem, secondCollectionItem, precedes).id
       Then(" an Update Message should be received")
-      eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+      }
       update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
       assert(!update.isEmpty)
       And("an updated CollectionItem should part of the UpdateMessage.")
       assert(!update.head.collectionItems.isEmpty)
       And(" the CollectionItem should be replaced in the CollectionContent")
       assert(testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
-      firstCollectionItem =  testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
+      firstCollectionItem = testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
       And(" should contain the newly created connection")
       assert(firstCollectionItem.relations(precedes).destination.contains(secondCollectionItem.uri))
     }
 
-      scenario("Adding a second Connection between two Items") {
-        var update = Traversable.empty[UpdateMessage]
-        When("Adding a connection from Item #1 to Item #2")
-        val jobID = testLib.connectItems(firstCollectionItem, secondCollectionItem, isExample).id
-        Then(" an Update Message should be received")
-        eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
-        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
-        assert(!update.isEmpty)
-        And("an updated CollectionItem should part of the UpdateMessage.")
-        assert(!update.head.collectionItems.isEmpty)
-        And(" the CollectionItem should be replaced in the CollectionContent")
-        assert(testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
-        firstCollectionItem =  testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
-        And(" should contain the newly created connection")
-        assert(firstCollectionItem.relations(isExample).destination.contains(secondCollectionItem.uri))
+    scenario("Adding a second Connection between two Items") {
+      var update = Traversable.empty[UpdateMessage]
+      When("Adding a connection from Item #1 to Item #2")
+      val jobID = testLib.connectItems(firstCollectionItem, secondCollectionItem, isExample).id
+      Then(" an Update Message should be received")
+      eventually {
+        clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
       }
+      update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+      assert(!update.isEmpty)
+      And("an updated CollectionItem should part of the UpdateMessage.")
+      assert(!update.head.collectionItems.isEmpty)
+      And(" the CollectionItem should be replaced in the CollectionContent")
+      assert(testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
+      firstCollectionItem = testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
+      And(" should contain the newly created connection")
+      assert(firstCollectionItem.relations(isExample).destination.contains(secondCollectionItem.uri))
+    }
 
-      scenario("Removing a connection between two Items") {
-        var update = Traversable.empty[UpdateMessage]
-        When("Adding a connection from Item #1 to Item #2")
-        val jobID = testLib.disconnectItems(firstCollectionItem, secondCollectionItem, isExample).id
-        Then(" an Update Message should be received")
-        eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
-        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
-        assert(!update.isEmpty)
-        And("an updated CollectionItem should part of the UpdateMessage.")
-        assert(!update.head.collectionItems.isEmpty)
-        And(" the CollectionItem should be replaced in the CollectionContent")
-        assert(testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
-        firstCollectionItem = testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
-        And(" should contain the newly created connection")
-        assert(!firstCollectionItem.relations.contains(isExample))
-      }
-
-      scenario("Removing a CollectionItem which is a connection destination") {
-        var update = Traversable.empty[UpdateMessage]
-        When("Adding a connection from Item #1 to Item #2")
-        val jobID = testLib.removeFromCollection(secondCollectionItem, mediaCollection.uri).id
-        Then(" an Update Message should be received")
-        eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
-        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
-        assert(update.nonEmpty)
-        And("an updated CollectionContent should part of the UpdateMessage.")
-        assert(update.head.collectionContent.nonEmpty)
-        And(" the CollectionItem should not be part of the CollectionContent")
-        assert(!testLib.openCollections(mediaCollection.uri).contents.contains(secondCollectionItem.uri))
-        And(" it the relations for the origin CollectionItem should be empty")
-        assert(testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri).relations.isEmpty)
-      }
-
-      scenario("Removing a MediaItem Item which represents a CollectionItem") {
-        var update = Traversable.empty[UpdateMessage]
-        When("Adding a connection from Item #1 to Item #2")
-        val jobID = testLib.removeItem(firstCollectionItem.libraryResource)
-        Then(" an Update Message should be received")
-        eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
-        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
-        assert(update.nonEmpty)
-        And("an updated CollectionContent should part of the UpdateMessage.")
-        assert(update.head.collectionContent.nonEmpty)
-        And(" the CollectionItem should not be part of the CollectionContent")
-        assert(!testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
-        And(" it the relations for the origin CollectionItem should be empty")
-        assert(!testLib.content.contains(mediaItem.uri))
-      }
-
-
-
-
-
-    /*TODO
-
-      * Update Item Description
-      * Perform Sparql
-      * Open second Library with different Session and check update behavior
-     */
   }
+
+  feature("Metadata Modifications") {
+    scenario("Metadata Retrieval") {
+      When("Querying for an Items Metadata")
+      failAfter(500 millis) {
+        metadata = testLib.getMetadata(mediaItem.uri)
+      }
+      Then("The metadata object should contain at least the name of the Item")
+      assert(metadata.name === mediaItem.name)
+      }
+
+      scenario("Metadata Update") {
+        When("Adding a Metadata Tag")
+        val add = ItemDescription(name = changedItemName).addMetadata((sembaMetadata, newAnnotationValue))
+        val msg = MetadataUpdate().withItem(mediaItem).withAdd(add)
+        var update = Traversable.empty[UpdateMessage]
+
+        val jobID = testLib.saveMetadata(msg).id
+        Then(" an Update Message should be received")
+        eventually {
+          clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+        }
+        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+        assert(!update.isEmpty)
+        And("an updated ItemDescription should part of the UpdateMessage.")
+        assert(!update.head.descriptions.isEmpty)
+
+      }
+    }
+
+    feature ("Sparql Search"){
+      scenario("Simple Search for Metadata Entries"){
+        assert(1 === 1)
+      }
+
+
+    scenario("Filter Library Contents for MediaItems that are part of a Collection with a certain Relation") {
+      assert(1 === 1)
+    }
+  }
+
+
+  feature("Collection Handling 2: Removal"){
+  scenario("Removing a connection between two Items") {
+    var update = Traversable.empty[UpdateMessage]
+    When("Adding a connection from Item #1 to Item #2")
+    val jobID = testLib.disconnectItems(firstCollectionItem, secondCollectionItem, isExample).id
+    Then(" an Update Message should be received")
+    eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+    update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+    assert(!update.isEmpty)
+    And("an updated CollectionItem should part of the UpdateMessage.")
+    assert(!update.head.collectionItems.isEmpty)
+    And(" the CollectionItem should be replaced in the CollectionContent")
+    assert(testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
+    firstCollectionItem = testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri)
+    And(" should contain the newly created connection")
+    assert(!firstCollectionItem.relations.contains(isExample))
+  }
+
+  scenario("Removing a CollectionItem which is a connection destination") {
+    var update = Traversable.empty[UpdateMessage]
+    When("Adding a connection from Item #1 to Item #2")
+    val jobID = testLib.removeFromCollection(secondCollectionItem, mediaCollection.uri).id
+    Then(" an Update Message should be received")
+    eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+    update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+    assert(update.nonEmpty)
+    And("an updated CollectionContent should part of the UpdateMessage.")
+    assert(update.head.collectionContent.nonEmpty)
+    And(" the CollectionItem should not be part of the CollectionContent")
+    assert(!testLib.openCollections(mediaCollection.uri).contents.contains(secondCollectionItem.uri))
+    And(" it the relations for the origin CollectionItem should be empty")
+    assert(testLib.openCollections(mediaCollection.uri).contents(firstCollectionItem.uri).relations.isEmpty)
+  }
+
+  scenario("Removing a MediaItem Item which represents a CollectionItem") {
+    var update = Traversable.empty[UpdateMessage]
+    When("Adding a connection from Item #1 to Item #2")
+    val jobID = testLib.removeItem(firstCollectionItem.libraryResource).id
+    Then(" an Update Message should be received")
+    eventually { clientApi.lastUpdates.count(x => x.jobID === jobID) should be (1)}
+    update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+    assert(update.nonEmpty)
+    And("an updated CollectionContent should part of the UpdateMessage.")
+    assert(update.head.items.nonEmpty)
+    And(" the CollectionItem should not be part of the CollectionContent")
+    assert(!testLib.openCollections(mediaCollection.uri).contents.contains(firstCollectionItem.uri))
+    And(" it the relations for the origin CollectionItem should be empty")
+    assert(!testLib.content.contains(mediaItem.uri))
+  }
+  }
+
+  feature("Concurrency Check")
+  {
+    scenario("Adding an Item using a second Client Connection to the same library"){assert(1 === 1)}
+  }
+
+
 
 }

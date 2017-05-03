@@ -14,24 +14,24 @@ import utilities.UpdateMessageFactory
   */
 object ModificationMethods {
 
-  case class UpdateMetaInStorage(item: String, name: String, added: Option[ItemDescription], deleted: Option[ItemDescription]
+  case class UpdateMetaInStorage(item: String, name: Option[String], added: Option[ItemDescription], deleted: Option[ItemDescription]
                                  ,config: Config)
     extends StorageWriteRequest(updateMetaInStorage(item, name, added, deleted, config, _))
 
-  def updateMetaInStorage(item: String, name: String, addDesc: Option[ItemDescription], deleteDesc: Option[ItemDescription],
+  def updateMetaInStorage(item: String, name: Option[String], addDesc: Option[ItemDescription], deleteDesc: Option[ItemDescription],
                           config: Config, storage: SembaStorageComponent): UpdateMessage = {
 
     var update = UpdateMessageFactory.getReplaceMessage(config.libURI)
 
     val desc = storage.performWrite(
   {
-    val model = storage.getABox()
-      AccessMethods.setName(item, name, model)
+    val model = storage.getABox
+      name.foreach(itemName => update = update.addItems(AccessMethods.setName(item, itemName, model, config)))
       addDesc.foreach( add => AccessMethods.updateMetadata(item, add.metadata, model, false))
-      deleteDesc.foreach( del => AccessMethods.updateMetadata(item, del.metadata, model, false))
+      deleteDesc.foreach( del => AccessMethods.updateMetadata(item, del.metadata, model, true))
+      update = update.addDescriptions(AccessMethods.retrieveMetadata(item, storage.getABox))
   })
 
-    update = update.addDescriptions(AccessMethods.retrieveMetadata(item, storage.getABox()))
 
     update
   }
@@ -45,13 +45,13 @@ object ModificationMethods {
 
       update = storage.performWrite(
         {
-          val model = storage.getABox()
+          val model = storage.getABox
           val allCollectionItems = AccessMethods.getCollectionItems(item, model)
 
           val collectionItems = for(cItem <- allCollectionItems)
-            yield AccessMethods.removeCollectionItem(item,model,config)
+            yield AccessMethods.removeCollectionItem(cItem,model,config)
 
-          collectionItems.foreach(citem ⇒ update.addCollectionContent(AccessMethods.retrieveCollectionContent(model, citem.parentCollection, config)))
+          collectionItems.foreach(citem ⇒ updateCollections = updateCollections.addCollectionContent(AccessMethods.retrieveCollectionContent(model, citem.parentCollection, config)))
           Application.api ! updateCollections
 
           val deletedResource = AccessMethods.removeIndividual(item, model, config)
@@ -73,7 +73,7 @@ object ModificationMethods {
 
       update = storage.performWrite(
 
-         update.addCollectionItems(AccessMethods.addCollectionItem(collection,  item, storage.getABox(),config))
+         update.addCollectionItems(AccessMethods.addCollectionItem(collection,  item, storage.getABox,config))
        )
 
        update
@@ -87,7 +87,7 @@ object ModificationMethods {
 
       update = storage.performWrite(
         {
-        val model = storage.getABox()
+        val model = storage.getABox
         AccessMethods.removeCollectionItem(item, model, config)
         update.addCollectionContent(AccessMethods.retrieveCollectionContent(model, parentCollection,config))
         }

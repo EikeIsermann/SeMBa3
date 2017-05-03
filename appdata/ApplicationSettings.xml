@@ -23,6 +23,15 @@
     <sourceLocationURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#sourceFileLocation</sourceLocationURI>
     <ontologyDefinition>appdata\semba-main.owl</ontologyDefinition>
     <libraryDefinition>appdata\libraries</libraryDefinition>
+    <metadataValueURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MetadataValue</metadataValueURI>>
+    <hasValueURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasValue</hasValueURI>
+    <customMetadataURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#CustomMetadata</customMetadataURI>
+    <generatedMetadataURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#GeneratedMetadata</generatedMetadataURI>
+    <metadataFormatURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#metadataFormat</metadataFormatURI>
+    <hasMetadataURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasMetadata</hasMetadataURI>
+    <isMetadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#isMetadataType</isMetadataTypeURI>
+    <metadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MetadataType</metadataTypeURI>
+
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>

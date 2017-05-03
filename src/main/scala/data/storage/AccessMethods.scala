@@ -8,7 +8,7 @@ import globalConstants.SembaPaths
 import logic.core.Config
 import org.apache.jena.ontology._
 import org.apache.jena.ontology.impl.OntModelImpl
-import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory, SimpleSelector}
+import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode, ResourceFactory, SimpleSelector}
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.FileUtils
 import sembaGRPC._
@@ -76,6 +76,7 @@ object AccessMethods {
     clone
   }
   */
+
   def generateDatatypeProperty(rawKey: String, model: OntModel, config: Config, functional: Boolean = false): Option[DatatypeProperty] = {
     var prop = None: Option[DatatypeProperty]
         val key = config.constants.resourceBaseURI + TextFactory.cleanString(rawKey)
@@ -120,6 +121,17 @@ object AccessMethods {
     }
 
     ArrayBuffer[AnnotationValue](retVal)
+  }
+
+  def updateMetadata(item: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = {
+    var ind : Option[Individual] = None
+    ind = Option(model.getIndividual(item))
+
+    for((prop, values) <- dataSet)
+    {
+      if (!delete) setDatatypeProperty(prop, item, model, values.value.toArray)
+      else removeDatatypeProperty(prop, item, model, values.value.toArray)
+    }
   }
 
   def removeDatatypeProperty(uri: String, itemURI: String, model: OntModel,  values: Array[String]): ArrayBuffer[AnnotationValue] =
@@ -255,11 +267,14 @@ object AccessMethods {
   }
 
 
-  def removeCollectionItem(item: Individual, model: OntModel, config: Config): CollectionItem = {
+  def removeCollectionItem(item: org.apache.jena.rdf.model.Resource, model: OntModel, config: Config): CollectionItem = {
     val itemUri = item.getURI
-    val itemParent = item.getPropertyValue(model.getProperty(SembaPaths.containedByCollectionURI)).asResource.getURI
+    val containedBy = model.getProperty(SembaPaths.containedByCollectionURI)
+    val itemParentResource = item.getPropertyResourceValue(containedBy)
+    val itemParent = itemParentResource.asResource.getURI
     val retVal = new CollectionItem( uri = itemUri, parentCollection = itemParent).withLib(new Library(config.libURI))
-    item.remove()
+    model.removeAll( item, null, null)
+    model.removeAll(null, null, item)
     retVal
   }
 
@@ -270,7 +285,7 @@ object AccessMethods {
     val individual = model.getIndividual(item)
     val results = model.listSubjectsWithProperty(linksToSource, individual)
     while(results.hasNext){
-      retVal += results.nextResource()
+      retVal += results.nextResource
     }
     retVal
   }
@@ -304,25 +319,14 @@ object AccessMethods {
       DatastructureMapping.wrapCollectionItem(ind, model, config)
   }
 
-  def setName(item: String, name: String, model: OntModel) = {
-    var ind = Option(model.getIndividual(item))
-    if (ind.isDefined){
-      val item = ind.get
-      item.setPropertyValue(model.getProperty(SembaPaths.sembaTitle),
+  def setName(item: String, name: String, model: OntModel, config: Config): Resource = {
+    var ind = model.getIndividual(item)
+      ind.setPropertyValue(model.getProperty(SembaPaths.sembaTitle),
         model.createLiteral(name))
-   }
+
+    DatastructureMapping.wrapResource(ind, model, config)
   }
 
-  def updateMetadata(item: String, dataSet: Map[String, AnnotationValue], model: OntModel, delete: Boolean ) = {
-    var ind : Option[Individual] = None
-    ind = Option(model.getIndividual(item))
-
-    for((prop, values) <- dataSet)
-      {
-        if (!delete) setDatatypeProperty(prop, item, model, values.value.toArray)
-        else removeDatatypeProperty(prop, item, model, values.value.toArray)
-      }
-    }
 
 
   def addCollectionItem(collection: String, item: String, model: OntModel, config: Config): CollectionItem = {
@@ -330,16 +334,11 @@ object AccessMethods {
        val collItem = model.createIndividual(newUri, model.getOntClass(SembaPaths.collectionItemURI))
        val coll = model.getIndividual(collection)
        val itemIndividual = model.getIndividual(item)
-       val hasMediaItem = model.getObjectProperty(SembaPaths.hasMediaItem)
-       val hasCollectionItem = model.getObjectProperty(SembaPaths.containsItemURI)
        val isPart = model.getObjectProperty(SembaPaths.containedByCollectionURI)
 
 
-       collItem.setPropertyValue(model.getProperty(SembaPaths.linksToSource),itemIndividual )
+       collItem.setPropertyValue(model.getProperty(SembaPaths.linksToSource), itemIndividual )
        collItem.setPropertyValue(isPart, coll)
-       itemIndividual.setPropertyValue(isPart,collItem)
-       coll.setPropertyValue(hasCollectionItem, collItem)
-       //if(!model.contains(coll, hasMediaItem,itemIndividual)) coll.setPropertyValue(hasMediaItem, itemIndividual)
       DatastructureMapping.wrapCollectionItem(collItem, model, config)
   }
 
