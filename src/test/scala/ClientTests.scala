@@ -1,6 +1,6 @@
 
 import app.Application
-import app.testing.{ClientImpl, ClientLib}
+import app.testing.{ClientLib, SembaConnectionImpl, SembaConnectionImpl$}
 import globalConstants.SembaPaths
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, TimeLimits, Timeouts}
@@ -18,15 +18,15 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
 
   override implicit val patienceConfig =
     PatienceConfig(timeout = scaled(Span(60, Seconds)), interval = scaled(Span(15, Millis)))
-  var clientApi: ClientImpl = _
+  var clientApi: SembaConnectionImpl = _
   var testLib: ClientLib = _
-  val testFile = "file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf" //"file:///Users/uni/Desktop/TestLib/Test.pdf"//
-  val libSource = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl" //"file:///Users/uni/Desktop/TestLib/library.ttl"//
+  val testFile = "file:///Users/uni/Desktop/TestLib/Test.pdf"// "file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf" //
+  val libSource = "file:///Users/uni/Desktop/TestLib/library.ttl"// "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl" //
   val collectionClass =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program"
   val precedes =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#preceeds"
     val isExample =   "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#isExampleFor"
   val testingClient = RawClient.apply()
-  val sembaMetadata = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl#generatedMetadata_Creation-Date"
+  val sembaMetadata = "file:///Users/uni/Desktop/TestLib/library.ttl#generatedMetadata_Creation-Date"  //  "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl#generatedMetadata_Creation-Date" //
   val changedItemName = "ClientTest"
   val newAnnotationValue = AnnotationValue().withValue(Seq("This", "Is", "A", "Test"))
   val collectionName = "TestCollection"
@@ -53,7 +53,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     scenario("The client registers a Session on the remote server")
     {
       When("registering new client session")
-      clientApi = ClientImpl.apply()
+      clientApi = SembaConnectionImpl.apply()
       Then("the ID is correctly stored at the client")
       assert(clientApi.session != null)
     }
@@ -208,12 +208,11 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
         val jobID = testLib.saveMetadata(msg).id
         Then(" an Update Message should be received")
         eventually {
-          clientApi.lastUpdates.count(x => x.jobID === jobID) should be(1)
+          update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
+          update.size should be(1)
         }
-        update = clientApi.lastUpdates.filter(x => x.jobID === jobID)
-        assert(!update.isEmpty)
         And("an updated ItemDescription should part of the UpdateMessage.")
-        assert(!update.head.descriptions.isEmpty)
+        assert(update.head.descriptions.nonEmpty)
         And(" the updated description should contain the added metadata values as well as the new name")
         val description = update.head.descriptions.head
         assert(description.name === changedItemName)
@@ -314,7 +313,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     scenario("Adding an Item using a second Client Connection to the same library") {
       var update = Traversable.empty[UpdateMessage]
       When("Creating a Second Client Connection")
-      val secApi = ClientImpl.apply()
+      val secApi = SembaConnectionImpl.apply()
       val secLib = new ClientLib(libSource, secApi)
       And("Creating importing a new Item using this Connection")
 

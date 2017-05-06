@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by Eike on 28.04.2017.
   */
-class ClientLib(path: String, api: ClientImpl) {
+class ClientLib(path: String, api: SembaConnectionImpl) {
   var stamp = DC.measure("Setting up library")
   val lib = Library(path)
   var concepts = api.openLib(lib, this)

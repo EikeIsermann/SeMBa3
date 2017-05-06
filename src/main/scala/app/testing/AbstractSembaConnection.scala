@@ -14,12 +14,12 @@ import scala.collection.immutable.HashMap
 /**
   * Created by Eike on 01.05.2017.
   */
-abstract class AbstractClient (
+abstract class AbstractSembaConnection(
                                        val channel: ManagedChannel,
                                        val blockingStub: SembaAPIBlockingStub,
                                        val asyncStub: SembaAPIStub
                                      ) {
-  val logger = Logger.getLogger(classOf[AbstractClient].getName)
+  val logger = Logger.getLogger(classOf[AbstractSembaConnection].getName)
 
 
   val updateFunction: PartialFunction[UpdateMessage, Any]

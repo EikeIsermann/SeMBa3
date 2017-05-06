@@ -1,6 +1,6 @@
 import java.util.logging.Logger
 
-import app.testing.{AbstractClient, ClientImpl}
+import app.testing.{AbstractSembaConnection, SembaConnectionImpl$}
 import io.grpc.{ManagedChannel, ManagedChannelBuilder}
 import sembaGRPC.SembaAPIGrpc.{SembaAPIBlockingStub, SembaAPIStub}
 import sembaGRPC.{SembaAPIGrpc, UpdateMessage}
@@ -34,7 +34,7 @@ class RawClient(
   channel: ManagedChannel,
   blockingStub: SembaAPIBlockingStub,
   asyncStub: SembaAPIStub
-  ) extends AbstractClient(channel, blockingStub, asyncStub) {
+  ) extends AbstractSembaConnection(channel, blockingStub, asyncStub) {
     override val logger = Logger.getLogger(classOf[RawClient].getName)
 
     override val updateFunction: PartialFunction[UpdateMessage, Any] = Map.empty

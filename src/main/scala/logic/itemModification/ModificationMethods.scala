@@ -59,9 +59,7 @@ object ModificationMethods {
           update.addItems(deletedResource)
         }
       )
-
       update
-
     }
 
   case class AddToCollectionInStorage(collection: String, item: String, config: Config)
