@@ -13,17 +13,18 @@ import org.apache.jena.vocabulary.OWL
   * This is a SeMBa3 class
   */
 object TDBTest extends App{
-  var tdb: Dataset = TDBFactory.createDataset("/Users/uni/desktop/library/ontology")
-  tdb.getContext.set(TDB.symUnionDefaultGraph, true)
+  var tdb: Dataset = TDBFactory.createDataset("C:\\Users\\eikei_000\\Desktop\\sparqlLib\\ontology")
+  //tdb.getContext.set(TDB.symUnionDefaultGraph, true)
   //addStatement("modelA", "itemA", "likes", "itemB")
   //addStatement("modelB", "itemC", "likes", "itemD")
   //addStatement("urn:x-arq:UnionGraph", "itemA", "likes", "itemC")
-  export("tBox")
+  //export("tBox")
   export("aBox")
   tdb.begin(ReadWrite.READ)
   try{
 
-   // println(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF,tdb.getNamedModel("tBox")).getOntClass(SembaPaths.collectionClassURI).listSubClasses().toList)
+    //println(tdb.getNamedModel("aBox").add(tdb.getNamedModel("tBox")).size)
+    //println(ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF,tdb.getNamedModel("aBox")).addSubModel(tdb.getName)
 
   }
   finally {tdb.commit ; tdb.end() }
@@ -60,7 +61,7 @@ object TDBTest extends App{
         new BufferedWriter(
           new OutputStreamWriter(
             new FileOutputStream(
-              new File("/Users/uni/desktop/exporttest/" + aModel +".xml" +
+              new File("C:\\Users\\eikei_000\\Desktop\\tdbexport\\" + aModel +".xml" +
                 ""), false
             )
           )

@@ -1,6 +1,6 @@
 
 import app.Application
-import app.testing.{ClientImpl, ClientLib}
+import app.testing.{SembaConnectionImpl, ClientLib}
 import globalConstants.SembaPaths
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, TimeLimits, Timeouts}
@@ -18,15 +18,15 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
 
   override implicit val patienceConfig =
     PatienceConfig(timeout = scaled(Span(60, Seconds)), interval = scaled(Span(15, Millis)))
-  var clientApi: ClientImpl = _
+  var clientApi: SembaConnectionImpl = _
   var testLib: ClientLib = _
   val testFile = "file:///C:/Users/eikei_000/Desktop/TestLib/Test.pdf" //"file:///Users/uni/Desktop/TestLib/Test.pdf"//
-  val libSource = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl" //"file:///Users/uni/Desktop/TestLib/library.ttl"//
+  val libSource = "file:///C:/Users/eikei_000/Desktop/sparqlLib/library.ttl" //"file:///Users/uni/Desktop/TestLib/library.ttl"//
   val collectionClass =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#Program"
   val precedes =  "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#preceeds"
     val isExample =   "http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-teaching.owl#isExampleFor"
-  val testingClient = RawClient.apply()
-  val sembaMetadata = "file:///C:/Users/eikei_000/Desktop/TestLib/library.ttl#generatedMetadata_Creation-Date"
+  val testingClient = RawSembaConnection.apply()
+  val sembaMetadata = "file:///C:/Users/eikei_000/Desktop/sparqlLib/library.ttl#generatedMetadata_Creation-Date"
   val changedItemName = "ClientTest"
   val newAnnotationValue = AnnotationValue().withValue(Seq("This", "Is", "A", "Test"))
   val collectionName = "TestCollection"
@@ -41,11 +41,11 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
       "   }"
   }
 
-  val sparqlCollection = {
-    "SELECT ?mediaItem \nWHERE\n { ?collectionItem a <"+ SembaPaths.collectionItemURI +">;" +
-      "<"+precedes+"> ?y ;" +
-    "<" + SembaPaths.linksToSource +"> ?mediaItem ." +
-      "   }"
+  def sparqlCollection: String = {
+    "SELECT ?collection \nWHERE\n {?collectionItem <" + SembaPaths.linksToSource +"> <"+ mediaItem.uri+"> ." +
+      "?collectionItem <" + precedes + "> + ?y." +
+      "?collectionItem <" +SembaPaths.containedByCollectionURI+ "> ?collection ." +
+    "}"
   }
 
 
@@ -53,7 +53,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     scenario("The client registers a Session on the remote server")
     {
       When("registering new client session")
-      clientApi = ClientImpl.apply()
+      clientApi = SembaConnectionImpl.apply()
       Then("the ID is correctly stored at the client")
       assert(clientApi.session != null)
     }
@@ -62,7 +62,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     {
       When("opening a library")
       Then("the concepts and contents should be transmitted to the client in <15 seconds.")
-       failAfter(15 seconds){
+       failAfter(25 seconds){
         testLib = new ClientLib(libSource, clientApi)
       }
       And("they should contain at least the SeMBa base concepts.")
@@ -191,6 +191,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
 
   feature("Metadata Modifications") {
     scenario("Metadata Retrieval") {
+      testLib.openMetadata.clear()
       When("Querying for an Items Metadata")
       failAfter(500 millis) {
         metadata = testLib.getMetadata(mediaItem.uri)
@@ -244,15 +245,15 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     feature ("Sparql Search"){
       scenario("Simple Search for name"){
         When("Performing a SparqlSearch for a MediaItem with a certain name")
-        val result = testLib.sparql(sparqlName, Seq("?x"))
+        val result = testLib.sparqlToLibContent(sparqlName, Seq("?x"))
         Then("The result should only contain items with this name.")
         assert(!result.exists(x => x._2.name != collectionName))
       }
-    scenario("Filter Library Contents for MediaItems that are part of a Collection with a certain Relation") {
+    scenario("Filter Library Contents for Collections that contain a MediaItem with a certain Relation") {
       When("Performing a SparqlSearch for all MediaItems with a precedes collection in their collectionItem")
-      val result = testLib.sparql(sparqlCollection, Seq("?mediaItem"))
+      val result = testLib.sparqlToLibContent(sparqlCollection, Seq("?collection"))
       Then("The result should contain the current MediaItem.")
-      assert(result.exists(x => x._2.name == mediaItem.name))
+      assert(result.exists(x => x._2.name == mediaCollection.name))
       }
     }
 
@@ -314,7 +315,7 @@ class ClientTests extends FeatureSpec with GivenWhenThen with TimeLimits with Ev
     scenario("Adding an Item using a second Client Connection to the same library") {
       var update = Traversable.empty[UpdateMessage]
       When("Creating a Second Client Connection")
-      val secApi = ClientImpl.apply()
+      val secApi = SembaConnectionImpl.apply()
       val secLib = new ClientLib(libSource, secApi)
       And("Creating importing a new Item using this Connection")
 

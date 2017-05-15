@@ -44,13 +44,9 @@ class ResourceCreator(val config: Config) extends LibActor {
   override def reactOnReply(reply: JobReply, originalJob: Job, results: ResultArray): Unit = {
     reply.job match {
       case item: ImportNewItem => {
-          counter += 1
-        println("received successful import nr " + counter)
-
-        /* val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
+         val newItem = results.get(classOf[StorageWriteResult]).payload.items.head
          val moveSourceFile = MoveFile(item.item.toURI.toString, newItem.sourceFile)
-       fileMover ! moveSourceFile*/
-
+         fileMover ! moveSourceFile
      }
       case _ =>
 

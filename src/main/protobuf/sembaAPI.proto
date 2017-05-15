@@ -36,7 +36,7 @@ service SembaAPI {
     rpc updateMetadata (MetadataUpdate) returns (VoidResult) {
     }
 
-    rpc writeBenchmarkResults(Library) returns (VoidResult){
+    rpc writeBenchmarkResults(BenchmarkWriteRequest) returns (VoidResult){
 
     }
 
@@ -167,4 +167,9 @@ message SessionRequest {
 message LibraryRequest {
     Library lib = 1;
     string sessionID = 2;
+}
+
+message BenchmarkWriteRequest {
+    string lib = 1;
+    string name = 2;
 }

@@ -1,6 +1,6 @@
 import java.util.logging.Logger
 
-import app.testing.{AbstractClient, ClientImpl}
+import app.testing.{AbstractSembaConnection, SembaConnectionImpl}
 import io.grpc.{ManagedChannel, ManagedChannelBuilder}
 import sembaGRPC.SembaAPIGrpc.{SembaAPIBlockingStub, SembaAPIStub}
 import sembaGRPC.{SembaAPIGrpc, UpdateMessage}
@@ -9,9 +9,9 @@ import sembaGRPC.{SembaAPIGrpc, UpdateMessage}
   * Created by Eike on 01.05.2017.
   */
 
-object RawClient {
-  def apply(): RawClient = apply("localhost", 50051)
-  def apply(host: String, port: Int): RawClient = {
+object RawSembaConnection {
+  def apply(): RawSembaConnection = apply("localhost", 50051)
+  def apply(host: String, port: Int): RawSembaConnection = {
     /* val test = ManagedChannelBuilder.forAddress(host, port)Ja
      test.usePlaintext(true)
      val  channel =  test.build()
@@ -25,17 +25,17 @@ object RawClient {
     val channel2 = channel.build()
     val blockingStub = SembaAPIGrpc.blockingStub(channel2)
     val asyncStub = SembaAPIGrpc.stub(channel2)
-    new RawClient(channel2, blockingStub, asyncStub)
+    new RawSembaConnection(channel2, blockingStub, asyncStub)
 
   }
 }
 
-class RawClient(
+class RawSembaConnection(
   channel: ManagedChannel,
   blockingStub: SembaAPIBlockingStub,
   asyncStub: SembaAPIStub
-  ) extends AbstractClient(channel, blockingStub, asyncStub) {
-    override val logger = Logger.getLogger(classOf[RawClient].getName)
+  ) extends AbstractSembaConnection(channel, blockingStub, asyncStub) {
+    override val logger = Logger.getLogger(classOf[RawSembaConnection].getName)
 
     override val updateFunction: PartialFunction[UpdateMessage, Any] = Map.empty
 

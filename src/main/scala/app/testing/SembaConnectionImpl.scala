@@ -19,10 +19,10 @@ import scala.collection.parallel.immutable
   * Author: Eike Isermann
   * This is a SeMBa3 class
   */
-object ClientImpl {
+object SembaConnectionImpl {
 
-  def apply(): ClientImpl = apply("localhost", 50051)
-  def apply(host: String, port: Int): ClientImpl = {
+  def apply(): SembaConnectionImpl = apply("localhost", 50051)
+  def apply(host: String, port: Int): SembaConnectionImpl = {
     /* val test = ManagedChannelBuilder.forAddress(host, port)Ja
      test.usePlaintext(true)
      val  channel =  test.build()
@@ -36,19 +36,19 @@ object ClientImpl {
     val channel2 = channel.build()
     val blockingStub = SembaAPIGrpc.blockingStub(channel2)
     val asyncStub = SembaAPIGrpc.stub(channel2)
-    new ClientImpl(channel2, blockingStub, asyncStub)
+    new SembaConnectionImpl(channel2, blockingStub, asyncStub)
 
   }
 
 }
 
 
-class ClientImpl(
+class SembaConnectionImpl(
                   channel: ManagedChannel,
                   blockingStub: SembaAPIBlockingStub,
                   asyncStub: SembaAPIStub
-                ) extends AbstractClient(channel, blockingStub, asyncStub) {
-  override val logger = Logger.getLogger(classOf[ClientImpl].getName)
+                ) extends AbstractSembaConnection(channel, blockingStub, asyncStub) {
+  override val logger = Logger.getLogger(classOf[SembaConnectionImpl].getName)
 
 
   session = registerSession

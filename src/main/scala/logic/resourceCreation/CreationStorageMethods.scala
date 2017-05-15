@@ -15,6 +15,7 @@ import System.{currentTimeMillis => time}
 import globalConstants.SembaPresets
 import utilities.debug.DC
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -44,16 +45,19 @@ object CreationStorageMethods {
     // DC.stop(test)
 
    //  test = DC.measure("Generate Annotations")
+     var prefixUri = config.constants.resourceBaseURI + SembaPresets.generatedPrefix
+     var metadataLookup = desc.metadata.foldLeft(Map.empty[String,(String, AnnotationValue)]){case (lookup, valuePair) => lookup.updated(valuePair._1, (prefixUri + TextFactory.cleanString(valuePair._1), valuePair._2))}
      var itemDescription = desc
           val generatedProperties = storage.performWrite(
             {
               val model = storage.getTBox
-              val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateMetadataType(key, model, config))
+              val desc = itemDescription.metadata.keys.map(key => AccessMethods.generateMetadataType(metadataLookup(key)._1, key, model, config))
                 .foldLeft(Map.empty[String, Annotation])
                 {
-                  case (annotations, property) =>
-                  if (property.isDefined) annotations.updated(property.get.getURI,
-                    DatastructureMapping.wrapAnnotation(property.get, config))
+                  case (annotations, returnTuple) =>
+
+                  if (returnTuple._1) annotations.updated(returnTuple._2.getURI,
+                    DatastructureMapping.wrapAnnotation(returnTuple._2, config))
                   else annotations
                 }
               desc
@@ -64,13 +68,11 @@ object CreationStorageMethods {
     // test = DC.measure("Add Metadata")
 
      update = update.addAnnotations(AnnotationUpdate(generatedProperties))
-
-
+      var metadataEntries = metadataLookup.values.toMap
           storage.performWrite(
             {
-            val model = storage.getABox
-             val props = AccessMethods.updateMetadata(newResource.uri, itemDescription.metadata, model, false)
-             itemDescription = AccessMethods.retrieveMetadata(newResource.uri, model)
+             val props = AccessMethods.updateMetadata(newResource.uri, metadataEntries, storage.getABox, false)
+             itemDescription = AccessMethods.retrieveMetadata(newResource.uri, storage.getABox)
               props
             }
           )

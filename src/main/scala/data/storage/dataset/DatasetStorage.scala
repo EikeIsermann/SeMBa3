@@ -123,7 +123,7 @@ class DatasetStorage(config: Config) extends SembaStorageComponent {
     try{
       var model = Option(data.getNamedModel(tBoxName))
       var unionModel = model.getOrElse(tBox).union(tBox)
-      val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, unionModel)
+      val withReasoning = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_RDFS_INF, unionModel)
       data.addNamedModel(tBoxName, withReasoning)
       if(!data.containsNamedModel(aBoxName))
       {

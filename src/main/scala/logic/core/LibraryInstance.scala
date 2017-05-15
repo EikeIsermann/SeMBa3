@@ -12,6 +12,7 @@ import globalConstants._
 import logic.core.jobHandling.{Job, JobHandling, JobReply}
 import logic.itemModification.ItemModification
 import logic.search.Search
+import sembaGRPC.VoidResult
 
 
 /**
@@ -38,7 +39,10 @@ abstract class SembaBaseActor(val root: String) extends Stash with Initializatio
 class LibraryInstance(root: String) extends SembaBaseActor(root) with AccessToStorage with ResourceCreation with Search with ItemModification with Benchmarking//with DataExport
 {
   override def wrappedReceive: Receive = {
-    case write: WriteResults ⇒ benchmarkActor.foreach( _ ! WriteResults(config.constants.benchmarkPath))
+    case write: WriteResults ⇒ {
+      sender ! VoidResult()
+      benchmarkActor.foreach( _ ! WriteResults(config.constants.benchmarkPath + write.uri + ".xml"  ))
+    }
   }
 
   def initializeConstants(): Constants = {

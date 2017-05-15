@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by Eike on 28.04.2017.
   */
-class ClientLib(path: String, api: ClientImpl) {
+class ClientLib(path: String, api: SembaConnectionImpl) {
   var stamp = DC.measure("Setting up library")
   val lib = Library(path)
   var concepts = api.openLib(lib, this)
@@ -48,7 +48,7 @@ class ClientLib(path: String, api: ClientImpl) {
     api.removeItem(src,lib)
   }
 
-  def sparql(query: String, vars: Seq[String]): Map[String, Resource] = {
+  def sparqlToLibContent(query: String, vars: Seq[String]): Map[String, Resource] = {
     val result = api.sparql(query, vars, lib)
     //Assumes head of vars is the Resource.
     val allResourceResults = result.results.map(entry =>
@@ -61,6 +61,11 @@ class ClientLib(path: String, api: ClientImpl) {
     }
   }
 
+  def sparql(query: String, vars: Seq[String]): FilterResult = {
+    api.sparql(query, vars, lib)
+  }
+
+
   def requestCollectionContent(src: String): CollectionContent = {
     assert(content(src).itemType.isCollection)
     val coll = api.requestCollectionContent(content(src))
@@ -68,7 +73,7 @@ class ClientLib(path: String, api: ClientImpl) {
     coll
   }
 
-  def writeResults = api.writeResults(lib)
+  def writeResults(name: String) = api.writeResults(lib, name)
 
   def addToCollection(src: String, coll: String): VoidResult = {
     assert(content.contains(src) && content(coll).itemType.isCollection)

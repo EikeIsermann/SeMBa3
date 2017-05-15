@@ -11,6 +11,7 @@ import org.apache.jena.ontology.impl.OntModelImpl
 import org.apache.jena.rdf.model.{Model, ModelFactory, RDFNode, ResourceFactory, SimpleSelector, Statement}
 import org.apache.jena.shared.Lock
 import org.apache.jena.util.FileUtils
+import org.apache.jena.vocabulary.{OWL, RDF}
 import sembaGRPC._
 import utilities.debug.DC
 import utilities.{Convert, FileFactory, TextFactory, UpdateMessageFactory}
@@ -77,19 +78,19 @@ object AccessMethods {
   }
   */
 
-  def generateMetadataType(rawKey: String, model: OntModel, config: Config, functional: Boolean = false): Option[OntClass] = {
+  def generateMetadataType(key: String, rawKey: String, model: OntModel, config: Config, functional: Boolean = false): (Boolean, OntClass) = {
         var prop = None: Option[OntClass]
-        val key = config.constants.resourceBaseURI + SembaPresets.generatedPrefix + TextFactory.cleanString(rawKey)
+        var isNew = false
         prop = Option(model.getOntClass(key))
         if( prop.isEmpty ) {
+          isNew = true
         val newType = model.createClass(key)
           newType.addSuperClass(model.getOntClass(SembaPaths.generatedMetadata))
           newType.addLabel(ResourceFactory.createLangLiteral(rawKey, config.constants.language))
         prop = Some(newType)
         //if(functional) prop.get.addProperty(RDF.`type`, OWL.FunctionalProperty)
          }
-        else prop = None
-    prop
+    (isNew, prop.get)
   }
 
   def setMetadataValue(uri: String, itemURI: String, model: OntModel, values: AnnotationValue): ArrayBuffer[AnnotationValue] = {
@@ -112,7 +113,7 @@ object AccessMethods {
         }
         else */{
           {
-            val hasValue = model.getDatatypeProperty(SembaPaths.hasValue)
+            val hasValue = model.getProperty(SembaPaths.hasValue)
             values.value.foreach(x => {
               metadata.addProperty(hasValue, model.createLiteral(x))
               retVal = retVal.addValue(x)
@@ -140,10 +141,12 @@ object AccessMethods {
         retVal = Option(model.getIndividual(annotation.uri))
 
         if(retVal.isEmpty){
-          var individual = model.createIndividual(UUID.randomUUID().toString, model.getOntClass(metadataType))
-        individual.addProperty(model.getDatatypeProperty(SembaPaths.isMetadataType), metadataType)
-        item.addProperty(model.getProperty(SembaPaths.hasMetadata), individual)
-        retVal = Some(individual)
+          val newMetaValue = model.createResource(UUID.randomUUID().toString)
+          model.add(newMetaValue, RDF.`type`, model.getResource(metadataType))
+          model.add(newMetaValue, model.getProperty(SembaPaths.isMetadataType), metadataType)
+          model.add(item ,model.getProperty(SembaPaths.hasMetadata), newMetaValue)
+          model.add(newMetaValue ,model.getProperty(SembaPaths.describesItem), item)
+          retVal = Some(model.getIndividual(newMetaValue.getURI))
         }
     retVal
   }

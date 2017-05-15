@@ -31,6 +31,7 @@
     <hasMetadataURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#hasMetadata</hasMetadataURI>
     <isMetadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#isMetadataType</isMetadataTypeURI>
     <metadataTypeURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#MetadataType</metadataTypeURI>
+    <describesItemURI>http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl#describesItem</describesItemURI>
 </paths>
 <presets>
     <validOntologyExtensions>.owl,.ttl</validOntologyExtensions>

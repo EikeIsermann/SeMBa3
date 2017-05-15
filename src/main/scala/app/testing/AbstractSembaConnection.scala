@@ -14,12 +14,12 @@ import scala.collection.immutable.HashMap
 /**
   * Created by Eike on 01.05.2017.
   */
-abstract class AbstractClient (
+abstract class AbstractSembaConnection(
                                        val channel: ManagedChannel,
                                        val blockingStub: SembaAPIBlockingStub,
                                        val asyncStub: SembaAPIStub
                                      ) {
-  val logger = Logger.getLogger(classOf[AbstractClient].getName)
+  val logger = Logger.getLogger(classOf[AbstractSembaConnection].getName)
 
 
   val updateFunction: PartialFunction[UpdateMessage, Any]
@@ -157,7 +157,7 @@ abstract class AbstractClient (
   }
 
   def sparql(query: String, vars: Seq[String], lib: Library): FilterResult = {
-    logger.info("Performing Sparqlmagic")
+    //logger.info("Performing Sparqlmagic")
     var retVal = FilterResult()
     try {
       retVal = blockingStub.sparqlFilter(SparqlQuery().withLibrary(lib).withVars(vars).withQueryString(query))
@@ -245,11 +245,11 @@ abstract class AbstractClient (
     retVal
   }
 
-  def writeResults(lib: Library): VoidResult = {
-    logger.info("Sending Benchmark Write Trigger")
+  def writeResults(lib: Library, name: String): VoidResult = {
+   // logger.info("Sending Benchmark Write Trigger")
     var retVal = VoidResult()
     try{
-     retVal = blockingStub.writeBenchmarkResults(lib)
+     retVal = blockingStub.writeBenchmarkResults(BenchmarkWriteRequest(lib.uri, name))
     }
     catch {
       case e: StatusRuntimeException =>

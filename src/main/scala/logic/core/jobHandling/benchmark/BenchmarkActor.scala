@@ -67,8 +67,7 @@ class BenchmarkActor extends Actor {
   }
 
   override def postStop(): Unit = {
-    println("Poststoooop")
-    writeResults("/Users/uni/desktop/shutdownBench.xml")
+   //writeResults("/Users/uni/desktop/shutdownBench.xml")
   }
 }
 

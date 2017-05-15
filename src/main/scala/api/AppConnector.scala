@@ -342,9 +342,9 @@ class AppConnector extends Actor {
         Future.successful(request)
       }
 
-      override def writeBenchmarkResults(request: Library): Future[VoidResult] = {
-        val lib = app.get(request.uri)
-        ask(lib, WriteResults("")).mapTo[VoidResult]
+      override def writeBenchmarkResults(request: BenchmarkWriteRequest): Future[VoidResult] = {
+        val lib = app.get(request.lib)
+        ask(lib, WriteResults(request.name)).mapTo[VoidResult]
       }
 
 

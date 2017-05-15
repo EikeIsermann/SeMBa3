@@ -94,6 +94,8 @@ object SembaPaths {
 
   val hasValue = getString("hasValueURI")
 
+  val describesItem = getString("describesItemURI")
+
 
   /** Gets each config entry. */
   def getString(s: String): String = configFile.getValueAt("paths", s)
