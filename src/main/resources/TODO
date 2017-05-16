@@ -1,10 +1,7 @@
-- Build ScalaTest and thorughly test collection handling
-
-
 
 - Look into simple text search. Should have very low performance at the moment?
 
-- Improve metadata. Add XML Configuration for extracted metadata. Add labels to metadata. Put analysis in jobactor.
+- Improve metadata. Add XML Configuration to limit extracted metadata.
 
 - Test ItemModification
 
@@ -12,5 +9,4 @@
 
 - Metadata type definition in Ontology and automatic value mapping for API classes
 
--
 

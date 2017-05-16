@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-    <uri id="Imports Wizard Entry" name="http://www.hci.uni-wuerzburg.de/semba/semba-concepts.owl" uri="http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-concepts.ttl"/>
-    <uri id="Imports Wizard Entry" name="http://www.hci.uni-wuerzburg.de/ontologies/semba-main.owl" uri="http://www.hci.uni-wuerzburg.de/ontologies/semba/semba-main.owl"/>
-    <uri id="Imports Wizard Entry" name="http://www.hci.uni-wuerzburg.de/semba/semba-sbase.owl" uri="file:/Users/dwiebusch/Desktop/semba/semba-base.owl"/>
-    <uri id="User Edited Redirect" name="http://www.cc.uah.es/ie/ont/lom2owl" uri="file:/Users/dwiebusch/Desktop/semba/LOM2OWL.owl"/>
-    <uri id="User Edited Redirect" name="http://purl.org/dc/terms" uri="file:/Users/dwiebusch/Desktop/semba/dcterms.rdf"/>
-    <uri id="User Edited Redirect" name="http://purl.org/cld/terms/" uri="file:/Users/dwiebusch/Desktop/semba/cldterms.rdf"/>
-</catalog>
